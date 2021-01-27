@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -Eeo pipefail
+
+###########
+## TASKS ##
+###########
+
+command="$1"
+case "${command}" in
+  _test_unit)
+      gradle test
+      ;;
+  test_unit)
+      dojo "./tasks _test_unit"
+      ;;
+  *)
+      echo "Invalid command: '${command}'"
+      exit 1
+      ;;
+esac
+set +e

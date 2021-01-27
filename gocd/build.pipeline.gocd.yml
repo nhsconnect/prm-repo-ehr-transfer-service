@@ -1,0 +1,23 @@
+format_version: 4
+pipelines:
+  'prm-deductions-gp2gp-message-handler':
+    group: deductions
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - docs/**/*.*
+    stages:
+      - build:
+          clean_workspace: true
+          jobs:
+            test_unit:
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks test_unit
