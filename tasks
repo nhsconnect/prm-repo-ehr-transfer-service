@@ -8,10 +8,18 @@ set -Eeo pipefail
 
 AWS_DEFAULT_REGION=eu-west-2
 IMAGE_REPO_NAME=deductions/gp2gp-message-handler
+export NHS_SERVICE=gp2gp-message-handler
 
 ####################################
 # Instance (Environment) Variables #
 ####################################
+
+function check_env {
+  if [[ -z "${NHS_ENVIRONMENT}" ]]; then
+    echo "Must set NHS_ENVIRONMENT"
+    exit 1
+  fi
+}
 
 function get_latest_commit_hash {
   export COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-8)
@@ -19,6 +27,42 @@ function get_latest_commit_hash {
 
 function get_aws_account_id {
     AWS_ACCOUNT_ID=$(dojo -c Dojofile-infra "aws sts get-caller-identity | jq -r .Account")
+}
+
+#######################
+# Terraform Functions #
+#######################
+
+function tf_plan {
+  operation=$1
+  cd terraform
+
+  COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-8)
+
+  if [[ -z "${GO_DEPENDENCY_LABEL_APP}" ]]; then
+    IMAGE_TAG=${COMMIT_HASH}
+  else
+    IMAGE_TAG=${GO_DEPENDENCY_LABEL_APP}
+  fi
+
+  terraform init -reconfigure -backend-config key=${NHS_SERVICE}-${NHS_ENVIRONMENT}/terraform.tfstate
+  terraform get # modules
+  if [[ "${operation}" == "create" ]]; then
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="nhs_deployment.tfplan"
+  elif [[ "${operation}" == "destroy" ]]; then
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="nhs_deployment.tfplan" -destroy
+  else
+    echo "Unknown operation (should be create or destroy), got: ${operation}"
+    exit 1
+  fi
+}
+
+function tf_apply {
+  cd terraform
+  terraform init -backend-config key=${NHS_SERVICE}-${NHS_ENVIRONMENT}/terraform.tfstate
+  terraform get # modules
+  terraform apply nhs_deployment.tfplan
+  terraform output -json > tf-out.json
 }
 
 ############################
@@ -56,7 +100,8 @@ case "${command}" in
       configure_docker_repository_uri
       build_docker_image
       echo "Pushing the Docker image... $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG"
-      docker push $REPOSITORY_URI
+      docker push $REPOSITORY_URI:$IMAGE_TAG
+      docker push $REPOSITORY_URI:latest
       ;;
   _build)
       rm -rf build/
@@ -70,6 +115,24 @@ case "${command}" in
       ;;
   test_unit)
       dojo "./tasks _test_unit"
+      ;;
+  tf)
+      check_env
+      dojo -c Dojofile-infra "bash"
+      ;;
+  _tf_plan)
+      tf_plan "$2"
+      ;;
+  tf_plan)
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_plan $2"
+      ;;
+  _tf_apply)
+      tf_apply
+      ;;
+  tf_apply)
+      check_env
+      dojo -c Dojofile-infra "./tasks _tf_apply"
       ;;
   *)
       echo "Invalid command: '${command}'"
