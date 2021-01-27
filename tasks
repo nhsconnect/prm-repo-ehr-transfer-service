@@ -2,12 +2,62 @@
 
 set -Eeo pipefail
 
+###########################
+# Local Config Parameters #
+###########################
+
+AWS_DEFAULT_REGION=eu-west-2
+IMAGE_REPO_NAME=deductions/gp2gp-message-handler
+
+####################################
+# Instance (Environment) Variables #
+####################################
+
+function get_latest_commit_hash {
+  export COMMIT_HASH=$(git rev-parse HEAD | cut -c 1-8)
+}
+
+function get_aws_account_id {
+    AWS_ACCOUNT_ID=$(dojo -c Dojofile-infra "aws sts get-caller-identity | jq -r .Account")
+}
+
+############################
+# Docker Related Functions #
+############################
+
+function docker_login {
+  echo Logging in to Amazon ECR...
+  eval $(dojo -c Dojofile-infra "aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION")
+}
+
+function configure_docker_repository_uri {
+  docker_login
+  get_aws_account_id
+  export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/$IMAGE_REPO_NAME
+}
+
+function build_docker_image {
+  echo Build started on `date`
+  get_latest_commit_hash
+  IMAGE_TAG=${COMMIT_HASH}
+  echo Building the Docker image...
+  docker build -t $REPOSITORY_URI:latest -t $REPOSITORY_URI:$IMAGE_TAG .
+  echo Build completed on `date`
+}
+
 ###########
 ## TASKS ##
 ###########
 
 command="$1"
 case "${command}" in
+  build_docker)
+      gradle build
+      configure_docker_repository_uri
+      build_docker_image
+      echo "Pushing the Docker image... $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG"
+      docker push $REPOSITORY_URI
+      ;;
   _test_unit)
       gradle test
       ;;

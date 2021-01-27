@@ -15,9 +15,28 @@ pipelines:
             test_unit:
               resources:
                 - docker
+              artifacts:
+                - build:
+                    source: build
               tasks:
                 - exec:
                     command: /bin/bash
                     arguments:
                       - -c
                       - ./tasks test_unit
+      - docker:
+          clean_workspace: true
+          jobs:
+            build:
+              resources:
+                - docker
+              tasks:
+                - fetch:
+                    stage: build
+                    job: test_unit
+                    source: build
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks build_docker
