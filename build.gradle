@@ -3,7 +3,8 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
 	id 'jacoco'
-	id "com.github.spotbugs" version "4.6.0"
+	id 'com.github.spotbugs' version '4.6.0'
+	id 'org.owasp.dependencycheck' version '6.1.0'
 }
 
 group = 'uk.nhs.prm.deductions'
@@ -47,4 +48,8 @@ spotbugsMain {
 			stylesheet = 'fancy-hist.xsl'
 		}
 	}
+}
+
+dependencyCheck {
+	failBuildOnCVSS=7
 }

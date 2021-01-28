@@ -128,6 +128,12 @@ case "${command}" in
   code_quality)
       dojo "./tasks _code_quality"
       ;;
+  _dep)
+      gradle dependencyCheckAnalyze
+      ;;
+  dep)
+      dojo "./tasks _dep"
+      ;;
   tf)
       check_env
       dojo -c Dojofile-infra "bash"
