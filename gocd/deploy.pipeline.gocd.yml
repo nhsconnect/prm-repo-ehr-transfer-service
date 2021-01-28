@@ -1,0 +1,68 @@
+format_version: 4
+common:
+  deploy_job: &deploy_job
+    resources:
+      - docker
+    tasks:
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_plan create
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks tf_apply
+      - exec:
+          command: /bin/bash
+          arguments:
+            - -c
+            - ./tasks wait_ecs
+pipelines:
+  'prm-deductions-gp2gp-message-handler.dev':
+    group: deductions
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - docs/**/*.*
+      app:
+        pipeline: prm-deductions-gp2gp-message-handler
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_dev
+    environment_variables:
+      NHS_ENVIRONMENT: dev
+    stages:
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy_job
+
+  'prm-deductions-gp2gp-message-handler.test':
+    group: deductions
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - docs/**/*.*
+      app:
+        pipeline: prm-deductions-gp2gp-message-handler
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_test
+      dev_env:
+        pipeline: prm-deductions-gp2gp-message-handler.dev
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: test
+    stages:
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy_job

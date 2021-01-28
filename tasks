@@ -134,6 +134,16 @@ case "${command}" in
       check_env
       dojo -c Dojofile-infra "./tasks _tf_apply"
       ;;
+  _wait_ecs)
+      aws ecs wait services-stable \
+        --region $AWS_DEFAULT_REGION \
+        --cluster $NHS_ENVIRONMENT-deductions-private-ecs-cluster \
+        --service $NHS_ENVIRONMENT-${NHS_SERVICE}-service
+      ;;
+  wait_ecs)
+      check_env
+      dojo -c Dojofile-infra "./tasks _wait_ecs"
+      ;;
   *)
       echo "Invalid command: '${command}'"
       exit 1
