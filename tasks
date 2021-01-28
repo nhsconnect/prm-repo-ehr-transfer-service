@@ -116,6 +116,12 @@ case "${command}" in
   test_unit)
       dojo "./tasks _test_unit"
       ;;
+  _test_coverage)
+      gradle jacocoTestCoverageVerification
+      ;;
+  test_coverage)
+      dojo "./tasks _test_coverage"
+      ;;
   tf)
       check_env
       dojo -c Dojofile-infra "bash"

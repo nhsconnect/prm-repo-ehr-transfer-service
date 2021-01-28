@@ -24,6 +24,20 @@ pipelines:
                     arguments:
                       - -c
                       - ./tasks test_unit
+            test_coverage:
+              artifacts:
+                - build:
+                    source: build/reports/jacoco
+              tabs:
+                coverage: jacoco/test/html/index.html
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks test_coverage
       - docker:
           clean_workspace: true
           jobs:
