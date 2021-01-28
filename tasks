@@ -122,6 +122,12 @@ case "${command}" in
   test_coverage)
       dojo "./tasks _test_coverage"
       ;;
+  _code_quality)
+      gradle check
+      ;;
+  code_quality)
+      dojo "./tasks _code_quality"
+      ;;
   tf)
       check_env
       dojo -c Dojofile-infra "bash"

@@ -38,6 +38,20 @@ pipelines:
                     arguments:
                       - -c
                       - ./tasks test_coverage
+            code_quality:
+              artifacts:
+                - build:
+                    source: build/reports/spotbugs
+              tabs:
+                quality: spotbugs/main/spotbugs.html
+              resources:
+                - docker
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks code_quality
       - docker:
           clean_workspace: true
           jobs:
