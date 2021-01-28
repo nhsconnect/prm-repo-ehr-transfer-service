@@ -37,3 +37,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Local .terraform directories
+**/.terraform/*
+/terraform/nhs_deployment.tfplan
+/terraform/tf-out.json
