@@ -102,7 +102,8 @@ function build_docker_image {
 command="$1"
 case "${command}" in
   build_docker)
-      dojo "./tasks _build"
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _build"
       configure_docker_repository_uri
       build_docker_image
       echo "Pushing the Docker image... $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG"
@@ -114,8 +115,7 @@ case "${command}" in
       gradle build
       ;;
   build)
-      configure_local_envs
-      dojo -c Dojofile-itest "./tasks _build"
+      dojo "./tasks _build"
       ;;
   _test)
       gradle test
