@@ -18,6 +18,12 @@ public class ActiveMQConfig {
     @Value("${activemq.brokerUrl}")
     private String brokerUrl;
 
+    @Value("${activemq.userName}")
+    private String brokerUsername;
+
+    @Value("${activemq.password}")
+    private String brokerPassword;
+
     @Bean
     public JmsListenerContainerFactory<?> myFactory(ConnectionFactory connectionFactory,
                                                     DefaultJmsListenerContainerFactoryConfigurer configurer) {
@@ -33,6 +39,8 @@ public class ActiveMQConfig {
     public ConnectionFactory connectionFactory(){
         ActiveMQConnectionFactory activeMQConnectionFactory  = new ActiveMQConnectionFactory();
         activeMQConnectionFactory.setBrokerURL(brokerUrl);
+        activeMQConnectionFactory.setPassword(brokerPassword);
+        activeMQConnectionFactory.setUserName(brokerUsername);
         return activeMQConnectionFactory;
     }
 }
