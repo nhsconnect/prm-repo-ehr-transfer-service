@@ -114,7 +114,8 @@ case "${command}" in
       gradle build
       ;;
   build)
-      dojo "./tasks _build"
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _build"
       ;;
   _test)
       gradle test
