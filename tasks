@@ -29,6 +29,12 @@ function get_aws_account_id {
     AWS_ACCOUNT_ID=$(dojo -c Dojofile-infra "aws sts get-caller-identity | jq -r .Account")
 }
 
+function configure_local_envs {
+  export GP2GP_WORKER_MHS_QUEUE_URL_1=tcp://mq-1:61616
+  export GP2GP_WORKER_MHS_QUEUE_USERNAME=admin
+  export GP2GP_WORKER_MHS_QUEUE_PASSWORD=admin
+}
+
 #######################
 # Terraform Functions #
 #######################
@@ -110,11 +116,12 @@ case "${command}" in
   build)
       dojo "./tasks _build"
       ;;
-  _test_unit)
+  _test)
       gradle test
       ;;
-  test_unit)
-      dojo "./tasks _test_unit"
+  test)
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _test"
       ;;
   _test_coverage)
       gradle jacocoTestCoverageVerification

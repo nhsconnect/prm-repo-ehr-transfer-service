@@ -12,7 +12,7 @@ pipelines:
       - build:
           clean_workspace: true
           jobs:
-            test_unit:
+            test:
               resources:
                 - docker
               artifacts:
@@ -23,7 +23,7 @@ pipelines:
                     command: /bin/bash
                     arguments:
                       - -c
-                      - ./tasks test_unit
+                      - ./tasks test
             test_coverage:
               artifacts:
                 - build:
@@ -61,7 +61,7 @@ pipelines:
               tasks:
                 - fetch:
                     stage: build
-                    job: test_unit
+                    job: test
                     source: build
                 - exec:
                     command: /bin/bash
