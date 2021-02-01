@@ -127,13 +127,15 @@ case "${command}" in
       gradle jacocoTestCoverageVerification
       ;;
   test_coverage)
-      dojo "./tasks _test_coverage"
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
       gradle check
       ;;
   code_quality)
-      dojo "./tasks _code_quality"
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _dep)
       gradle dependencyCheckAnalyze
