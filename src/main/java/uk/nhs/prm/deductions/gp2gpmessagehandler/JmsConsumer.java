@@ -10,8 +10,7 @@ import javax.jms.TextMessage;
 @Component
 public class JmsConsumer {
 
-    final
-    JmsTemplate jmsTemplate;
+    final JmsTemplate jmsTemplate;
 
     @Value("${activemq.outboundQueue}")
     private String outboundQueue;
