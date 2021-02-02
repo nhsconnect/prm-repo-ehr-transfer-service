@@ -59,15 +59,19 @@ data "aws_iam_policy_document" "logs_policy_doc" {
   }
 }
 
-//data "aws_iam_policy_document" "ssm_policy_doc" {
-//  statement {
-//    actions = [
-//      "ssm:*"
-//    ]
-//
-//    resources = []
-//  }
-//}
+data "aws_iam_policy_document" "ssm_policy_doc" {
+  statement {
+    actions = [
+      "ssm:*"
+    ]
+
+    resources = [
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-username",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-password",
+    ]
+  }
+}
+
 
 resource "aws_iam_policy" "gp2gp-ecr" {
   name   = "${var.environment}-gp2gp-message-handler-ecr"
@@ -79,20 +83,20 @@ resource "aws_iam_policy" "gp2gp-logs" {
   policy = data.aws_iam_policy_document.logs_policy_doc.json
 }
 
-//resource "aws_iam_policy" "gp2gp-ssm" {
-//  name   = "${var.environment}-gp2gp-message-handler-ssm"
-//  policy = data.aws_iam_policy_document.ssm_policy_doc.json
-//}
+resource "aws_iam_policy" "gp2gp-ssm" {
+  name   = "${var.environment}-gp2gp-message-handler-ssm"
+  policy = data.aws_iam_policy_document.ssm_policy_doc.json
+}
 
 resource "aws_iam_role_policy_attachment" "gp2gp-ecr-attach" {
   role       = aws_iam_role.gp2gp.name
   policy_arn = aws_iam_policy.gp2gp-ecr.arn
 }
 
-//resource "aws_iam_role_policy_attachment" "gp2gp-ssm" {
-//  role       = aws_iam_role.gp2gp.name
-//  policy_arn = aws_iam_policy.gp2gp-ssm.arn
-//}
+resource "aws_iam_role_policy_attachment" "gp2gp-ssm" {
+  role       = aws_iam_role.gp2gp.name
+  policy_arn = aws_iam_policy.gp2gp-ssm.arn
+}
 
 resource "aws_iam_role_policy_attachment" "gp2gp-logs" {
   role       = aws_iam_role.gp2gp.name
