@@ -11,7 +11,6 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -43,8 +42,13 @@ class Gp2gpMessageHandlerApplicationTests {
 
 		//assertion: verify the message gets on the outbound q
 		jmsTemplate.setReceiveTimeout(5000);
-		Message message = jmsTemplate.receive(outboundQueue);
+		BytesMessage message = (BytesMessage) jmsTemplate.receive(outboundQueue);
 		assertNotNull(message);
+		try {
+			String stringMessage = message.readUTF();
+			assertThat(stringMessage, equalTo(testMessage));
+		} catch (JMSException e) {
+			e.printStackTrace();
+		}
 	}
-
 }

@@ -28,8 +28,7 @@ public class JmsConsumer {
     public void onMessage(Message message) {
         try {
             BytesMessage bytesMessage = (BytesMessage) message;
-//            String content = bytesMessage.readUTF();
-//            System.out.println("Received Message: "+ content);
+            System.out.println("Received Message from Inbound queue");
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch(Exception e) {
             System.out.println("Received Exception : "+ e);
