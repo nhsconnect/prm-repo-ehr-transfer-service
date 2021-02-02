@@ -5,9 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,7 +32,14 @@ class Gp2gpMessageHandlerApplicationTests {
 	void shouldPassThroughMessages() {
 		//action: send a message on the inbound q
 		String testMessage = "test message";
-		jmsTemplate.convertAndSend(inboundQueue, testMessage);
+		jmsTemplate.send(inboundQueue, new MessageCreator() {
+			@Override
+			public Message createMessage(Session session) throws JMSException {
+				BytesMessage bytesMessage = session.createBytesMessage();
+				bytesMessage.writeUTF(testMessage);
+				return bytesMessage;
+			}
+		});
 
 		//assertion: verify the message gets on the outbound q
 		jmsTemplate.setReceiveTimeout(5000);
