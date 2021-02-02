@@ -3,10 +3,13 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
 
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.Session;
 
 @Component
 public class JmsConsumer {
@@ -25,9 +28,9 @@ public class JmsConsumer {
     public void onMessage(Message message) {
         try {
             BytesMessage bytesMessage = (BytesMessage) message;
-            String content = bytesMessage.readUTF();
-            System.out.println("Received Message: "+ content);
-            jmsTemplate.convertAndSend(outboundQueue, content);
+//            String content = bytesMessage.readUTF();
+//            System.out.println("Received Message: "+ content);
+            jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch(Exception e) {
             System.out.println("Received Exception : "+ e);
         }

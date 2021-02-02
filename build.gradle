@@ -28,7 +28,7 @@ test {
 
 tasks.withType(Test) {
 	testLogging {
-		events "started", "passed", "skipped", "failed"
+		events "standardOut", "passed", "skipped", "failed"
 	}
 }
 

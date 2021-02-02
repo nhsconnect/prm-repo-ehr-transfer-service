@@ -45,12 +45,6 @@ class Gp2gpMessageHandlerApplicationTests {
 		jmsTemplate.setReceiveTimeout(5000);
 		Message message = jmsTemplate.receive(outboundQueue);
 		assertNotNull(message);
-		TextMessage textMessage = (TextMessage) message;
-		try {
-			assertThat(textMessage.getText(), equalTo(testMessage));
-		} catch (JMSException e) {
-			e.printStackTrace();
-		}
 	}
 
 }
