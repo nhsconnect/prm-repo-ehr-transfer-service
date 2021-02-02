@@ -26,6 +26,12 @@ test {
 	useJUnitPlatform()
 }
 
+tasks.withType(Test) {
+	testLogging {
+		events "started", "passed", "skipped", "failed"
+	}
+}
+
 jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
 }
