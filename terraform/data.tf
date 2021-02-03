@@ -23,3 +23,11 @@ data "aws_ssm_parameter" "amq-username" {
 data "aws_ssm_parameter" "amq-password" {
   name = "/repo/${var.environment}/user-input/mq-app-password"
 }
+
+data "aws_ssm_parameter" "openwire_endpoint_0" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/openwire-endpoint-0"
+}
+
+data "aws_ssm_parameter" "openwire_endpoint_1" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/openwire-endpoint-1"
+}

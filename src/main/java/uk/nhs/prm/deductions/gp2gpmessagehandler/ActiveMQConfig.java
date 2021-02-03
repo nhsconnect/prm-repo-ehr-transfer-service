@@ -15,8 +15,11 @@ import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 @Configuration
 public class ActiveMQConfig {
 
-    @Value("${activemq.brokerUrl}")
-    private String brokerUrl;
+    @Value("${activemq.amqEndpoint1}")
+    private String amqEndpoint1;
+
+    @Value("${activemq.amqEndpoint2}")
+    private String amqEndpoint2;
 
     @Value("${activemq.userName}")
     private String brokerUsername;
@@ -38,9 +41,13 @@ public class ActiveMQConfig {
     @Bean
     public ConnectionFactory connectionFactory(){
         ActiveMQConnectionFactory activeMQConnectionFactory  = new ActiveMQConnectionFactory();
-        activeMQConnectionFactory.setBrokerURL(brokerUrl);
+        activeMQConnectionFactory.setBrokerURL(failoverUrl());
         activeMQConnectionFactory.setPassword(brokerPassword);
         activeMQConnectionFactory.setUserName(brokerUsername);
         return activeMQConnectionFactory;
+    }
+
+    private String failoverUrl() {
+        return String.format("failover:(%s,%s)", amqEndpoint1, amqEndpoint2);
     }
 }
