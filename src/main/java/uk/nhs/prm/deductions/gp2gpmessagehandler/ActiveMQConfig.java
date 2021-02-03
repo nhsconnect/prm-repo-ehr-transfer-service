@@ -27,6 +27,9 @@ public class ActiveMQConfig {
     @Value("${activemq.password}")
     private String brokerPassword;
 
+    @Value("${activemq.randomOption}")
+    private String randomOption;
+
     @Bean
     public JmsListenerContainerFactory<?> myFactory(ConnectionFactory connectionFactory,
                                                     DefaultJmsListenerContainerFactoryConfigurer configurer) {
@@ -42,12 +45,13 @@ public class ActiveMQConfig {
     public ConnectionFactory connectionFactory(){
         ActiveMQConnectionFactory activeMQConnectionFactory  = new ActiveMQConnectionFactory();
         activeMQConnectionFactory.setBrokerURL(failoverUrl());
+        System.out.println("FAILOVER" + failoverUrl());
         activeMQConnectionFactory.setPassword(brokerPassword);
         activeMQConnectionFactory.setUserName(brokerUsername);
         return activeMQConnectionFactory;
     }
 
     private String failoverUrl() {
-        return String.format("failover:(%s,%s)", amqEndpoint1, amqEndpoint2);
+        return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
     }
 }
