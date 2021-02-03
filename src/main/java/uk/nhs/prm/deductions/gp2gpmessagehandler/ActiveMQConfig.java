@@ -45,7 +45,6 @@ public class ActiveMQConfig {
     public ConnectionFactory connectionFactory(){
         ActiveMQConnectionFactory activeMQConnectionFactory  = new ActiveMQConnectionFactory();
         activeMQConnectionFactory.setBrokerURL(failoverUrl());
-        System.out.println("FAILOVER" + failoverUrl());
         activeMQConnectionFactory.setPassword(brokerPassword);
         activeMQConnectionFactory.setUserName(brokerUsername);
         return activeMQConnectionFactory;
