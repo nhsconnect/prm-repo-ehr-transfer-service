@@ -20,7 +20,6 @@ public class JmsConsumer {
         this.jmsTemplate = jmsTemplate;
     }
 
-    //might need to use BytesMessage as that's how is probably gonna be read from the q
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) {
         try {
