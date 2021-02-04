@@ -5,8 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
+
+import javax.jms.JMSException;
 
 import static org.mockito.Mockito.verify;
 
@@ -16,14 +17,13 @@ public class JmsConsumerTest {
     @Mock
     JmsTemplate mockJmsTemplate;
 
-    @Value("${activemq.outboundQueue}")
-    private String outboundQueue;
-
     @Test
-    void shouldSendMessageToOutboundQueue() {
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate);
+    void shouldSendMessageToOutboundQueue() throws JMSException {
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.writeUTF("hello");
+        message.reset();
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate).convertAndSend(outboundQueue, message);
+        verify(mockJmsTemplate).convertAndSend("unhandled", message);
     }
 }
