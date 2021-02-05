@@ -13,6 +13,7 @@ import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +37,7 @@ public class JmsConsumerTest {
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate).convertAndSend("outbound", message);
+        verify(mockJmsTemplate, only()).convertAndSend("outbound", message);
     }
 
     @Test
@@ -44,7 +45,7 @@ public class JmsConsumerTest {
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
         ActiveMQBytesMessage message = getActiveMQBytesMessage("hello");
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate).convertAndSend("unhandled", message);
+        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
     }
 
     @Test
@@ -53,6 +54,15 @@ public class JmsConsumerTest {
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
         ActiveMQBytesMessage message = getActiveMQBytesMessage(nonSoapMessage);
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate).convertAndSend("unhandled", message);
+        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+    }
+
+    @Test
+    void shouldSendMessageWithoutInteractionIdToUnhandledQueue() throws JMSException, IOException {
+        String messageWithoutInteractionId = dataLoader.getData("ehrRequestWithoutInteractionId.xml");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
+        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutInteractionId);
+        jmsConsumer.onMessage(message);
+        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
     }
 }

@@ -34,12 +34,17 @@ public class JmsConsumer {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class SOAPEnvelope {
-        @JacksonXmlProperty(localName = "SOAP-ENV:Header")
+        @JacksonXmlProperty(localName = "Header", namespace = "SOAP-ENV")
         SOAPHeader header;
     }
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class SOAPHeader {
-        @JacksonXmlProperty(localName = "eb:Action")
+        @JacksonXmlProperty(localName = "MessageHeader", namespace = "eb")
+        MessageHeader messageHeader;
+    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class MessageHeader {
+        @JacksonXmlProperty(localName = "Action", namespace = "eb")
         String action;
     }
 
@@ -56,7 +61,12 @@ public class JmsConsumer {
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
             XmlMapper xmlMapper = new XmlMapper();
-            xmlMapper.readValue(soapHeader.getInputStream(), SOAPEnvelope.class);
+            SOAPEnvelope soapEnvelope = xmlMapper.readValue(soapHeader.getInputStream(), SOAPEnvelope.class);
+
+            if (soapEnvelope.header.messageHeader.action == null) {
+                jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+                return;
+            }
 
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch (MessagingException | JsonParseException e) {

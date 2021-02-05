@@ -38,7 +38,6 @@ class Gp2gpMessageHandlerApplicationTests {
 	@Test
 	void shouldPassThroughMessagesForOldWorker() throws IOException {
 		String ehrRequest = dataLoader.getData("ehrRequestSoapEnvelope.xml");
-		//action: send a message on the inbound q
 		jmsTemplate.send(inboundQueue, new MessageCreator() {
 			@Override
 			public Message createMessage(Session session) throws JMSException {
@@ -48,7 +47,6 @@ class Gp2gpMessageHandlerApplicationTests {
 			}
 		});
 
-		//assertion: verify the message gets on the outbound q
 		jmsTemplate.setReceiveTimeout(5000);
 		BytesMessage message = (BytesMessage) jmsTemplate.receive(outboundQueue);
 		assertNotNull(message);
@@ -73,7 +71,6 @@ class Gp2gpMessageHandlerApplicationTests {
 			}
 		});
 
-		//assertion: verify the message gets on the outbound q
 		jmsTemplate.setReceiveTimeout(5000);
 		BytesMessage message = (BytesMessage) jmsTemplate.receive(unhandledQueue);
 		assertNotNull(message);
