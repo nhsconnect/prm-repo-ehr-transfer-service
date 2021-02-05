@@ -12,8 +12,8 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -43,7 +43,7 @@ class Gp2gpMessageHandlerApplicationTests {
 			@Override
 			public Message createMessage(Session session) throws JMSException {
 				BytesMessage bytesMessage = session.createBytesMessage();
-				bytesMessage.writeBytes(ehrRequest.getBytes());
+				bytesMessage.writeBytes(ehrRequest.getBytes(StandardCharsets.UTF_8));
 				return bytesMessage;
 			}
 		});

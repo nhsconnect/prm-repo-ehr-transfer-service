@@ -11,6 +11,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 import javax.jms.JMSException;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static org.mockito.Mockito.verify;
 
@@ -24,7 +25,7 @@ public class JmsConsumerTest {
 
     private ActiveMQBytesMessage getActiveMQBytesMessage(String content) throws JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.writeBytes(content.getBytes());
+        message.writeBytes(content.getBytes(StandardCharsets.UTF_8));
         message.reset();
         return message;
     }
