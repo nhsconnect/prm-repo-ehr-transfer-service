@@ -22,13 +22,18 @@ public class JmsConsumerTest {
 
     private TestDataLoader dataLoader = new TestDataLoader();
 
+    private ActiveMQBytesMessage getActiveMQBytesMessage(String content) throws JMSException {
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.writeBytes(content.getBytes());
+        message.reset();
+        return message;
+    }
+
     @Test
     void shouldSendMessageToOutboundQueue() throws JMSException, IOException {
-        String ehrRequest = dataLoader.getData("ehrRequest.xml");
+        String ehrRequest = dataLoader.getData("ehrRequestSoapEnvelope.xml");
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.writeUTF(ehrRequest);
-        message.reset();
+        ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
         verify(mockJmsTemplate).convertAndSend("outbound", message);
     }
@@ -36,9 +41,16 @@ public class JmsConsumerTest {
     @Test
     void shouldSendMessageToUnhandledQueue() throws JMSException {
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.writeUTF("hello");
-        message.reset();
+        ActiveMQBytesMessage message = getActiveMQBytesMessage("hello");
+        jmsConsumer.onMessage(message);
+        verify(mockJmsTemplate).convertAndSend("unhandled", message);
+    }
+
+    @Test
+    void shouldSendNonSOAPMessageToUnhandledQueue() throws JMSException, IOException {
+        String nonSoapMessage = dataLoader.getData("nonSoapMimeMessage.xml");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
+        ActiveMQBytesMessage message = getActiveMQBytesMessage(nonSoapMessage);
         jmsConsumer.onMessage(message);
         verify(mockJmsTemplate).convertAndSend("unhandled", message);
     }

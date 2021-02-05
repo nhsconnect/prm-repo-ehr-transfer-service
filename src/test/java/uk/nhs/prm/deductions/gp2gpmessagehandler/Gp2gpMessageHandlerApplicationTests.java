@@ -37,13 +37,13 @@ class Gp2gpMessageHandlerApplicationTests {
 
 	@Test
 	void shouldPassThroughMessagesForOldWorker() throws IOException {
-		String ehrRequest = dataLoader.getData("ehrRequest.xml");
+		String ehrRequest = dataLoader.getData("ehrRequestSoapEnvelope.xml");
 		//action: send a message on the inbound q
 		jmsTemplate.send(inboundQueue, new MessageCreator() {
 			@Override
 			public Message createMessage(Session session) throws JMSException {
 				BytesMessage bytesMessage = session.createBytesMessage();
-				bytesMessage.writeUTF(ehrRequest);
+				bytesMessage.writeBytes(ehrRequest.getBytes());
 				return bytesMessage;
 			}
 		});
