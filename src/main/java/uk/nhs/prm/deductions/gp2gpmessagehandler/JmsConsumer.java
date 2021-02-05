@@ -37,7 +37,7 @@ public class JmsConsumer {
             bytesMessage.readBytes(contentAsBytes);
             ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsBytes, "multipart/related;charset=\"UTF-8\"");
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-            BodyPart soapHeader = mimeMultipart.getBodyPart(0);
+            mimeMultipart.getBodyPart(0);
 
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch (MessagingException e) {
