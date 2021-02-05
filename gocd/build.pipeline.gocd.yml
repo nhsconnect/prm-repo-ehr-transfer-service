@@ -43,7 +43,8 @@ pipelines:
                 - build:
                     source: build/reports/spotbugs
               tabs:
-                quality: spotbugs/main/spotbugs.html
+                MainCodeQuality: spotbugs/main/spotbugs.html
+                TestCodeQuality: spotbugs/test/spotbugs.html
               resources:
                 - docker
               tasks:
