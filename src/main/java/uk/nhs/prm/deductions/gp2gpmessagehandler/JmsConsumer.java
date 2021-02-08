@@ -86,6 +86,7 @@ public class JmsConsumer {
             XmlMapper xmlMapper = new XmlMapper();
             InputStream inputStream = soapHeader.getInputStream();
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println(content);
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
             System.out.println("SOAP Envelope" + soapEnvelope);
             System.out.println("SOAP Header" + soapEnvelope.header);
