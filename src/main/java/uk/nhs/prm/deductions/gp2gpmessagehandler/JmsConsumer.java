@@ -73,6 +73,7 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) {
+        MessageSanitizer messageSanitizer = new MessageSanitizer();
 
         BytesMessage bytesMessage = (BytesMessage) message;
         System.out.println("Received Message from Inbound queue");
@@ -82,7 +83,7 @@ public class JmsConsumer {
             bytesMessage.readBytes(contentAsBytes);
             String fullContent = new String(contentAsBytes, StandardCharsets.UTF_8);
             System.out.println("fullContent: "+ fullContent);
-            ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsBytes, "multipart/related;charset=\"UTF-8\"");
+            ByteArrayDataSource dataSource = new ByteArrayDataSource(messageSanitizer.sanitize(fullContent), "multipart/related;charset=\"UTF-8\"");
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
             XmlMapper xmlMapper = new XmlMapper();
