@@ -36,16 +36,37 @@ public class JmsConsumer {
     static class SOAPEnvelope {
         @JacksonXmlProperty(localName = "Header", namespace = "SOAP-ENV")
         SOAPHeader header;
+
+        @Override
+        public String toString() {
+            return "SOAPEnvelope{" +
+                    "header=" + header +
+                    '}';
+        }
     }
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class SOAPHeader {
         @JacksonXmlProperty(localName = "MessageHeader", namespace = "eb")
         MessageHeader messageHeader;
+
+        @Override
+        public String toString() {
+            return "SOAPHeader{" +
+                    "messageHeader=" + messageHeader +
+                    '}';
+        }
     }
     @JsonIgnoreProperties(ignoreUnknown = true)
     static class MessageHeader {
         @JacksonXmlProperty(localName = "Action", namespace = "eb")
         String action;
+
+        @Override
+        public String toString() {
+            return "MessageHeader{" +
+                    "action='" + action + '\'' +
+                    '}';
+        }
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
@@ -62,6 +83,8 @@ public class JmsConsumer {
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
             XmlMapper xmlMapper = new XmlMapper();
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(soapHeader.getInputStream(), SOAPEnvelope.class);
+            System.out.println("SOAP Envelope" + soapEnvelope);
+            System.out.println("SOAP Header" + soapEnvelope.header);
 
             if (soapEnvelope.header.messageHeader.action == null) {
                 System.out.println("Sending message without soap envelope header to unhandled queue");
