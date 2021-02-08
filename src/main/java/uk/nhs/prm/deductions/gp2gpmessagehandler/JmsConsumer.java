@@ -64,10 +64,12 @@ public class JmsConsumer {
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(soapHeader.getInputStream(), SOAPEnvelope.class);
 
             if (soapEnvelope.header.messageHeader.action == null) {
+                System.out.println("Sending message without soap envelope header to unhandled queue");
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
 
+            System.out.println("Sending message to outbound queue");
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch (MessagingException | JsonParseException e) {
             System.out.println(e.getMessage());
