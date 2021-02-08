@@ -65,4 +65,22 @@ public class JmsConsumerTest {
         jmsConsumer.onMessage(message);
         verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
     }
+
+    @Test
+    void shouldSendMessageWithoutMessageHeaderToUnhandledQueue() throws JMSException, IOException {
+        String messageWithoutMessageHeader = dataLoader.getData("ehrRequestWithoutMessageHeader.xml");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
+        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutMessageHeader);
+        jmsConsumer.onMessage(message);
+        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+    }
+
+    @Test
+    void shouldSendMessageWithoutSoapHeaderToUnhandledQueue() throws JMSException, IOException {
+        String messageWithoutSoapHeader = dataLoader.getData("ehrRequestWithoutSoapHeader.xml");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
+        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutSoapHeader);
+        jmsConsumer.onMessage(message);
+        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+    }
 }

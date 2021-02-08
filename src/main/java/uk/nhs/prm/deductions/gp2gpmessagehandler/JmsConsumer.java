@@ -82,19 +82,15 @@ public class JmsConsumer {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
             String fullContent = new String(contentAsBytes, StandardCharsets.UTF_8);
-            System.out.println("fullContent: "+ fullContent);
             ByteArrayDataSource dataSource = new ByteArrayDataSource(messageSanitizer.sanitize(fullContent), "multipart/related;charset=\"UTF-8\"");
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
             XmlMapper xmlMapper = new XmlMapper();
             InputStream inputStream = soapHeader.getInputStream();
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            System.out.println(content);
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
-            System.out.println("SOAP Envelope" + soapEnvelope);
-            System.out.println("SOAP Header" + soapEnvelope.header);
 
-            if (soapEnvelope.header.messageHeader.action == null) {
+            if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.action == null) {
                 System.out.println("Sending message without soap envelope header to unhandled queue");
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
