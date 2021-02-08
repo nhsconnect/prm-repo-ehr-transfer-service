@@ -32,55 +32,41 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldSendMessageToOutboundQueue() throws JMSException, IOException {
-        String ehrRequest = dataLoader.getData("ehrRequestSoapEnvelope.xml");
+    private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
+        String ehrRequest = dataLoader.getData(fileName);
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("outbound", message);
+        verify(mockJmsTemplate, only()).convertAndSend(expectedQueue, message);
     }
 
     @Test
-    void shouldSendMessageToUnhandledQueue() throws JMSException {
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = getActiveMQBytesMessage("hello");
-        jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+    void shouldSendMessageToOutboundQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("ehrRequestSoapEnvelope.xml", "outbound");
+    }
+
+    @Test
+    void shouldSendMessageToUnhandledQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("simpleTextMessage.txt", "unhandled");
     }
 
     @Test
     void shouldSendNonSOAPMessageToUnhandledQueue() throws JMSException, IOException {
-        String nonSoapMessage = dataLoader.getData("nonSoapMimeMessage.xml");
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = getActiveMQBytesMessage(nonSoapMessage);
-        jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+        jmsConsumerTestFactory("nonSoapMimeMessage.xml", "unhandled");
     }
 
     @Test
     void shouldSendMessageWithoutInteractionIdToUnhandledQueue() throws JMSException, IOException {
-        String messageWithoutInteractionId = dataLoader.getData("ehrRequestWithoutInteractionId.xml");
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutInteractionId);
-        jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+        jmsConsumerTestFactory("ehrRequestWithoutInteractionId.xml", "unhandled");
     }
 
     @Test
     void shouldSendMessageWithoutMessageHeaderToUnhandledQueue() throws JMSException, IOException {
-        String messageWithoutMessageHeader = dataLoader.getData("ehrRequestWithoutMessageHeader.xml");
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutMessageHeader);
-        jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+        jmsConsumerTestFactory("ehrRequestWithoutMessageHeader.xml", "unhandled");
     }
 
     @Test
     void shouldSendMessageWithoutSoapHeaderToUnhandledQueue() throws JMSException, IOException {
-        String messageWithoutSoapHeader = dataLoader.getData("ehrRequestWithoutSoapHeader.xml");
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
-        ActiveMQBytesMessage message = getActiveMQBytesMessage(messageWithoutSoapHeader);
-        jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend("unhandled", message);
+        jmsConsumerTestFactory("ehrRequestWithoutSoapHeader.xml", "unhandled");
     }
 }
