@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 
+@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class JmsConsumerTest {
 

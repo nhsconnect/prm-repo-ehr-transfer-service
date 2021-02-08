@@ -1,5 +1,6 @@
-package uk.nhs.prm.deductions.gp2gpmessagehandler;
+package uk.nhs.prm.deductions.gp2gpmessagehandler.integrationTests;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Tag("integration")
 @SpringBootTest
 class Gp2gpMessageHandlerApplicationTests {
 	@Autowired

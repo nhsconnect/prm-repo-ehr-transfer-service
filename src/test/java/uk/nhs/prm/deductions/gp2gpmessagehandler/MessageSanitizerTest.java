@@ -1,5 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+@Tag("unit")
 class MessageSanitizerTest {
 
     private TestDataLoader dataLoader = new TestDataLoader();

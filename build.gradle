@@ -31,6 +31,18 @@ test {
 	useJUnitPlatform()
 }
 
+task unitTest(type: Test) {
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+}
+
+task integrationTest(type: Test) {
+	useJUnitPlatform {
+		excludeTags 'unit'
+	}
+}
+
 tasks.withType(Test) {
 	testLogging {
 		events "standardOut", "passed", "skipped", "failed"
