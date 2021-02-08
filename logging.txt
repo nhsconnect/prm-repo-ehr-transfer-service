@@ -1,0 +1,35 @@
+centralised logging
+logger class provides logging methods
+getLogger method
+a global logger instance is available GLOBAL_LOGGER_NAME
+
+Spring Boot comes with a preconfigured default logger based on the Logback framework.
+To use Log4j2, exclude Logback from the springboot-starter in build.gradle.
+The config file can e written in xml, or alternatively in JSON or YML if the plugin is provided in build.gradle.
+
+LogManager lm = LogManager.getLogManager()
+Logger logger = lm.getLogger(Logger.GLOBAL_LOGGER_NAME)
+logger.log(Level.INFO, "my log message");
+
+LEVELS:
+- FATAL
+- ERROR - serious failure
+- WARN - Potential problem
+- INFO - general info
+- DEBUG - config info
+
+Example:
+private static final Logger LOG = LogManager.getLogger(yourclassname.class);
+
+LOG.debug("Debugging log in our greeting method");
+LOG.info("Info log in our greeting method");
+LOG.warn("Warning log in our greeting method");
+LOG.error("Error in our greeting method");
+LOG.fatal("Damn! Fatal error. Please fix me.");
+
+
+logger.logp(Level.WARN, "class name", "method bane", "message")
+logger.entering("class", "method")
+logger.exiting("class", "method", new Object[]{param1, param2})
+
+log.properties

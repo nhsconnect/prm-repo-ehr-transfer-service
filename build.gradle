@@ -17,8 +17,11 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-activemq'
+	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
 	implementation 'org.apache.activemq:activemq-broker:5.16.1'
 	implementation 'org.apache.activemq:activemq-client:5.16.1'
+	implementation 'com.sun.mail:javax.mail:1.6.2'
 	implementation 'com.sun.mail:javax.mail:1.6.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.hamcrest:hamcrest:2.2'
@@ -26,6 +29,26 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.1'
 	implementation 'com.fasterxml.woodstox:woodstox-core:5.1.0'
 }
+
+configurations.all {
+	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+}
+//
+//configurations {
+//	compile.exclude module : 'spring-boot-starter-logging'
+//	implementation.exclude module : 'spring-boot-starter-logging'
+//	testImplementation.exclude module : 'spring-boot-starter-logging'
+//}
+
+//configurations {
+//	runtime.exclude group: "org.slf4j", module: "slf4j-log4j12"
+//	compile.exclude group: "org.slf4j", module: "slf4j-log4j12"
+//}
+//
+//configurations {
+//	providedRuntime
+//	compile.exclude(group: 'ch.qos.logback')
+//}
 
 test {
 	useJUnitPlatform()
@@ -43,12 +66,12 @@ task integrationTest(type: Test) {
 	}
 }
 
-tasks.withType(Test) {
-	testLogging {
-		events "standardOut", "passed", "skipped", "failed"
-		showStandardStreams = true
-	}
-}
+//tasks.withType(Test) {
+//	testLogging {
+//		events "standardOut", "passed", "skipped", "failed"
+//		showStandardStreams = true
+//	}
+//}
 
 jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
