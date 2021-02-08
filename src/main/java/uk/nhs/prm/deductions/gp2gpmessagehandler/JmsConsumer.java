@@ -80,6 +80,8 @@ public class JmsConsumer {
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
+            String fullContent = new String(contentAsBytes, StandardCharsets.UTF_8);
+            System.out.println("fullContent: "+ fullContent);
             ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsBytes, "multipart/related;charset=\"UTF-8\"");
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
