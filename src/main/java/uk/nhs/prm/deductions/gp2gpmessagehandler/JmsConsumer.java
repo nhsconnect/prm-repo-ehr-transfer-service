@@ -18,6 +18,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class JmsConsumer {
@@ -82,7 +84,9 @@ public class JmsConsumer {
             MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
             BodyPart soapHeader = mimeMultipart.getBodyPart(0);
             XmlMapper xmlMapper = new XmlMapper();
-            SOAPEnvelope soapEnvelope = xmlMapper.readValue(soapHeader.getInputStream(), SOAPEnvelope.class);
+            InputStream inputStream = soapHeader.getInputStream();
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
             System.out.println("SOAP Envelope" + soapEnvelope);
             System.out.println("SOAP Header" + soapEnvelope.header);
 
