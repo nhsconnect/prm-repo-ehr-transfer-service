@@ -74,7 +74,7 @@ pipelines:
               tasks:
                 - fetch:
                     stage: build
-                    job: test
+                    job: test_unit
                     source: build
                 - exec:
                     command: /bin/bash
