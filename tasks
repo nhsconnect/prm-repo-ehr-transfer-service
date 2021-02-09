@@ -30,8 +30,8 @@ function get_aws_account_id {
 }
 
 function configure_local_envs {
-  export GP2GP_WORKER_MHS_QUEUE_URL_1=tcp://0.0.0.0:61616
-  export GP2GP_WORKER_MHS_QUEUE_URL_2=tcp://0.0.0.0:61616
+  export GP2GP_WORKER_MHS_QUEUE_URL_1=tcp://mq-1:61616
+  export GP2GP_WORKER_MHS_QUEUE_URL_2=tcp://mq-2:61616
   export GP2GP_WORKER_MHS_QUEUE_USERNAME=admin
   export GP2GP_WORKER_MHS_QUEUE_PASSWORD=admin
 }
