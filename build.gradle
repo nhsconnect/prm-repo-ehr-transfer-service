@@ -23,7 +23,6 @@ dependencies {
 	implementation 'org.apache.activemq:activemq-broker:5.16.1'
 	implementation 'org.apache.activemq:activemq-client:5.16.1'
 	implementation 'com.sun.mail:javax.mail:1.6.2'
-	implementation 'com.sun.mail:javax.mail:1.6.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.2'
 	testImplementation 'org.hamcrest:hamcrest:2.2'
 	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'

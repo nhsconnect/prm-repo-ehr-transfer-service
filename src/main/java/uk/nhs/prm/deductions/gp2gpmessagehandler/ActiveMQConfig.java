@@ -47,7 +47,6 @@ public class ActiveMQConfig {
         activeMQConnectionFactory.setBrokerURL(failoverUrl());
         activeMQConnectionFactory.setPassword(brokerPassword);
         activeMQConnectionFactory.setUserName(brokerUsername);
-        System.out.println("Connected to queue: " + failoverUrl());
         return activeMQConnectionFactory;
     }
 

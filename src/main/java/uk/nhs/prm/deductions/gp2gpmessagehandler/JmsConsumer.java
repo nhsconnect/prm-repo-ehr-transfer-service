@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
@@ -27,6 +29,7 @@ public class JmsConsumer {
     final JmsTemplate jmsTemplate;
     private String outboundQueue;
     private String unhandledQueue;
+    private static Logger logger = LogManager.getLogger("JSON_LAYOUT_APPENDER");
 
     public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
         this.jmsTemplate = jmsTemplate;
@@ -77,7 +80,7 @@ public class JmsConsumer {
 
         BytesMessage bytesMessage = (BytesMessage) message;
 
-        System.out.println("Received Message from Inbound queue");
+        logger.info("Received Message from Inbound queue");
 
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
@@ -92,22 +95,24 @@ public class JmsConsumer {
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
 
             if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.action == null) {
-                System.out.println("Sending message without soap envelope header to unhandled queue");
+                logger.info("Sending message without soap envelope header to unhandled queue");
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
 
-            System.out.println("Sending message to outbound queue");
+            logger.info("Sending message to outbound queue");
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch (MessagingException | JsonParseException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
         } catch (JMSException e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage());
             e.printStackTrace();
         } catch (JsonMappingException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         } catch (IOException e) {
+            logger.error(e.getMessage());
             e.printStackTrace();
         }
     }
