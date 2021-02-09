@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
@@ -25,8 +23,6 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class JmsConsumer {
-
-    private static final Logger logger = LogManager.getLogger();
 
     final JmsTemplate jmsTemplate;
     private String outboundQueue;
@@ -82,7 +78,6 @@ public class JmsConsumer {
         BytesMessage bytesMessage = (BytesMessage) message;
 
         System.out.println("Received Message from Inbound queue");
-        logger.info("Hello from Log4j 2");
 
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
