@@ -34,3 +34,8 @@
 [INFO ] 2021-02-08 20:49:52.563 [main] Gp2gpMessageHandlerApplication - Starting Gp2gpMessageHandlerApplication using Java 14.0.2 on ip-192-168-0-25.eu-west-2.compute.internal with PID 50675 (/Users/edytawrobel/Code/work/nhs/prm-deductions-gp2gp-message-handler/build/classes/java/main started by edytawrobel in /Users/edytawrobel/Code/work/nhs/prm-deductions-gp2gp-message-handler)
 [INFO ] 2021-02-08 20:49:52.564 [main] Gp2gpMessageHandlerApplication - No active profile set, falling back to default profiles: default
 [INFO ] 2021-02-08 20:49:53.121 [main] Gp2gpMessageHandlerApplication - Started Gp2gpMessageHandlerApplication in 0.707 seconds (JVM running for 1.283)
+[INFO ] 2021-02-09 10:34:38.919 [main] Gp2gpMessageHandlerApplication - This is an INFO message.
+[WARN ] 2021-02-09 10:34:38.921 [main] Gp2gpMessageHandlerApplication - This is a WARN message.
+[ERROR] 2021-02-09 10:34:38.921 [main] Gp2gpMessageHandlerApplication - You guessed it, an ERROR message.
+[INFO ] 2021-02-09 10:34:39.266 [main] Gp2gpMessageHandlerApplication - Starting Gp2gpMessageHandlerApplication using Java 14.0.2 on ip-192-168-0-106.eu-west-2.compute.internal with PID 47072 (/Users/rosieamphlett/Documents/workspace/nhs/prm-deductions-gp2gp-message-handler/out/production/classes started by rosieamphlett in /Users/rosieamphlett/Documents/workspace/nhs/prm-deductions-gp2gp-message-handler)
+[INFO ] 2021-02-09 10:34:39.267 [main] Gp2gpMessageHandlerApplication - No active profile set, falling back to default profiles: default

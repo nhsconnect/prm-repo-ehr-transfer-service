@@ -81,9 +81,6 @@ public class JmsConsumer {
 
         BytesMessage bytesMessage = (BytesMessage) message;
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Hello from Log4j 2");
-        }
         System.out.println("Received Message from Inbound queue");
         logger.info("Hello from Log4j 2");
 
