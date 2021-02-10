@@ -1,16 +1,15 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageParts.SOAPEnvelope;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -35,43 +34,6 @@ public class JmsConsumer {
         this.jmsTemplate = jmsTemplate;
         this.outboundQueue = outboundQueue;
         this.unhandledQueue = unhandledQueue;
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class SOAPEnvelope {
-        @JacksonXmlProperty(localName = "Header", namespace = "SOAP-ENV")
-        SOAPHeader header;
-
-        @Override
-        public String toString() {
-            return "SOAPEnvelope{" +
-                    "header=" + header +
-                    '}';
-        }
-    }
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class SOAPHeader {
-        @JacksonXmlProperty(localName = "MessageHeader", namespace = "eb")
-        MessageHeader messageHeader;
-
-        @Override
-        public String toString() {
-            return "SOAPHeader{" +
-                    "messageHeader=" + messageHeader +
-                    '}';
-        }
-    }
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static class MessageHeader {
-        @JacksonXmlProperty(localName = "Action", namespace = "eb")
-        String action;
-
-        @Override
-        public String toString() {
-            return "MessageHeader{" +
-                    "action='" + action + '\'' +
-                    '}';
-        }
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
