@@ -43,8 +43,18 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldSendMessageToOutboundQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestSoapEnvelope.xml", "outbound");
+    void shouldSendEHR_REQUESTMessageToOutboundQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("ehrRequestRCMR_IN010000UK05InteractionId.xml", "outbound");
+    }
+
+    @Test
+    void shouldSendEHR_REQUEST_COMPLETEDMessageToOutboundQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("ehrRequestRCMR_IN030000UK06InteractionId.xml", "outbound");
+    }
+
+    @Test
+    void shouldSendPDS_GENERAL_UPDATE_REQUEST_ACCEPTEDMessageToOutboundQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("ehrRequestPRPA_IN000202UK01InteractionId.xml", "outbound");
     }
 
     @Test
@@ -71,4 +81,10 @@ public class JmsConsumerTest {
     void shouldSendMessageWithoutSoapHeaderToUnhandledQueue() throws JMSException, IOException {
         jmsConsumerTestFactory("ehrRequestWithoutSoapHeader.xml", "unhandled");
     }
+
+    @Test
+    void shouldSendMessageWithIncorrectInteractionIdToUnhandledQueue() throws JMSException, IOException {
+        jmsConsumerTestFactory("ehrRequestIncorrectInteractionId.xml", "unhandled");
+    }
+
 }

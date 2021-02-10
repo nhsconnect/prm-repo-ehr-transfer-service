@@ -21,6 +21,8 @@ import javax.mail.util.ByteArrayDataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class JmsConsumer {
@@ -29,6 +31,12 @@ public class JmsConsumer {
     private String outboundQueue;
     private String unhandledQueue;
     private static Logger logger = LogManager.getLogger("JSON_LAYOUT_APPENDER");
+
+    final String EHR_REQUEST = "RCMR_IN010000UK05";
+    final String EHR_REQUEST_COMPLETED = "RCMR_IN030000UK06";
+    final String PDS_GENERAL_UPDATE_REQUEST_ACCEPTED = "PRPA_IN000202UK01";
+
+    List<String> validInteractionIds = Arrays.asList(EHR_REQUEST, EHR_REQUEST_COMPLETED, PDS_GENERAL_UPDATE_REQUEST_ACCEPTED);
 
     public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
         this.jmsTemplate = jmsTemplate;
@@ -56,8 +64,14 @@ public class JmsConsumer {
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
 
-            if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.action == null) {
+            if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
                 logger.info("Sending message without soap envelope header to unhandled queue");
+                jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+                return;
+            }
+
+            if (soapEnvelope.header.messageHeader.action == null || !validInteractionIds.contains(soapEnvelope.header.messageHeader.action)) {
+                logger.info("Sending message with an invalid or missing interactionId to unhandled queue");
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
