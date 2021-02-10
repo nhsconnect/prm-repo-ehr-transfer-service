@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageParts.SOAPEnvelope;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
