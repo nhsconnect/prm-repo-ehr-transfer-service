@@ -146,6 +146,16 @@ case "${command}" in
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
+  _test_all)
+    ./tasks _test_unit
+    ./tasks _test_integration
+    ./tasks _test_coverage
+    ./tasks _code_quality
+    ;;
+  test_all)
+    configure_local_envs
+    dojo -c Dojofile-itest "./tasks _test_all"
+    ;;
   _dep)
       gradle dependencyCheckAnalyze
       ;;
