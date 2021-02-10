@@ -5,9 +5,20 @@ This is an implementation of a component to handle the receiving of the GP2GP me
 ## Prerequisites
 
 - Java 14
-- Gradle 6.8
+- Gradle 6.5
 
 # Set up
+
+## Running the application
+
+In IntelliJ editor, use the green `play` button next to the main class `Gp2gpmessagehandlerApplication` to run the application
+
+In your terminal with `./gradlew bootRun`.
+
+
+This application relies on the queues to send/receive messages.
+They are spun up with `docker-compose-itest.yml` when running the tests in `dojo`.
+You can access the queues using the Active MQ console on: `http://localhost:8161/`
 
 ## Running the tests
 
@@ -15,10 +26,14 @@ Run the unit tests with dojo
 1. Enter ` dojo `
 2. `./tasks _test_unit`
 
-Run the integration tests.
+In your terminal with
+`./gradlew test`
 
-1. Run `docker-compose up` to set up the message queues
-2. Run `./gradlew test`
+Run the integration tests with dojo
+1. Enter ` dojo `
+2. `./tasks _test_integration`
+
+Alternatively, you can use `play` button next to each test in IntelliJ (your IDE)
 
 Run the coverage tests with a Dojo container
 
@@ -30,16 +45,13 @@ Run the dependency check tests with a Dojo container
 1. Enter ` dojo `
 2. `./tasks _dep`
 
-## Start the app locally
-
-1. Run the message queues in docker by using `docker-compose up -d`. 
-You can access the queues using the Active MQ console on: `http://localhost:8161/`
-
-2. In IntelliJ editor, press the green run button next to the main class `Gp2gpmessagehandlerApplication` to run the application
+To run all the checks before committing with one command
+1. Enter `dojo `
+2. `./tasks _test_all`
 
 ## Config
 
-If you need to add any new configuration items, update the `src/main/resources/application.properties` file per environment. 
+If you need to add any new configuration items, update the `src/main/resources/application.properties` file per environment as well as add the environment variables in `./tasks` `configure_local_envariables`. 
 Note that `test` directory has its own `application.properties` file used in the test suite.
 
 | Parameters          | SSM Parameter                                                             |
@@ -47,7 +59,9 @@ Note that `test` directory has its own `application.properties` file used in the
 | active-mq.broker-url| /repo/${NHS_ENVIRONMENT}/output/prm-deductions-infra/amqp-endpoint-0      |
 | active-mq.queue     | /repo/${NHS_ENVIRONMENT}/output/prm-deductions-infra/amqp-endpoint-1      |
 | active-mq.username  | /repo/${NHS_ENVIRONMENT}/user-input/mq-admin-username                     |
+| active-mq.username  | /repo/${NHS_ENVIRONMENT}/user-input/mq-app-username                       | - to access user interface
 | active-mq.password  | /repo/${NHS_ENVIRONMENT}/user-input/mq-admin-password                     |
+| active-mq.password  | /repo/${NHS_ENVIRONMENT}/user-input/mq-app-password                       |
 
 Ensure you have VPN connection set up to both `dev` and `test` environments:
 [CLICK HERE](https://gpitbjss.atlassian.net/wiki/spaces/TW/pages/1832779966/VPN+for+Deductions+Services)
