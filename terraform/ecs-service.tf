@@ -1,6 +1,6 @@
 locals {
   ecs_cluster_id    = data.aws_ssm_parameter.deductions_private_ecs_cluster_id.value
-  ecs_task_sg_id    = data.aws_ssm_parameter.deductions_private_gp2gp-message_handler_sg_id.value
+  ecs_task_sg_id    = data.aws_ssm_parameter.deductions_private_gp2gp_message_handler_sg_id.value
   private_subnets   = split(",", data.aws_ssm_parameter.deductions_private_private_subnets.value)
 }
 
