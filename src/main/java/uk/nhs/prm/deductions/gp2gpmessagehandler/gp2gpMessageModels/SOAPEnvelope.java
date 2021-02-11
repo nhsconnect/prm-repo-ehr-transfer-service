@@ -6,12 +6,5 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SOAPEnvelope {
     @JacksonXmlProperty(localName = "Header", namespace = "SOAP-ENV")
-    public SOAPHeader header = new SOAPHeader();
-
-    @Override
-    public String toString() {
-        return "SOAPEnvelope{" +
-                "header=" + header +
-                '}';
-    }
+    public SOAPHeader header;
 }

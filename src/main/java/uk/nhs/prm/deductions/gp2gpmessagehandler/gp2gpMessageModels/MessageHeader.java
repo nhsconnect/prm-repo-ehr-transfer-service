@@ -7,11 +7,4 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 public class MessageHeader {
     @JacksonXmlProperty(localName = "Action", namespace = "eb")
     public String action;
-
-    @Override
-    public String toString() {
-        return "MessageHeader{" +
-                "action='" + action + '\'' +
-                '}';
-    }
 }
