@@ -25,6 +25,7 @@ dependencies {
 	implementation 'com.sun.mail:javax.mail:1.6.2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.4.2'
 	testImplementation 'org.hamcrest:hamcrest:2.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.7.0'
 	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }
 

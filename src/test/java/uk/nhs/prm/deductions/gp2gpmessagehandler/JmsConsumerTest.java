@@ -4,6 +4,8 @@ import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jms.core.JmsTemplate;
@@ -33,7 +35,6 @@ public class JmsConsumerTest {
         return message;
     }
 
-    @Test
     private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
         String ehrRequest = dataLoader.getData(fileName);
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
@@ -42,49 +43,26 @@ public class JmsConsumerTest {
         verify(mockJmsTemplate, only()).convertAndSend(expectedQueue, message);
     }
 
-    @Test
-    void shouldSendEHR_REQUESTMessageToOutboundQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestRCMR_IN010000UK05InteractionId.xml", "outbound");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "ehrRequestRCMR_IN010000UK05InteractionId.xml",
+            "ehrRequestRCMR_IN030000UK06InteractionId.xml",
+            "ehrRequestPRPA_IN000202UK01InteractionId.xml"
+    })
+    void shouldSendMessageWithKnownInteractionIdsToOutboundQueue(String fileName) throws JMSException, IOException {
+        jmsConsumerTestFactory(fileName, "outbound");
     }
 
-    @Test
-    void shouldSendEHR_REQUEST_COMPLETEDMessageToOutboundQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestRCMR_IN030000UK06InteractionId.xml", "outbound");
-    }
-
-    @Test
-    void shouldSendPDS_GENERAL_UPDATE_REQUEST_ACCEPTEDMessageToOutboundQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestPRPA_IN000202UK01InteractionId.xml", "outbound");
-    }
-
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "simpleTextMessage.txt",
+            "nonSoapMimeMessage.xml",
+            "ehrRequestWithoutInteractionId.xml",
+            "ehrRequestWithoutMessageHeader.xml",
+            "ehrRequestWithoutSoapHeader.xml",
+            "ehrRequestIncorrectInteractionId.xml"
+    })
     void shouldSendMessageToUnhandledQueue() throws JMSException, IOException {
         jmsConsumerTestFactory("simpleTextMessage.txt", "unhandled");
     }
-
-    @Test
-    void shouldSendNonSOAPMessageToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("nonSoapMimeMessage.xml", "unhandled");
-    }
-
-    @Test
-    void shouldSendMessageWithoutInteractionIdToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestWithoutInteractionId.xml", "unhandled");
-    }
-
-    @Test
-    void shouldSendMessageWithoutMessageHeaderToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestWithoutMessageHeader.xml", "unhandled");
-    }
-
-    @Test
-    void shouldSendMessageWithoutSoapHeaderToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestWithoutSoapHeader.xml", "unhandled");
-    }
-
-    @Test
-    void shouldSendMessageWithIncorrectInteractionIdToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("ehrRequestIncorrectInteractionId.xml", "unhandled");
-    }
-
 }
