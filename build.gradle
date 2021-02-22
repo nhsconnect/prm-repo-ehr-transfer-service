@@ -29,6 +29,10 @@ dependencies {
 	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
 }
 
+configurations {
+	compile.exclude module: 'activemq-broker'
+}
+
 test {
 	useJUnitPlatform()
 }
