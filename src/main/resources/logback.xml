@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<include resource="org/springframework/boot/logging/logback/console.xml"/>
+	<springProperty scope="context" name="environment" source="environment"/>
 	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
 			<providers>
@@ -10,11 +11,12 @@
 				<pattern>
 					<pattern>
 						{
-						"level": "%level",
-						"service": "gp2gp-message-handler",
-						"class": "%C{0}",
-						"line": "%L",
-						"message": "%message"
+						"Level": "%level",
+						"Service": "gp2gp-message-handler",
+						"Class": "%C{0}",
+						"Line": "%L",
+						"Message": "%message",
+						"Environment": "${environment}"
 						}
 					</pattern>
 				</pattern>
@@ -26,6 +28,9 @@
 						<rootCauseFirst>true</rootCauseFirst>
 					</throwableConverter>
 				</stackTrace>
+				<arguments>
+					<includeNonStructuredArguments>true</includeNonStructuredArguments>
+				</arguments>
 			</providers>
 		</encoder>
 

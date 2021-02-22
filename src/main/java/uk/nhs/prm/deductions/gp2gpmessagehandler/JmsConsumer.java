@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import static net.logstash.logback.argument.StructuredArguments.v;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
@@ -37,12 +38,12 @@ public class JmsConsumer {
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
-    public void onMessage(Message message) {
+    public void onMessage(Message message) throws JMSException {
         MessageSanitizer messageSanitizer = new MessageSanitizer();
 
         BytesMessage bytesMessage = (BytesMessage) message;
 
-        logger.info("Received Message from Inbound queue");
+        logger.info("Received Message from Inbound queue", v("CorrelationId", bytesMessage.getJMSCorrelationID()));
 
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
@@ -77,13 +78,10 @@ public class JmsConsumer {
         } catch (MessagingException | JsonParseException e) {
             logger.error(e.getMessage());
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
-        } catch (JMSException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
         } catch (JsonMappingException e) {
             logger.error(e.getMessage());
             e.printStackTrace();
-        } catch (IOException e) {
+        } catch (JMSException | IOException e) {
             logger.error(e.getMessage());
             e.printStackTrace();
         }
