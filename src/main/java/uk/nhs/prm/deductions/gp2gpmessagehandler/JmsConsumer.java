@@ -28,13 +28,15 @@ import java.util.Arrays;
 public class JmsConsumer {
     final JmsTemplate jmsTemplate;
     private String outboundQueue;
+    private String inboundQueue;
     private String unhandledQueue;
     private static Logger logger = LogManager.getLogger("JSON_LAYOUT_APPENDER");
 
-    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
+    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue) {
         this.jmsTemplate = jmsTemplate;
         this.outboundQueue = outboundQueue;
         this.unhandledQueue = unhandledQueue;
+        this.inboundQueue = inboundQueue;
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
@@ -43,7 +45,7 @@ public class JmsConsumer {
 
         BytesMessage bytesMessage = (BytesMessage) message;
 
-        logger.info("Received Message from Inbound queue", v("CorrelationId", bytesMessage.getJMSCorrelationID()));
+        logger.info("Received Message from Inbound queue", v("Queue", inboundQueue), v("CorrelationId", bytesMessage.getJMSCorrelationID()));
 
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
@@ -58,7 +60,7 @@ public class JmsConsumer {
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
 
             if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
-                logger.info("Sending message without soap envelope header to unhandled queue");
+                logger.info("Sending message without soap envelope header to unhandled queue", v("Queue", unhandledQueue));
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
@@ -68,12 +70,12 @@ public class JmsConsumer {
                     .anyMatch(value -> value.getInteractionId().equals(interactionId));
 
             if (interactionId == null || !knownInteractionId) {
-                logger.info("Sending message with an unknown or missing interactionId to unhandled queue");
+                logger.info("Sending message with an unknown or missing interactionId to unhandled queue", v("Queue", unhandledQueue));
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
 
-            logger.info("Sending message to outbound queue");
+            logger.info("Sending message to outbound queue", v("Queue", outboundQueue));
             jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
         } catch (MessagingException | JsonParseException e) {
             logger.error(e.getMessage());

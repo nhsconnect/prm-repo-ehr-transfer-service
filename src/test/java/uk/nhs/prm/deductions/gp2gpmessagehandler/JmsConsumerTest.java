@@ -2,7 +2,6 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -37,7 +36,7 @@ public class JmsConsumerTest {
 
     private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
         String ehrRequest = dataLoader.getData(fileName);
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled", "inboundQueue");
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
         verify(mockJmsTemplate, only()).convertAndSend(expectedQueue, message);
