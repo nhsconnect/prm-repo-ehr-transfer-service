@@ -11,12 +11,12 @@
 				<pattern>
 					<pattern>
 						{
-						"Level": "%level",
-						"Service": "gp2gp-message-handler",
-						"Class": "%C{0}",
-						"Line": "%L",
-						"Message": "%message",
-						"Environment": "${environment}"
+						"level": "%level",
+						"service": "gp2gp-message-handler",
+						"class": "%C{0}",
+						"line": "%L",
+						"message": "%message",
+						"environment": "${environment}"
 						}
 					</pattern>
 				</pattern>
