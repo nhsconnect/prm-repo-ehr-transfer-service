@@ -35,7 +35,7 @@ public class JmsConsumerTest {
     }
 
     private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
-        String ehrRequest = dataLoader.getData(fileName);
+        String ehrRequest = dataLoader.getDataAsString(fileName);
         JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled", "inboundQueue");
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
