@@ -24,6 +24,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+/*
+ Responsible for:
+  - interactions with the queue
+  - deciding where to put each message
+ */
 @Component
 public class JmsConsumer {
     final JmsTemplate jmsTemplate;
@@ -31,6 +36,7 @@ public class JmsConsumer {
     private String inboundQueue;
     private String unhandledQueue;
     private static Logger logger = LogManager.getLogger(JmsConsumer.class);
+    //TODO: depend on parser, message sanitizer
 
     public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue) {
         this.jmsTemplate = jmsTemplate;
@@ -58,6 +64,7 @@ public class JmsConsumer {
             InputStream inputStream = soapHeader.getInputStream();
             String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
+            // a parsed message
 
             if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
                 logger.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
@@ -66,6 +73,7 @@ public class JmsConsumer {
             }
 
             String interactionId = soapEnvelope.header.messageHeader.action;
+
             boolean knownInteractionId = Arrays.stream(InteractionIds.values())
                     .anyMatch(value -> value.getInteractionId().equals(interactionId));
 

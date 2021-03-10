@@ -21,10 +21,12 @@ public class ParserServiceTest {
         loader = new TestDataLoader();
     }
 
-    @Test
+    @Test // could be param. test
     public void shouldExtractActionNameFromMessage() throws IOException, MessagingException {
         String message = loader.getDataAsString("ehrRequestSoapEnvelopeSanitized.xml");
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.getAction(), equalTo("RCMR_IN010000UK05"));
     }
+
+    //TODO: move other test cases from JMS consumer
 }

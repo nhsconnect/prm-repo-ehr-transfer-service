@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@Tag("integration")
+@Tag("integration") // perhaps we need other name for tests that interact with external systems
 @SpringBootTest
 class Gp2gpMessageHandlerApplicationTests {
 	@Autowired
