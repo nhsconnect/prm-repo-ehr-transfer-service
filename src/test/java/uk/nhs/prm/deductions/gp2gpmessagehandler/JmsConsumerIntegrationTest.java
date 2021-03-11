@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jms.core.JmsTemplate;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
 import javax.jms.JMSException;
@@ -29,6 +30,8 @@ public class JmsConsumerIntegrationTest {
     JmsTemplate mockJmsTemplate;
 
     private TestDataLoader dataLoader = new TestDataLoader();
+    private MessageSanitizer messageSanitizer = new MessageSanitizer();
+    private ParserService parserService = new ParserService();
 
     private ActiveMQBytesMessage getActiveMQBytesMessage(String content) throws JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
@@ -39,7 +42,7 @@ public class JmsConsumerIntegrationTest {
 
     private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
         String ehrRequest = dataLoader.getDataAsString(fileName);
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled", "inboundQueue");
+        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled", "inboundQueue", messageSanitizer, parserService);
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
         verify(mockJmsTemplate, only()).convertAndSend(expectedQueue, message);
@@ -64,7 +67,7 @@ public class JmsConsumerIntegrationTest {
             "ehrRequestWithoutSoapHeader.xml",
             "ehrRequestIncorrectInteractionId.xml"
     })
-    void shouldSendMessageToUnhandledQueue() throws JMSException, IOException {
-        jmsConsumerTestFactory("simpleTextMessage.txt", "unhandled");
+    void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
+        jmsConsumerTestFactory(fileName, "unhandled");
     }
 }

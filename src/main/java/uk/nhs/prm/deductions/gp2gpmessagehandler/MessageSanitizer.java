@@ -1,8 +1,10 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
-import javax.mail.util.ByteArrayDataSource;
+import org.springframework.stereotype.Component;
+
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class MessageSanitizer {
     public String sanitize(String rawMessageFromQueue) {
         int startOfMessage = rawMessageFromQueue.indexOf("--");
