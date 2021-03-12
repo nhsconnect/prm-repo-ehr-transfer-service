@@ -26,11 +26,11 @@ public class ParserService {
     public ParsedMessage parse(String contentAsString) throws IOException, MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsString, "multipart/related;charset=\"UTF-8\"");
         MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-        BodyPart soapHeader = mimeMultipart.getBodyPart(0);
+        BodyPart soapEnvelope = mimeMultipart.getBodyPart(0);
         XmlMapper xmlMapper = new XmlMapper();
-        InputStream inputStream = soapHeader.getInputStream();
+        InputStream inputStream = soapEnvelope.getInputStream();
         String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        SOAPEnvelope soapEnvelope = xmlMapper.readValue(content, SOAPEnvelope.class);
-        return new ParsedMessage(soapEnvelope);
+        SOAPEnvelope envelope = xmlMapper.readValue(content, SOAPEnvelope.class);
+        return new ParsedMessage(envelope);
     }
 }

@@ -1,6 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
-import static net.logstash.logback.argument.StructuredArguments.v;
 
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
