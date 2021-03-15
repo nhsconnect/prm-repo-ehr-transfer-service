@@ -14,5 +14,13 @@ public class ParsedMessage {
         }
         return soapEnvelope.header.messageHeader.action;
     }
-    //TODO: soap body, which effectively has the MIDs
+
+    public boolean isLargeMessage() {
+        for (Reference reference: soapEnvelope.body.manifest) {
+            if (reference.href.contains("mid")) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

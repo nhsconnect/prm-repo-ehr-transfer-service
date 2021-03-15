@@ -34,4 +34,15 @@ public class ParserServiceTest {
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "ehrOneLargeMessageSanitized.xml, true",
+            "ehrRequestRCMR_IN030000UK06InteractionIdSanitized.xml, false"
+    })
+    public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException, MessagingException {
+        String message = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(message);
+        assertThat(parsedMessage.isLargeMessage(), equalTo(isLargeMessage));
+    }
 }
