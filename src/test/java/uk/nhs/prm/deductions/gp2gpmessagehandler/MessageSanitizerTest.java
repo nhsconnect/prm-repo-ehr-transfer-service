@@ -23,15 +23,15 @@ class MessageSanitizerTest {
 
     @Test
     void shouldRemoveExtraCharactersBeforeFirstBoundaryWhenInputIsString() throws IOException {
-        String rawMessageFromQueue = dataLoader.getDataAsString("ehrRequestSoapEnvelope.xml");
-        String sanitizedMessage = dataLoader.getDataAsString("ehrRequestSoapEnvelopeSanitized.xml");
+        String rawMessageFromQueue = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
+        String sanitizedMessage = dataLoader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
         assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 
     @Test
     void shouldRemoveExtraCharactersBeforeFirstBoundaryWhenInputIsBytes() throws IOException {
-        byte[] rawMessageFromQueue = dataLoader.getDataAsBytes("ehrRequestSoapEnvelope.xml");
-        String sanitizedMessage = dataLoader.getDataAsString("ehrRequestSoapEnvelopeSanitized.xml");
+        byte[] rawMessageFromQueue = dataLoader.getDataAsBytes("RCMR_IN010000UK05.xml");
+        String sanitizedMessage = dataLoader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
         assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 

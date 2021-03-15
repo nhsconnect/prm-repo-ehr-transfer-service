@@ -50,9 +50,9 @@ public class JmsConsumerIntegrationTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "ehrRequestRCMR_IN010000UK05InteractionId.xml",
-            "ehrRequestRCMR_IN030000UK06InteractionId.xml",
-            "ehrRequestPRPA_IN000202UK01InteractionId.xml"
+            "RCMR_IN010000UK05.xml",
+            "RCMR_IN030000UK06.xml",
+            "PRPA_IN000202UK01.xml"
     })
     void shouldSendMessageWithKnownInteractionIdsToOutboundQueue(String fileName) throws JMSException, IOException {
         jmsConsumerTestFactory(fileName, "outbound");

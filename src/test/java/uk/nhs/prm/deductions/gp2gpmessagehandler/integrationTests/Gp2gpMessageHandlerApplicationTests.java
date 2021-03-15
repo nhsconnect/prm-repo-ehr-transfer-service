@@ -39,7 +39,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldPassThroughMessagesForOldWorker() throws IOException, JMSException {
-        String ehrRequest = dataLoader.getDataAsString("ehrRequestRCMR_IN010000UK05InteractionId.xml");
+        String ehrRequest = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
         jmsTemplate.send(inboundQueue, new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {

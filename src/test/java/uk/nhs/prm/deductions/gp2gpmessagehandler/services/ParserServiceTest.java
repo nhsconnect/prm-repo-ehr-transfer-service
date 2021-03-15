@@ -25,9 +25,9 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ehrRequestSoapEnvelopeSanitized.xml, RCMR_IN010000UK05",
-            "ehrRequestRCMR_IN030000UK06InteractionIdSanitized.xml, RCMR_IN030000UK06",
-            "ehrRequestPRPA_IN000202UK01InteractionIdSanitized.xml, PRPA_IN000202UK01"
+            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
+            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
+            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01"
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         String message = loader.getDataAsString(fileName);
@@ -38,7 +38,7 @@ public class ParserServiceTest {
     @ParameterizedTest
     @CsvSource({
             "ehrOneLargeMessageSanitized.xml, true",
-            "ehrRequestRCMR_IN030000UK06InteractionIdSanitized.xml, false"
+            "RCMR_IN030000UK06Sanitized.xml, false"
     })
     public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException, MessagingException {
         String message = loader.getDataAsString(fileName);

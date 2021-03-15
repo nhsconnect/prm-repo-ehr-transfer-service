@@ -1,5 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPHeader;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@Tag("unit")
 public class ParsedMessageTest {
     private final Reference mid;
     private final Reference cid;
