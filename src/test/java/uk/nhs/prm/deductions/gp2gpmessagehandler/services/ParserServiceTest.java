@@ -45,4 +45,28 @@ public class ParserServiceTest {
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.isLargeMessage(), equalTo(isLargeMessage));
     }
+
+    @ParameterizedTest
+    @CsvSource({
+            "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
+            "RCMR_IN030000UK06Sanitized.xml, 5A36471B-036B-48E1-BBB4-A89AEE0652E1",
+            "PRPA_IN000202UK01Sanitized.xml, 761f1012-396c-43d2-9684-d87354ac8e50"
+    })
+    public void shouldExtractConversationIdFromSanitizedMessage(String fileName, String expectedConversationId) throws IOException, MessagingException {
+        String message = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(message);
+        assertThat(parsedMessage.getConversationId(), equalTo(expectedConversationId));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
+            "RCMR_IN030000UK06Sanitized.xml, 31FA3430-6E88-11EA-9384-E83935108FD5",
+            "PRPA_IN000202UK01Sanitized.xml, D2B59ACB-68AF-462C-B0CC-387A1201F667"
+    })
+    public void shouldExtractMessageIdFromSanitizedMessage(String fileName, String expectedMessageId) throws IOException, MessagingException {
+        String message = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(message);
+        assertThat(parsedMessage.getMessageId(), equalTo(expectedMessageId));
+    }
 }

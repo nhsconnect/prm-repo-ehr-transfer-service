@@ -48,6 +48,74 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
+    public void shouldPopulateConversationIdInEnvelope() throws JsonProcessingException {
+        String envelopeText = "\n" +
+                "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
+                "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
+                "                   xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
+                "        <soap:Header>\n" +
+                "            <eb:MessageHeader eb:version=\"2.0\" soap:mustUnderstand=\"1\">\n" +
+                "                <eb:From>\n" +
+                "                    <eb:PartyId eb:type=\"urn:nhs:names:partyType:ocs+serviceInstance\">5XZ-821385</eb:PartyId>\n" +
+                "                </eb:From>\n" +
+                "                <eb:To>\n" +
+                "                    <eb:PartyId eb:type=\"urn:nhs:names:partyType:ocs+serviceInstance\">B86041-822103</eb:PartyId>\n" +
+                "                </eb:To>\n" +
+                "                <eb:CPAId>e06af803674408a9d8e8</eb:CPAId>\n" +
+                "                <eb:ConversationId>8B373671-5884-45DF-A22C-B3EF768E1DC4</eb:ConversationId>\n" +
+                "                <eb:Service>urn:nhs:names:services:gp2gp</eb:Service>\n" +
+                "                <eb:Action>RCMR_IN030000UK06</eb:Action>\n" +
+                "                <eb:MessageData>\n" +
+                "                    <eb:MessageId>72EAA355-B152-4B24-A088-AC2F66AE8A21</eb:MessageId>\n" +
+                "                    <eb:Timestamp>2021-03-09T14:21:22.646Z</eb:Timestamp>\n" +
+                "                    <eb:TimeToLive>2021-03-09T20:36:22.646Z</eb:TimeToLive>\n" +
+                "                </eb:MessageData>\n" +
+                "                <eb:DuplicateElimination/>\n" +
+                "            </eb:MessageHeader>\n" +
+                "            <eb:AckRequested eb:version=\"2.0\" soap:mustUnderstand=\"1\"\n" +
+                "                             soap:actor=\"urn:oasis:names:tc:ebxml-msg:actor:nextMSH\" eb:signed=\"false\"/>\n" +
+                "        </soap:Header>\n" +
+                "    </soap:Envelope>";
+        XmlMapper xmlMapper = new XmlMapper();
+        SOAPEnvelope envelope = xmlMapper.readValue(envelopeText, SOAPEnvelope.class);
+        assertThat(envelope.header.messageHeader.conversationId, equalTo("8B373671-5884-45DF-A22C-B3EF768E1DC4"));
+    }
+
+    @Test
+    public void shouldPopulateMessageIdInEnvelope() throws JsonProcessingException {
+        String envelopeText = "\n" +
+                "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
+                "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
+                "                   xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
+                "        <soap:Header>\n" +
+                "            <eb:MessageHeader eb:version=\"2.0\" soap:mustUnderstand=\"1\">\n" +
+                "                <eb:From>\n" +
+                "                    <eb:PartyId eb:type=\"urn:nhs:names:partyType:ocs+serviceInstance\">5XZ-821385</eb:PartyId>\n" +
+                "                </eb:From>\n" +
+                "                <eb:To>\n" +
+                "                    <eb:PartyId eb:type=\"urn:nhs:names:partyType:ocs+serviceInstance\">B86041-822103</eb:PartyId>\n" +
+                "                </eb:To>\n" +
+                "                <eb:CPAId>e06af803674408a9d8e8</eb:CPAId>\n" +
+                "                <eb:ConversationId>8B373671-5884-45DF-A22C-B3EF768E1DC4</eb:ConversationId>\n" +
+                "                <eb:Service>urn:nhs:names:services:gp2gp</eb:Service>\n" +
+                "                <eb:Action>RCMR_IN030000UK06</eb:Action>\n" +
+                "                <eb:MessageData>\n" +
+                "                    <eb:MessageId>72EAA355-B152-4B24-A088-AC2F66AE8A21</eb:MessageId>\n" +
+                "                    <eb:Timestamp>2021-03-09T14:21:22.646Z</eb:Timestamp>\n" +
+                "                    <eb:TimeToLive>2021-03-09T20:36:22.646Z</eb:TimeToLive>\n" +
+                "                </eb:MessageData>\n" +
+                "                <eb:DuplicateElimination/>\n" +
+                "            </eb:MessageHeader>\n" +
+                "            <eb:AckRequested eb:version=\"2.0\" soap:mustUnderstand=\"1\"\n" +
+                "                             soap:actor=\"urn:oasis:names:tc:ebxml-msg:actor:nextMSH\" eb:signed=\"false\"/>\n" +
+                "        </soap:Header>\n" +
+                "    </soap:Envelope>";
+        XmlMapper xmlMapper = new XmlMapper();
+        SOAPEnvelope envelope = xmlMapper.readValue(envelopeText, SOAPEnvelope.class);
+        assertThat(envelope.header.messageHeader.messageData.messageId, equalTo("72EAA355-B152-4B24-A088-AC2F66AE8A21"));
+    }
+
+    @Test
     public void shouldPopulateReferencesInManifestWhenThereAreCIDsAndMIDs() throws JsonProcessingException {
         String envelopeText = "\n" +
                 "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +

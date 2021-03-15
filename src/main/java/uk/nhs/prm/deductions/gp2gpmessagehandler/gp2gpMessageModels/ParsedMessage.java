@@ -1,6 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
-
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
 
@@ -13,6 +12,20 @@ public class ParsedMessage {
             return null;
         }
         return soapEnvelope.header.messageHeader.action;
+    }
+
+    public String getConversationId() {
+        if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
+            return null;
+        }
+        return soapEnvelope.header.messageHeader.conversationId;
+    }
+
+    public String getMessageId() {
+        if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.messageData == null) {
+            return null;
+        }
+        return soapEnvelope.header.messageHeader.messageData.messageId;
     }
 
     public boolean isLargeMessage() {

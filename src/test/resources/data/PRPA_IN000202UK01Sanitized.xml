@@ -19,7 +19,7 @@
                     <eb:Service>urn:nhs:names:services:gp2gp</eb:Service>
                     <eb:Action>PRPA_IN000202UK01</eb:Action>
                     <eb:MessageData>
-                        <eb:MessageId>${conversationId}</eb:MessageId>
+                        <eb:MessageId>D2B59ACB-68AF-462C-B0CC-387A1201F667</eb:MessageId>
                         <eb:Timestamp>2020-12-18T17:36:38.827Z</eb:Timestamp>
                         <eb:TimeToLive>2020-12-18T23:51:38.827Z</eb:TimeToLive>
                     </eb:MessageData>
@@ -45,7 +45,7 @@
 
         <RCMR_IN010000UK05 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                            xmlns:xs="http://www.w3.org/2001/XMLSchema" type="Message" xmlns="urn:hl7-org:v3">
-            <id root="${conversationId}"/>
+            <id root="D2B59ACB-68AF-462C-B0CC-387A1201F667"/>
             <creationTime value="20201218173637"/>
             <versionCode code="V3NPfIT3.1.10"/>
             <interactionId root="2.16.840.1.113883.2.1.3.2.4.12" extension="RCMR_IN010000UK05"/>

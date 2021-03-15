@@ -8,6 +8,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeade
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPBody;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Reference;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
 
 import java.util.ArrayList;
 
@@ -20,6 +21,8 @@ public class ParsedMessageTest {
     private final Reference cid;
     private final Reference invalid;
     private final String action;
+    private final String conversationId;
+    private final String messageId;
 
     public ParsedMessageTest() {
         mid = new Reference();
@@ -32,6 +35,8 @@ public class ParsedMessageTest {
         invalid.href = "bogus";
 
         action = "RCMR_IN030000UK06";
+        conversationId = "FFE3AF9D-8A11-4606-859D-CDBF469984E6";
+        messageId = "EE662CBC-A847-47CF-93E9-301D78C31845";
     }
 
     @Test
@@ -81,5 +86,42 @@ public class ParsedMessageTest {
         envelope.body.manifest.add(invalid);
         ParsedMessage message = new ParsedMessage(envelope);
         assertThat(message.isLargeMessage(), equalTo(false));
+    }
+
+    @Test
+    public void shouldReturnConversationIdWhenSOAPIsValid() {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.header = new SOAPHeader();
+        envelope.header.messageHeader = new MessageHeader();
+        envelope.header.messageHeader.conversationId = conversationId;
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getConversationId(), equalTo(conversationId));
+    }
+
+    @Test
+    public void shouldReturnNullForConversationIdWhenSOAPDoesNotHaveAMessageHeader() {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.header = new SOAPHeader();
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getConversationId(), equalTo(null));
+    }
+
+    @Test
+    public void shouldReturnMessageIdWhenSOAPIsValid() {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.header = new SOAPHeader();
+        envelope.header.messageHeader = new MessageHeader();
+        envelope.header.messageHeader.messageData = new MessageData();
+        envelope.header.messageHeader.messageData.messageId = messageId;
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getMessageId(), equalTo(messageId));
+    }
+
+    @Test
+    public void shouldReturnNullForMessageIdWhenSOAPDoesNotHaveAMessageHeader() {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.header = new SOAPHeader();
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getMessageId(), equalTo(null));
     }
 }

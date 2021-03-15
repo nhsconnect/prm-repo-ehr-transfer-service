@@ -7,4 +7,10 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 public class MessageHeader {
     @JacksonXmlProperty(localName = "Action", namespace = "eb")
     public String action;
+
+    @JacksonXmlProperty(localName = "ConversationId", namespace = "eb")
+    public String conversationId;
+
+    @JacksonXmlProperty(localName = "MessageData", namespace = "eb")
+    public MessageData messageData;
 }
