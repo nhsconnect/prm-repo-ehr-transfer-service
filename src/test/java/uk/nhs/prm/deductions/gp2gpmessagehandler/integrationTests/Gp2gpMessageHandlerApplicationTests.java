@@ -35,6 +35,12 @@ class Gp2gpMessageHandlerApplicationTests {
 	@Value("${activemq.unhandledQueue}")
 	private String unhandledQueue;
 
+    @Value("${gpToRepoUrl}")
+    String gpToRepoUrl;
+
+    @Value("${gpToRepoAuthKey}")
+    String gpToRepoAuthKey;
+
     private TestDataLoader dataLoader = new TestDataLoader();
 
     @Test

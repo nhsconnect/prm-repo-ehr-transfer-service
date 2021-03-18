@@ -1,5 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
+import java.util.UUID;
+
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
 
@@ -14,14 +16,14 @@ public class ParsedMessage {
         return soapEnvelope.header.messageHeader.action;
     }
 
-    public String getConversationId() {
+    public UUID getConversationId() {
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;
         }
         return soapEnvelope.header.messageHeader.conversationId;
     }
 
-    public String getMessageId() {
+    public UUID getMessageId() {
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.messageData == null) {
             return null;
         }

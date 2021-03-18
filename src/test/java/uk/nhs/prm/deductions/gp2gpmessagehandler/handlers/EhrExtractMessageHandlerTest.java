@@ -8,14 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Reference;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPBody;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 
 import javax.jms.JMSException;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -30,9 +31,22 @@ public class EhrExtractMessageHandlerTest {
 
     @MockBean
     JmsTemplate mockJmsTemplate;
+    @MockBean
+    GPToRepoClient gpToRepoClient;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
+
+    @Value("${activemq.unhandledQueue}")
+    String unhandledQueue;
+
+    private UUID conversationId;
+    private UUID ehrExtractMessageId;
+
+    public EhrExtractMessageHandlerTest() {
+        conversationId = UUID.randomUUID();
+        ehrExtractMessageId = UUID.randomUUID();
+    }
 
     private SOAPEnvelope getSoapEnvelope(String href) {
         Reference reference = new Reference();
@@ -41,6 +55,11 @@ public class EhrExtractMessageHandlerTest {
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(reference);
+        envelope.header = new SOAPHeader();
+        envelope.header.messageHeader = new MessageHeader();
+        envelope.header.messageHeader.messageData = new MessageData();
+        envelope.header.messageHeader.conversationId = conversationId;
+        envelope.header.messageHeader.messageData.messageId = ehrExtractMessageId;
         return envelope;
     }
 
@@ -63,7 +82,7 @@ public class EhrExtractMessageHandlerTest {
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
-        verify(mockJmsTemplate, only()).convertAndSend("outboundQueue", bytesMessage);
+        verify(mockJmsTemplate, only()).convertAndSend(outboundQueue, bytesMessage);
     }
 
     @Test
@@ -74,5 +93,27 @@ public class EhrExtractMessageHandlerTest {
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
         verify(mockJmsTemplate, never()).convertAndSend("outboundQueue", bytesMessage);
+    }
+
+    @Test
+    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws JMSException, MalformedURLException, URISyntaxException {
+        SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
+        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
+
+        messageHandler.handleMessage(parsedMessage, bytesMessage);
+        verify(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
+    }
+
+    @Test
+    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException {
+        SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
+        RuntimeException expectedError = new RuntimeException("Failed to send continue message");
+        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
+        doThrow(expectedError).when(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
+
+        messageHandler.handleMessage(parsedMessage, bytesMessage);
+        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
     }
 }

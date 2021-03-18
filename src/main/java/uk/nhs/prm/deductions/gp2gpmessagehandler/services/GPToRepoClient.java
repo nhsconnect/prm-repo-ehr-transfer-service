@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.jsonModels.EhrExtractMessage;
 
 import java.net.MalformedURLException;
@@ -12,6 +13,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
+@Service
 public class GPToRepoClient {
 
     private final URL gpToRepoUrl;

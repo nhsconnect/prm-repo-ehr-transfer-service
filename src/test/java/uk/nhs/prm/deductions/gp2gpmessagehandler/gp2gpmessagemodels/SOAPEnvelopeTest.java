@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 
+import java.util.UUID;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -78,7 +80,7 @@ public class SOAPEnvelopeTest {
                 "    </soap:Envelope>";
         XmlMapper xmlMapper = new XmlMapper();
         SOAPEnvelope envelope = xmlMapper.readValue(envelopeText, SOAPEnvelope.class);
-        assertThat(envelope.header.messageHeader.conversationId, equalTo("8B373671-5884-45DF-A22C-B3EF768E1DC4"));
+        assertThat(envelope.header.messageHeader.conversationId, equalTo(UUID.fromString("8B373671-5884-45DF-A22C-B3EF768E1DC4")));
     }
 
     @Test
@@ -112,7 +114,7 @@ public class SOAPEnvelopeTest {
                 "    </soap:Envelope>";
         XmlMapper xmlMapper = new XmlMapper();
         SOAPEnvelope envelope = xmlMapper.readValue(envelopeText, SOAPEnvelope.class);
-        assertThat(envelope.header.messageHeader.messageData.messageId, equalTo("72EAA355-B152-4B24-A088-AC2F66AE8A21"));
+        assertThat(envelope.header.messageHeader.messageData.messageId, equalTo(UUID.fromString("72EAA355-B152-4B24-A088-AC2F66AE8A21")));
     }
 
     @Test

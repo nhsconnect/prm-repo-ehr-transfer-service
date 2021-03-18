@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,6 +14,7 @@ import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.PdsUpdateCompletedMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -35,6 +37,9 @@ public class JmsConsumerIntegrationTest {
 
     @MockBean
     JmsTemplate mockJmsTemplate;
+
+    @MockBean
+    GPToRepoClient gpToRepoClient;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;

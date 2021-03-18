@@ -8,6 +8,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -50,9 +51,9 @@ public class ParserServiceTest {
     @CsvSource({
             "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
             "RCMR_IN030000UK06Sanitized.xml, 5A36471B-036B-48E1-BBB4-A89AEE0652E1",
-            "PRPA_IN000202UK01Sanitized.xml, 761f1012-396c-43d2-9684-d87354ac8e50"
+            "PRPA_IN000202UK01Sanitized.xml, 3B71EB7E-5F87-426D-AE23-E0EAFEB60BD4"
     })
-    public void shouldExtractConversationIdFromSanitizedMessage(String fileName, String expectedConversationId) throws IOException, MessagingException {
+    public void shouldExtractConversationIdFromSanitizedMessage(String fileName, UUID expectedConversationId) throws IOException, MessagingException {
         String message = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.getConversationId(), equalTo(expectedConversationId));
@@ -62,9 +63,9 @@ public class ParserServiceTest {
     @CsvSource({
             "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
             "RCMR_IN030000UK06Sanitized.xml, 31FA3430-6E88-11EA-9384-E83935108FD5",
-            "PRPA_IN000202UK01Sanitized.xml, D2B59ACB-68AF-462C-B0CC-387A1201F667"
+            "PRPA_IN000202UK01Sanitized.xml, D9B0D972-79C5-4144-B7FD-FE61EEF33E5F"
     })
-    public void shouldExtractMessageIdFromSanitizedMessage(String fileName, String expectedMessageId) throws IOException, MessagingException {
+    public void shouldExtractMessageIdFromSanitizedMessage(String fileName, UUID expectedMessageId) throws IOException, MessagingException {
         String message = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.getMessageId(), equalTo(expectedMessageId));

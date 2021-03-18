@@ -11,6 +11,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessag
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,8 +22,8 @@ public class ParsedMessageTest {
     private final Reference cid;
     private final Reference invalid;
     private final String action;
-    private final String conversationId;
-    private final String messageId;
+    private final UUID conversationId;
+    private final UUID messageId;
 
     public ParsedMessageTest() {
         mid = new Reference();
@@ -35,8 +36,8 @@ public class ParsedMessageTest {
         invalid.href = "bogus";
 
         action = "RCMR_IN030000UK06";
-        conversationId = "FFE3AF9D-8A11-4606-859D-CDBF469984E6";
-        messageId = "EE662CBC-A847-47CF-93E9-301D78C31845";
+        conversationId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
     }
 
     @Test
