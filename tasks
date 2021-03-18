@@ -147,10 +147,7 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
-    ./tasks _test_unit
-    ./tasks _test_integration
-    ./tasks _test_coverage
-    ./tasks _code_quality
+    gradle unitTest integrationTest jacocoTestCoverageVerification check
     ;;
   test_all)
     configure_local_envs
