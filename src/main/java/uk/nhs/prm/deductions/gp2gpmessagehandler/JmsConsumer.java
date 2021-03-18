@@ -8,12 +8,15 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
 
 /*
  Responsible for:
@@ -29,14 +32,18 @@ public class JmsConsumer {
     private static Logger logger = LogManager.getLogger(JmsConsumer.class);
     final MessageSanitizer messageSanitizer;
     final ParserService parserService;
+    // can't initialize the dictionary in the constructor because it makes mocking harder
+    private final List<MessageHandler> handlersList;
+    private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService) {
+    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
         this.jmsTemplate = jmsTemplate;
         this.outboundQueue = outboundQueue;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
         this.parserService = parserService;
+        this.handlersList  = handlers;
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
@@ -59,20 +66,28 @@ public class JmsConsumer {
                 return;
             }
 
-            boolean knownInteractionId = Arrays.stream(InteractionIds.values())
-                    .anyMatch(value -> value.getInteractionId().equals(interactionId));
+            MessageHandler matchingHandler = this.getHandlers().get(interactionId);
 
-            if (!knownInteractionId) {
+            if (matchingHandler == null) {
                 logger.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue));
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
 
-            logger.info("Sending message to outbound queue", v("queue", outboundQueue));
-            jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
+            matchingHandler.handleMessage(parsedMessage, bytesMessage);
         } catch (Exception e) {
             logger.error("Failed to process message from the queue", e);
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
         }
+    }
+
+    private Dictionary<String, MessageHandler> getHandlers() {
+        if(handlers == null) {
+            this.handlers = new Hashtable<>();
+            for(MessageHandler h : this.handlersList) {
+                this.handlers.put(h.getInteractionId(), h);
+            }
+        }
+        return handlers;
     }
 }

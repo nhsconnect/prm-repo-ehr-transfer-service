@@ -2,12 +2,17 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentMatchers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrRequestMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.PdsUpdateCompletedMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -16,22 +21,29 @@ import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.mockito.Mockito.only;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /*
  Tests JMS Consumer together with other classes but without talking to a real queue server
  */
 @Tag("unit")
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = { JmsConsumer.class, MessageSanitizer.class, ParserService.class,
+        EhrExtractMessageHandler.class, PdsUpdateCompletedMessageHandler.class, EhrRequestMessageHandler.class })
 public class JmsConsumerIntegrationTest {
+    @Autowired
+    JmsConsumer jmsConsumer;
 
-    @Mock
+    @MockBean
     JmsTemplate mockJmsTemplate;
 
+    @Value("${activemq.outboundQueue}")
+    String outboundQueue;
+    @Value("${activemq.unhandledQueue}")
+    String unhandledQueue;
+    @Value("${activemq.inboundQueue}")
+    String inboundQueue;
+
     private TestDataLoader dataLoader = new TestDataLoader();
-    private MessageSanitizer messageSanitizer = new MessageSanitizer();
-    private ParserService parserService = new ParserService();
 
     private ActiveMQBytesMessage getActiveMQBytesMessage(String content) throws JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
@@ -42,10 +54,9 @@ public class JmsConsumerIntegrationTest {
 
     private void jmsConsumerTestFactory(String fileName, String expectedQueue) throws IOException, JMSException {
         String ehrRequest = dataLoader.getDataAsString(fileName);
-        JmsConsumer jmsConsumer = new JmsConsumer(mockJmsTemplate, "outbound", "unhandled", "inboundQueue", messageSanitizer, parserService);
         ActiveMQBytesMessage message = getActiveMQBytesMessage(ehrRequest);
         jmsConsumer.onMessage(message);
-        verify(mockJmsTemplate, only()).convertAndSend(expectedQueue, message);
+        verify(mockJmsTemplate, times(1)).convertAndSend(ArgumentMatchers.eq(expectedQueue), ArgumentMatchers.eq(message));
     }
 
     @ParameterizedTest
@@ -55,7 +66,7 @@ public class JmsConsumerIntegrationTest {
             "PRPA_IN000202UK01.xml"
     })
     void shouldSendMessageWithKnownInteractionIdsToOutboundQueue(String fileName) throws JMSException, IOException {
-        jmsConsumerTestFactory(fileName, "outbound");
+        jmsConsumerTestFactory(fileName, outboundQueue);
     }
 
     @ParameterizedTest
@@ -68,6 +79,6 @@ public class JmsConsumerIntegrationTest {
             "ehrRequestIncorrectInteractionId.xml"
     })
     void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
-        jmsConsumerTestFactory(fileName, "unhandled");
+        jmsConsumerTestFactory(fileName, unhandledQueue);
     }
 }

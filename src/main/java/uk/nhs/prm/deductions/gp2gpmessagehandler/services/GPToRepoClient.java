@@ -15,12 +15,13 @@ import java.util.UUID;
 public class GPToRepoClient {
 
     private final URL gpToRepoUrl;
-    private String gpToRepoAuthKey;
+    private final String gpToRepoAuthKey;
 
     public GPToRepoClient (@Value("${gpToRepoUrl}") String gpToRepoUrl, @Value("${gpToRepoAuthKey}") String gpToRepoAuthKey) throws MalformedURLException {
         this.gpToRepoUrl = new URL(gpToRepoUrl);
         this.gpToRepoAuthKey = gpToRepoAuthKey;
     }
+
     public void sendContinueMessage(UUID ehrExtractMessageId, UUID conversationId) throws MalformedURLException, URISyntaxException {
         String jsonPayloadString = new Gson().toJson(new EhrExtractMessage(ehrExtractMessageId));
         String endpoint = "/deduction-requests/"+ conversationId + "/large-ehr-started";
