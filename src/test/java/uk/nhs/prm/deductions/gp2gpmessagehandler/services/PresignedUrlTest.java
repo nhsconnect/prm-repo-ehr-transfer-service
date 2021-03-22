@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -23,30 +22,30 @@ public class PresignedUrlTest {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
 
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
+    private byte[] getMessageAsBytes() throws JMSException {
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         bytesMessage.writeBytes(new byte[10]);
         bytesMessage.reset();
-        return bytesMessage;
+        return new byte[(int) bytesMessage.getBodyLength()];
     }
 
     @Test
     void shouldUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
-        BytesMessage message = getActiveMQBytesMessage();
+        byte[] message = getMessageAsBytes();
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
         presignedUrl.uploadMessage(message);
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(new byte[(int) message.getBodyLength()])));
+                .withRequestBody(binaryEqualTo(message)));
     }
 
     @Test
     void shouldThrowErrorWhenCannotUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
-        BytesMessage message = getActiveMQBytesMessage();
+        byte[] message = getMessageAsBytes();
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
@@ -56,6 +55,6 @@ public class PresignedUrlTest {
         assertThat(expected, notNullValue());
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(new byte[(int) message.getBodyLength()])));
+                .withRequestBody(binaryEqualTo(message)));
     }
 }
