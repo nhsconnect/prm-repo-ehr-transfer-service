@@ -39,3 +39,7 @@ data "aws_ssm_parameter" "gp2gp_message_handler_gp_to_repo_url" {
 data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_gp_to_repo" {
   name = "/repo/${var.environment}/user-input/gp-to-repo-authorization-keys"
 }
+
+data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_ehr_repo" {
+  name = "/repo/${var.environment}/user-input/ehr-repo-authorization-keys"
+}
