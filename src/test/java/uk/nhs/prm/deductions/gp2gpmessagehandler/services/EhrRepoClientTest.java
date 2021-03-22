@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-public class EhrRepoTest {
+public class EhrRepoClientTest {
 
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
@@ -52,5 +52,27 @@ public class EhrRepoTest {
                 .withHeader("Authorization", matching("secret")));
 
         assertThat(response.presignedUrl, Matchers.equalTo(new URL("https://fake-presigned-url")));
+    }
+
+    @Test
+    public void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
+        String conversationId = "2592d6e6-3896-4c5c-a8b7-74216c9802f6";
+        String messageId = "4e003f6f-6d03-4c98-8b08-54473b555f28";
+
+        wireMock.stubFor(get(urlEqualTo("/messages/"+ conversationId + "/" + messageId))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(503)
+                        .withHeader("Content-Type", "application/json")));
+
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
+        Exception expected = assertThrows(RuntimeException.class, () ->
+                ehrRepoClient.fetchStorageUrl(UUID.fromString(conversationId), UUID.fromString(messageId))
+        );
+        assertThat(expected, notNullValue());
+
+        verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
+                .withHeader("Content-Type", matching("application/json"))
+                .withHeader("Authorization", matching("secret")));
     }
 }
