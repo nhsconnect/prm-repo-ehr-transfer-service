@@ -1,16 +1,29 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import de.mkammerer.wiremock.WireMockExtension;
+import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 public class EhrRepoTest {
@@ -32,10 +45,12 @@ public class EhrRepoTest {
                         .withHeader("Content-Type", "application/json")));
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
-        ehrRepoClient.fetchStorageUrl(UUID.fromString(conversationId), UUID.fromString(messageId));
+        PresignedUrl response = ehrRepoClient.fetchStorageUrl(UUID.fromString(conversationId), UUID.fromString(messageId));
 
         verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
+
+        assertThat(response.presignedUrl, Matchers.equalTo(new URL("https://fake-presigned-url")));
     }
 }

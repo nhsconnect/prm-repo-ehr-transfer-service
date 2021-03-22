@@ -20,7 +20,7 @@ public class EhrRepoClient {
         this.ehrRepoAuthKey = ehrRepoAuthKey;
     }
 
-    public String fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException {
         String endpoint = "/messages/"+ conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -37,7 +37,8 @@ public class EhrRepoClient {
                 throw new RuntimeException("Unexpected response from EHR Repo");
             }
 
-            return response.body();
+            URL url = new URL(response.body());
+            return new PresignedUrl(url);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send a request to EHR Repo",e);
         }
