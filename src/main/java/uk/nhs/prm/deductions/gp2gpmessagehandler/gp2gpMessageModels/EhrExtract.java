@@ -8,6 +8,10 @@ public class EhrExtract {
     @JacksonXmlProperty(localName = "recordTarget")
     public RecordTarget recordTarget;
 
+    public Patient getPatient() {
+        return this.recordTarget.patient;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RecordTarget {
         @JacksonXmlProperty(localName = "patient")

@@ -8,6 +8,10 @@ public class EhrExtractMessageWrapper {
     @JacksonXmlProperty(localName = "ControlActEvent")
     public ControlActEvent controlActEvent;
 
+    public EhrExtract getEhrExtract() {
+        return this.controlActEvent.subject.ehrExtract;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ControlActEvent {
         @JacksonXmlProperty(localName = "subject")

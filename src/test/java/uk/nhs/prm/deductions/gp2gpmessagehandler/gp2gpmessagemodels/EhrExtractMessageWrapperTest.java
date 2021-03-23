@@ -3,7 +3,9 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.junit.jupiter.api.Test;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtract;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Patient;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -29,6 +31,8 @@ public class EhrExtractMessageWrapperTest {
 
         XmlMapper xmlMapper = new XmlMapper();
         EhrExtractMessageWrapper ehrExtractMessageWrapper = xmlMapper.readValue(extract, EhrExtractMessageWrapper.class);
-        assertThat(ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension, equalTo("9442964410"));
+        EhrExtract ehrExtract = ehrExtractMessageWrapper.getEhrExtract();
+        Patient patient = ehrExtract.getPatient();
+        assertThat(patient.getNhsNumber(), equalTo("9442964410"));
     }
 }
