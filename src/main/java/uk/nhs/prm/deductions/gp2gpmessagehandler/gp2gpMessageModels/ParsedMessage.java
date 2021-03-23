@@ -1,5 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class ParsedMessage {
@@ -37,5 +39,17 @@ public class ParsedMessage {
             }
         }
         return false;
+    }
+
+    public List<UUID> getAttachmentMessageIds(){
+        List<UUID> attachmentMessageIds = new ArrayList<>();
+
+        for (Reference reference : soapEnvelope.body.manifest) {
+            if (reference.href.contains("mid")) {
+                String attachmentMessageId = reference.href.substring(4);
+                attachmentMessageIds.add(UUID.fromString(attachmentMessageId));
+            }
+        }
+        return attachmentMessageIds;
     }
 }

@@ -11,6 +11,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessag
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,6 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Tag("unit")
 public class ParsedMessageTest {
     private final Reference mid;
+    private final Reference othermid;
     private final Reference cid;
     private final Reference invalid;
     private final String action;
@@ -27,7 +29,10 @@ public class ParsedMessageTest {
 
     public ParsedMessageTest() {
         mid = new Reference();
-        mid.href = "mid:something";
+        mid.href = "mid:BFA900F3-4D4E-4661-8A78-82BE5742F0CB";
+
+        othermid = new Reference();
+        othermid.href = "mid:7D52B137-36CE-4179-8375-40B42AFCCF81";
 
         cid = new Reference();
         cid.href = "cid:something-else";
@@ -87,6 +92,33 @@ public class ParsedMessageTest {
         envelope.body.manifest.add(invalid);
         ParsedMessage message = new ParsedMessage(envelope);
         assertThat(message.isLargeMessage(), equalTo(false));
+    }
+
+    @Test
+    public void shouldReturnEmptyArrayWhenNoAttachments() {
+        List<UUID> expectedListOfMIDs = new ArrayList<>();
+
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.body = new SOAPBody();
+        envelope.body.manifest = new ArrayList<>();
+        envelope.body.manifest.add(cid);
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
+    }
+
+    @Test
+    public void shouldReturnArrayOfAttachmentMessageIdsWhenMessageHasAttachments() {
+        List<UUID> expectedListOfMIDs = new ArrayList<>();
+        expectedListOfMIDs.add(UUID.fromString("BFA900F3-4D4E-4661-8A78-82BE5742F0CB"));
+        expectedListOfMIDs.add(UUID.fromString("7D52B137-36CE-4179-8375-40B42AFCCF81"));
+
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.body = new SOAPBody();
+        envelope.body.manifest = new ArrayList<>();
+        envelope.body.manifest.add(mid);
+        envelope.body.manifest.add(othermid);
+        ParsedMessage message = new ParsedMessage(envelope);
+        assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
     }
 
     @Test
