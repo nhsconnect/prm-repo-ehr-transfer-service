@@ -78,7 +78,7 @@ public class EhrExtractMessageHandlerTest {
     @Test
     public void shouldPutSmallHealthRecordsOnJSQueue() throws JMSException {
         SOAPEnvelope envelope = getSoapEnvelope("cid:no-attachments");
-        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
@@ -88,7 +88,7 @@ public class EhrExtractMessageHandlerTest {
     @Test
     public void shouldNotPutLargeHealthRecordsOnJSQueue() throws JMSException {
         SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
-        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
@@ -98,7 +98,7 @@ public class EhrExtractMessageHandlerTest {
     @Test
     public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws JMSException, MalformedURLException, URISyntaxException {
         SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
-        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
@@ -109,7 +109,7 @@ public class EhrExtractMessageHandlerTest {
     public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException {
         SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
         RuntimeException expectedError = new RuntimeException("Failed to send continue message");
-        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
         doThrow(expectedError).when(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
 

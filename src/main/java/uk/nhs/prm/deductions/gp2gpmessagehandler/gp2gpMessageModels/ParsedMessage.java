@@ -6,9 +6,22 @@ import java.util.UUID;
 
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
+    private MessageContent messageContent;
 
-    public ParsedMessage(SOAPEnvelope soapEnvelope) {
+    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent) {
         this.soapEnvelope = soapEnvelope;
+        this.messageContent = messageContent;
+    }
+
+    public MessageContent getMessageContent() {
+        return messageContent;
+    }
+
+    public String getNhsNumber() {
+        if (messageContent instanceof EhrExtractMessageWrapper) {
+            return ((EhrExtractMessageWrapper) messageContent).getEhrExtract().getPatient().getNhsNumber();
+        }
+        return null;
     }
 
     public String getAction() {

@@ -1,8 +1,10 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -69,5 +71,19 @@ public class ParserServiceTest {
         String message = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(message);
         assertThat(parsedMessage.getMessageId(), equalTo(expectedMessageId));
+    }
+
+    @Test
+    public void shouldExtractNhsNumberFromEhrExtract() throws IOException, MessagingException {
+        String message = loader.getDataAsString("RCMR_IN030000UK06Sanitized.xml");
+        ParsedMessage parsedMessage = parser.parse(message);
+        assertThat(parsedMessage.getNhsNumber(), equalTo("9442964410"));
+    }
+
+    @Test
+    public void shouldNotExtractNhsNumberFromEhrRequest() throws IOException, MessagingException {
+        String message = loader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
+        ParsedMessage parsedMessage = parser.parse(message);
+        assertThat(parsedMessage.getNhsNumber(), equalTo(null));
     }
 }

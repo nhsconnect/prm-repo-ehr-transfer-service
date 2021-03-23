@@ -77,7 +77,7 @@ public class JmsConsumerTest {
     @Test
     void shouldHandleRCMR_IN030000UK06MessageInEhrExtractMessageHandler() throws IOException, JMSException, MessagingException {
         ActiveMQBytesMessage message = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope("RCMR_IN030000UK06"));
+        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope("RCMR_IN030000UK06"), null);
         when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -90,14 +90,14 @@ public class JmsConsumerTest {
             ","
     })
     void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope(interactionId));
+        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope(interactionId), null);
         when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnUnhandledQueue() throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(new SOAPEnvelope());
+        ParsedMessage parsedMessage = new ParsedMessage(new SOAPEnvelope(), null);
         when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }

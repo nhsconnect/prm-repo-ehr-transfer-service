@@ -45,10 +45,10 @@
             </eb:Manifest>
         </soap:Body>
     </soap:Envelope>
-    --2f5a95be-81e0-4f4a-b62f-88c3a02a697c
-    Content-Id:<Content1@e-mis.com/EMISWeb/GP2GP2.2A>
-    Content-Transfer-Encoding: 8bit
-    Content-Type: application/xml; charset=UTF-8
+--2f5a95be-81e0-4f4a-b62f-88c3a02a697c
+Content-Id:<Content1@e-mis.com/EMISWeb/GP2GP2.2A>
+Content-Transfer-Encoding: 8bit
+Content-Type: application/xml; charset=UTF-8
 
     <RCMR_IN030000UK06 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema"
                        xmlns="urn:hl7-org:v3">

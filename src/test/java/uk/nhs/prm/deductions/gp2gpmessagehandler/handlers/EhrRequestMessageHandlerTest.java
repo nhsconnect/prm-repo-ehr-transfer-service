@@ -46,7 +46,7 @@ public class EhrRequestMessageHandlerTest {
     @Test
     public void shouldPutEhrRequestMessagesOnJSQueue() throws JMSException {
         SOAPEnvelope envelope = new SOAPEnvelope();
-        ParsedMessage parsedMessage = new ParsedMessage(envelope);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);

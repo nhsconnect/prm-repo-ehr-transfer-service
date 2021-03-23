@@ -2,13 +2,17 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtract;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Identifier;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeader;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Patient;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Reference;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPHeader;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeader;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPBody;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Reference;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +56,7 @@ public class ParsedMessageTest {
         envelope.header.messageHeader = new MessageHeader();
         envelope.header.messageHeader.action = action;
 
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getAction(), equalTo(action));
     }
 
@@ -60,8 +64,28 @@ public class ParsedMessageTest {
     public void shouldReturnNullWhenSOAPDoesNotHaveAHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
 
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getAction(), equalTo(null));
+    }
+
+    @Test
+    public void shouldReturnNhsNumberForEhrExtract() {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        envelope.header = new SOAPHeader();
+        envelope.header.messageHeader = new MessageHeader();
+        envelope.header.messageHeader.action = action;
+
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
+        ehrExtractMessageWrapper.controlActEvent = new EhrExtractMessageWrapper.ControlActEvent();
+        ehrExtractMessageWrapper.controlActEvent.subject = new EhrExtractMessageWrapper.ControlActEvent.Subject();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract = new EhrExtract();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget = new EhrExtract.RecordTarget();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient = new Patient();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= "1234567890";
+
+        ParsedMessage message = new ParsedMessage(envelope, ehrExtractMessageWrapper);
+        assertThat(message.getNhsNumber(), equalTo("1234567890"));
     }
 
     @Test
@@ -70,7 +94,7 @@ public class ParsedMessageTest {
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(mid);
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.isLargeMessage(), equalTo(true));
     }
 
@@ -80,7 +104,7 @@ public class ParsedMessageTest {
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(cid);
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.isLargeMessage(), equalTo(false));
     }
 
@@ -90,7 +114,7 @@ public class ParsedMessageTest {
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(invalid);
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.isLargeMessage(), equalTo(false));
     }
 
@@ -102,7 +126,7 @@ public class ParsedMessageTest {
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(cid);
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
     }
 
@@ -117,7 +141,7 @@ public class ParsedMessageTest {
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(mid);
         envelope.body.manifest.add(othermid);
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
     }
 
@@ -127,7 +151,7 @@ public class ParsedMessageTest {
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
         envelope.header.messageHeader.conversationId = conversationId;
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getConversationId(), equalTo(conversationId));
     }
 
@@ -135,7 +159,7 @@ public class ParsedMessageTest {
     public void shouldReturnNullForConversationIdWhenSOAPDoesNotHaveAMessageHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getConversationId(), equalTo(null));
     }
 
@@ -146,7 +170,7 @@ public class ParsedMessageTest {
         envelope.header.messageHeader = new MessageHeader();
         envelope.header.messageHeader.messageData = new MessageData();
         envelope.header.messageHeader.messageData.messageId = messageId;
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getMessageId(), equalTo(messageId));
     }
 
@@ -154,7 +178,7 @@ public class ParsedMessageTest {
     public void shouldReturnNullForMessageIdWhenSOAPDoesNotHaveAMessageHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
-        ParsedMessage message = new ParsedMessage(envelope);
+        ParsedMessage message = new ParsedMessage(envelope, null);
         assertThat(message.getMessageId(), equalTo(null));
     }
 }
