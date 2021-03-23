@@ -6,16 +6,17 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class MessageSanitizer {
-    public String sanitize(String rawMessageFromQueue) {
-        int startOfMessage = rawMessageFromQueue.indexOf("--");
-        if (startOfMessage == -1) {
-            return rawMessageFromQueue;
-        }
-        return rawMessageFromQueue.substring(startOfMessage);
-    }
-
     public String sanitize(byte[] rawMessage) {
         String fullContent = new String(rawMessage, StandardCharsets.UTF_8);
-        return this.sanitize(fullContent);
+        String firstLine = fullContent.split("\n")[0];
+        int startOfMessage = firstLine.lastIndexOf("--");
+
+        if (firstLine.endsWith("----=_MIME-Boundary")) {
+            startOfMessage = firstLine.lastIndexOf("----=_MIME-Boundary");
+        }
+        if (startOfMessage == -1) {
+            return fullContent;
+        }
+        return fullContent.substring(startOfMessage);
     }
 }
