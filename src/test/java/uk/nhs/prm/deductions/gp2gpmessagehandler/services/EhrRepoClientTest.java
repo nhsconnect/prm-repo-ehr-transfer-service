@@ -1,22 +1,17 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import de.mkammerer.wiremock.WireMockExtension;
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -33,8 +28,8 @@ public class EhrRepoClientTest {
 
     @Test
     public void shouldFetchStorageUrlFromEhrRepo() throws MalformedURLException, URISyntaxException {
-        String conversationId = "2592d6e6-3896-4c5c-a8b7-74216c9802f6";
-        String messageId = "4e003f6f-6d03-4c98-8b08-54473b555f28";
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
         wireMock.stubFor(get(urlEqualTo("/messages/"+ conversationId + "/" + messageId))
@@ -45,7 +40,7 @@ public class EhrRepoClientTest {
                         .withHeader("Content-Type", "application/json")));
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
-        PresignedUrl response = ehrRepoClient.fetchStorageUrl(UUID.fromString(conversationId), UUID.fromString(messageId));
+        PresignedUrl response = ehrRepoClient.fetchStorageUrl(conversationId, messageId);
 
         verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
                 .withHeader("Content-Type", matching("application/json"))
@@ -56,8 +51,8 @@ public class EhrRepoClientTest {
 
     @Test
     public void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
-        String conversationId = "2592d6e6-3896-4c5c-a8b7-74216c9802f6";
-        String messageId = "4e003f6f-6d03-4c98-8b08-54473b555f28";
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
 
         wireMock.stubFor(get(urlEqualTo("/messages/"+ conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
@@ -67,12 +62,73 @@ public class EhrRepoClientTest {
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
         Exception expected = assertThrows(RuntimeException.class, () ->
-                ehrRepoClient.fetchStorageUrl(UUID.fromString(conversationId), UUID.fromString(messageId))
+                ehrRepoClient.fetchStorageUrl(conversationId, messageId)
         );
         assertThat(expected, notNullValue());
 
         verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
+    }
+
+    @Test
+    public void shouldConfirmMessageStoredInEhrRepo() throws MalformedURLException, URISyntaxException {
+        // Setup
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+        String nhsNumber = "1234567890";
+        String messageType = "ehrExtract";
+        String interactionId = "RCMR_IN030000UK06";
+        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[]}}}";
+
+        // Mock request
+        wireMock.stubFor(post(urlEqualTo("/messages"))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(201)
+                        .withHeader("Content-Type", "application/json")));
+
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
+
+        // Create parsed message to store
+        SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, interactionId);
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent(nhsNumber);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper);
+
+        // Store
+        ehrRepoClient.confirmMessageStored(parsedMessage);
+
+        verify(postRequestedFor(urlMatching("/messages"))
+                .withRequestBody(equalToJson((requestBody)))
+                .withHeader("Content-Type", matching("application/json"))
+                .withHeader("Authorization", matching("secret")));
+    }
+
+    private EhrExtractMessageWrapper getMessageContent(String nhsNumber) {
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
+        ehrExtractMessageWrapper.controlActEvent = new EhrExtractMessageWrapper.ControlActEvent();
+        ehrExtractMessageWrapper.controlActEvent.subject = new EhrExtractMessageWrapper.ControlActEvent.Subject();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract = new EhrExtract();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget = new EhrExtract.RecordTarget();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient = new Patient();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= nhsNumber;
+        return ehrExtractMessageWrapper;
+    }
+
+    private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, String interactionId) {
+        SOAPEnvelope envelope = new SOAPEnvelope();
+        Reference reference = new Reference();
+        reference.href = "cid:small-message";
+        envelope.body = new SOAPBody();
+        envelope.body.manifest = new ArrayList<>();
+        envelope.body.manifest.add(reference);
+        envelope.header = new SOAPHeader();
+        envelope.header.messageHeader = new MessageHeader();
+        envelope.header.messageHeader.action = interactionId;
+        envelope.header.messageHeader.conversationId = conversationId;
+        envelope.header.messageHeader.messageData = new MessageData();
+        envelope.header.messageHeader.messageData.messageId = messageId;
+        return envelope;
     }
 }
