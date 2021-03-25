@@ -104,10 +104,11 @@ public class EhrRepoClientTest {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
+        UUID attachmentId = UUID.randomUUID();
         String nhsNumber = "1234567890";
         String messageType = "ehrExtract";
         String interactionId = "RCMR_IN030000UK06";
-        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[]}}}";
+        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[\""+attachmentId+"\"]}}}";
 
         // Mock request
         wireMock.stubFor(post(urlEqualTo("/messages"))
@@ -119,7 +120,7 @@ public class EhrRepoClientTest {
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
 
         // Create parsed message to store
-        SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, interactionId);
+        SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, attachmentId, interactionId);
         EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent(nhsNumber);
         ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper);
 
@@ -144,10 +145,10 @@ public class EhrRepoClientTest {
         return ehrExtractMessageWrapper;
     }
 
-    private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, String interactionId) {
+    private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, UUID attachmentId, String interactionId) {
         SOAPEnvelope envelope = new SOAPEnvelope();
         Reference reference = new Reference();
-        reference.href = "cid:small-message";
+        reference.href = "mid:"+attachmentId;
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(reference);
