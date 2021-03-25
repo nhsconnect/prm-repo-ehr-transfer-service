@@ -40,10 +40,10 @@ public class GPToRepoClient {
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send a request to gp-to-repo",e);
+            throw new RuntimeException("Failed to send a request to gp-to-repo to send continue message",e);
         }
         if (response.statusCode() != 204) {
-            throw new RuntimeException("Unexpected response from gp-to-repo");
+            throw new RuntimeException("Unexpected response from gp-to-repo when sending continue message");
         }
     }
 }

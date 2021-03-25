@@ -40,13 +40,13 @@ public class EhrRepoClient {
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 200) {
-                throw new RuntimeException("Unexpected response from EHR Repo");
+                throw new RuntimeException("Unexpected response from EHR Repo when retrieving presigned URL");
             }
 
             URL url = new URL(response.body());
             return new PresignedUrl(url);
         } catch (Exception e) {
-            throw new HttpException("Failed to send a request to EHR Repo",e);
+            throw new HttpException("Failed to retrieve presigned URL from EHR Repo",e);
         }
     }
 
@@ -73,11 +73,11 @@ public class EhrRepoClient {
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 201) {
-                throw new HttpException(String.format("Unexpected response from EHR Repo: %d", response.statusCode()));
+                throw new HttpException(String.format("Unexpected response from EHR Repo when storing message: %d", response.statusCode()));
             }
 
         } catch (Exception e) {
-            throw new HttpException("Failed to send a request to EHR Repo",e);
+            throw new HttpException("Failed to store message in EHR repo",e);
         }
     }
 }

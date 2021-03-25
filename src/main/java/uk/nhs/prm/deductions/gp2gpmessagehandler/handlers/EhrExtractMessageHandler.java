@@ -45,9 +45,11 @@ public class EhrExtractMessageHandler implements MessageHandler {
             try {
                 byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
                 ehrRepoService.storeMessage(parsedMessage, messageAsBytes);
+                logger.info("Successfully stored message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
+                logger.info("Successfully sent continue message");
             } catch (Exception e) {
-                logger.error("Failed to send continue message to GP To Repo", e);
+                logger.error("Failed to store message and send continue request", e);
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
             }
         } else {
