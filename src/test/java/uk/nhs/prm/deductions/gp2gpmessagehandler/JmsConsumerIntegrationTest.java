@@ -14,6 +14,7 @@ import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.PdsUpdateCompletedMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
@@ -40,6 +41,9 @@ public class JmsConsumerIntegrationTest {
 
     @MockBean
     GPToRepoClient gpToRepoClient;
+
+    @MockBean
+    EhrRepoService ehrRepoService;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;

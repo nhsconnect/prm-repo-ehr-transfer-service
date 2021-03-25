@@ -9,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
 import javax.jms.JMSException;
 
@@ -33,6 +35,8 @@ public class EhrExtractMessageHandlerTest {
     JmsTemplate mockJmsTemplate;
     @MockBean
     GPToRepoClient gpToRepoClient;
+    @MockBean
+    EhrRepoService ehrRepoService;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
@@ -115,5 +119,44 @@ public class EhrExtractMessageHandlerTest {
 
         messageHandler.handleMessage(parsedMessage, bytesMessage);
         verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+    }
+
+    @Test
+    public void shouldCallEhrRepoToStoreMessageForLargeHealthRecords() throws JMSException, MalformedURLException, URISyntaxException, HttpException {
+        SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent("1234567890");
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper);
+        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
+        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+
+        messageHandler.handleMessage(parsedMessage, bytesMessage);
+        verify(ehrRepoService).storeMessage(parsedMessage, messageAsBytes);
+    }
+
+    @Test
+    public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException, HttpException {
+        SOAPEnvelope envelope = getSoapEnvelope("mid:attachment");
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent("1234567890");
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper);
+        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
+        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+
+        HttpException expectedError = new HttpException();
+        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage, messageAsBytes);
+
+        messageHandler.handleMessage(parsedMessage, bytesMessage);
+        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+    }
+
+    private EhrExtractMessageWrapper getMessageContent(String nhsNumber) {
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
+        ehrExtractMessageWrapper.controlActEvent = new EhrExtractMessageWrapper.ControlActEvent();
+        ehrExtractMessageWrapper.controlActEvent.subject = new EhrExtractMessageWrapper.ControlActEvent.Subject();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract = new EhrExtract();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget = new EhrExtract.RecordTarget();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient = new Patient();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= nhsNumber;
+        return ehrExtractMessageWrapper;
     }
 }

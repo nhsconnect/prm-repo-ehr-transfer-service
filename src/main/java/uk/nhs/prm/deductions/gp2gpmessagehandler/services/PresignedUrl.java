@@ -15,7 +15,7 @@ public class PresignedUrl {
         this.presignedUrl = presignedUrl;
     }
 
-    public void uploadMessage(byte[] messageAsBytes) throws URISyntaxException, JMSException {
+    public void uploadMessage(byte[] messageAsBytes) throws URISyntaxException {
         HttpRequest.BodyPublisher message = HttpRequest.BodyPublishers.ofByteArray(messageAsBytes);
 
         HttpRequest request = HttpRequest.newBuilder()

@@ -5,13 +5,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 
 import javax.jms.BytesMessage;
-
-import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 
@@ -26,12 +24,14 @@ public class EhrExtractMessageHandler implements MessageHandler {
     private String outboundQueue;
     private String unhandledQueue;
     private GPToRepoClient gpToRepoClient;
+    private EhrRepoService ehrRepoService;
 
-    public EhrExtractMessageHandler(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue,  @Value("${activemq.unhandledQueue}") String unhandledQueue, GPToRepoClient gpToRepoClient) {
+    public EhrExtractMessageHandler(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, GPToRepoClient gpToRepoClient, EhrRepoService ehrRepoService) {
         this.jmsTemplate = jmsTemplate;
         this.outboundQueue = outboundQueue;
         this.gpToRepoClient = gpToRepoClient;
         this.unhandledQueue = unhandledQueue;
+        this.ehrRepoService = ehrRepoService;
     }
 
     @Override
@@ -43,9 +43,9 @@ public class EhrExtractMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage, BytesMessage bytesMessage) {
         if (parsedMessage.isLargeMessage()) {
             try {
-                UUID conversationId = parsedMessage.getConversationId();
-                UUID ehrExtractMessageId = parsedMessage.getMessageId();
-                gpToRepoClient.sendContinueMessage(ehrExtractMessageId, conversationId);
+                byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+                ehrRepoService.storeMessage(parsedMessage, messageAsBytes);
+                gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
             } catch (Exception e) {
                 logger.error("Failed to send continue message to GP To Repo", e);
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);

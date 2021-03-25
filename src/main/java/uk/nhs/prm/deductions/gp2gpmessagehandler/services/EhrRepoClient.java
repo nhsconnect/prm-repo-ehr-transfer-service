@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.jsonModels.confirmmessagestored.StoreMessageRequestBody;
 
@@ -14,6 +15,7 @@ import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.UUID;
 
+@Service
 public class EhrRepoClient {
 
     private final URL ehrRepoUrl;
@@ -24,7 +26,7 @@ public class EhrRepoClient {
         this.ehrRepoAuthKey = ehrRepoAuthKey;
     }
 
-    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException, HttpException {
         String endpoint = "/messages/"+ conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -44,11 +46,11 @@ public class EhrRepoClient {
             URL url = new URL(response.body());
             return new PresignedUrl(url);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send a request to EHR Repo",e);
+            throw new HttpException("Failed to send a request to EHR Repo",e);
         }
     }
 
-    public void confirmMessageStored(ParsedMessage parsedMessage) throws MalformedURLException, URISyntaxException {
+    public void confirmMessageStored(ParsedMessage parsedMessage) throws MalformedURLException, URISyntaxException, HttpException {
         String endpoint = "/messages";
         UUID conversationId = parsedMessage.getConversationId();
         UUID messageId = parsedMessage.getMessageId();
@@ -71,11 +73,11 @@ public class EhrRepoClient {
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 201) {
-                throw new RuntimeException("Unexpected response from EHR Repo");
+                throw new HttpException("Unexpected response from EHR Repo");
             }
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send a request to EHR Repo",e);
+            throw new HttpException("Failed to send a request to EHR Repo",e);
         }
     }
 }

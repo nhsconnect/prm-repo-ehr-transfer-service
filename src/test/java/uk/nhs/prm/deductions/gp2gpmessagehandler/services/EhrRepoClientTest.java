@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -19,6 +20,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Tag("unit")
 public class EhrRepoClientTest {
@@ -27,7 +30,7 @@ public class EhrRepoClientTest {
     WireMockExtension wireMock = new WireMockExtension();
 
     @Test
-    public void shouldFetchStorageUrlFromEhrRepo() throws MalformedURLException, URISyntaxException {
+    public void shouldFetchStorageUrlFromEhrRepo() throws MalformedURLException, URISyntaxException, HttpException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
@@ -61,7 +64,7 @@ public class EhrRepoClientTest {
                         .withHeader("Content-Type", "application/json")));
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
-        Exception expected = assertThrows(RuntimeException.class, () ->
+        Exception expected = assertThrows(HttpException.class, () ->
                 ehrRepoClient.fetchStorageUrl(conversationId, messageId)
         );
         assertThat(expected, notNullValue());
@@ -72,7 +75,32 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldConfirmMessageStoredInEhrRepo() throws MalformedURLException, URISyntaxException {
+    public void shouldThrowErrorWhenCannotStoreMessageInEhrRepo() throws MalformedURLException {
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+
+        wireMock.stubFor(post(urlEqualTo("/messages"))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(503)
+                        .withHeader("Content-Type", "application/json")));
+
+        ParsedMessage mockParsedMessage = mock(ParsedMessage.class);
+        when(mockParsedMessage.getNhsNumber()).thenReturn("0123456789");
+        when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
+        when(mockParsedMessage.getMessageId()).thenReturn(messageId);
+        when(mockParsedMessage.getAction()).thenReturn("RCMR_IN030000UK06");
+        when(mockParsedMessage.getAttachmentMessageIds()).thenReturn(Collections.emptyList());
+
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
+        Exception expected = assertThrows(HttpException.class, () ->
+                ehrRepoClient.confirmMessageStored(mockParsedMessage)
+        );
+        assertThat(expected, notNullValue());
+    }
+
+    @Test
+    public void shouldConfirmMessageStoredInEhrRepo() throws MalformedURLException, URISyntaxException, HttpException {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
