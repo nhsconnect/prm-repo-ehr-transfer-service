@@ -73,7 +73,7 @@ public class EhrRepoClient {
                     .send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() != 201) {
-                throw new HttpException("Unexpected response from EHR Repo");
+                throw new HttpException(String.format("Unexpected response from EHR Repo: %d", response.statusCode()));
             }
 
         } catch (Exception e) {
