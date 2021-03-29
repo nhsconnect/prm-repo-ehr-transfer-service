@@ -69,7 +69,7 @@ public class JmsConsumer {
             MessageHandler matchingHandler = this.getHandlers().get(interactionId);
 
             if (matchingHandler == null) {
-                logger.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue));
+                logger.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue), v("interactionId", interactionId));
                 jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
                 return;
             }
