@@ -14,6 +14,10 @@ public class MessageSanitizer {
         if (firstLine.endsWith("----=_MIME-Boundary")) {
             startOfMessage = firstLine.lastIndexOf("----=_MIME-Boundary");
         }
+        // This is true for TPP messages
+        else if (firstLine.endsWith("----=_MIME-Boundary\r")) {
+            startOfMessage = firstLine.lastIndexOf("----=_MIME-Boundary\r");
+        }
         if (startOfMessage == -1) {
             return fullContent;
         }

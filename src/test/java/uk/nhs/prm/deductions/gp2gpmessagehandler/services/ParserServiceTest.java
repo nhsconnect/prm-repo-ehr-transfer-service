@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -28,9 +27,10 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
-            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
-            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01"
+//            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
+//            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
+//            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01",
+            "tppSmallEhrSanitized.xml, RCMR_IN030000UK06"
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         String message = loader.getDataAsString(fileName);

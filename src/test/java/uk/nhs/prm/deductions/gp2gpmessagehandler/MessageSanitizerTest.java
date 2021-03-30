@@ -2,8 +2,12 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -13,9 +17,21 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Tag("unit")
 class MessageSanitizerTest {
 
-    private TestDataLoader dataLoader = new TestDataLoader();
+    private TestDataLoader loader = new TestDataLoader();
 
     MessageSanitizer messageSanitizer = new MessageSanitizer();
+
+    @ParameterizedTest
+    @CsvSource({
+            "tppSmallEhr.xml, tppSmallEhrSanitized.xml"
+    })
+    public void shouldExtractActionNameFromSanitizedMessage(String inputMessage, String expectedOutputMessage) throws IOException, MessagingException {
+        byte[] message = loader.getDataAsBytes(inputMessage);
+        String sanitizedMessage = messageSanitizer.sanitize(message);
+        String expectedText = loader.getDataAsString(expectedOutputMessage);
+        assertThat(sanitizedMessage, equalTo(expectedText));
+    }
+
     @Test
     void shouldNotChangeAMessageWithoutABoundary() {
         String nonMultipartMessage = "Not a multipart message";
@@ -24,15 +40,15 @@ class MessageSanitizerTest {
 
     @Test
     void shouldRemoveExtraCharactersFromEMISResponse() throws IOException {
-        byte[] rawMessageFromQueue = dataLoader.getDataAsBytes("RCMR_IN010000UK05.xml");
-        String sanitizedMessage = dataLoader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
+        byte[] rawMessageFromQueue = loader.getDataAsBytes("RCMR_IN010000UK05.xml");
+        String sanitizedMessage = loader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
         assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 
     @Test
     void shouldRemoveExtraCharactersFromTPPResponse() throws IOException {
-        byte[] rawMessageFromQueue = dataLoader.getDataAsBytes("RCMR_IN030000UK06.xml");
-        String sanitizedMessage = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized.xml");
+        byte[] rawMessageFromQueue = loader.getDataAsBytes("RCMR_IN030000UK06.xml");
+        String sanitizedMessage = loader.getDataAsString("RCMR_IN030000UK06Sanitized.xml");
         assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 
