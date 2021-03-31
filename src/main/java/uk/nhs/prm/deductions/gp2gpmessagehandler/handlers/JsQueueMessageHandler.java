@@ -25,8 +25,8 @@ public abstract class JsQueueMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void handleMessage(ParsedMessage parsedMessage, BytesMessage bytesMessage) {
+    public void handleMessage(ParsedMessage parsedMessage) {
         logger.info("Sending message to outbound queue", v("queue", outboundQueue));
-        jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
+        jmsTemplate.convertAndSend(outboundQueue, parsedMessage.getBytesMessage());
     }
 }

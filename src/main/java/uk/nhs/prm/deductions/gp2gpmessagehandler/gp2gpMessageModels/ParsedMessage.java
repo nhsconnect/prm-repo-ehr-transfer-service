@@ -1,5 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
+import javax.jms.BytesMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -7,11 +8,15 @@ import java.util.UUID;
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
     private MessageContent messageContent;
+    private BytesMessage bytesMessage;
 
-    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent) {
+    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, BytesMessage bytesMessage) {
         this.soapEnvelope = soapEnvelope;
         this.messageContent = messageContent;
+        this.bytesMessage = bytesMessage;
     }
+
+    public BytesMessage getBytesMessage() { return bytesMessage; }
 
     public MessageContent getMessageContent() {
         return messageContent;

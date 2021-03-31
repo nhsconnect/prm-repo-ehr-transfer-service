@@ -49,25 +49,22 @@ public class CopcMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoToStoreMessage() throws JMSException, HttpException {
-        ParsedMessage parsedMessage = new ParsedMessage(null, null);
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+    public void shouldCallEhrRepoToStoreMessage() throws HttpException {
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, null);
 
-        messageHandler.handleMessage(parsedMessage, bytesMessage);
-        verify(ehrRepoService).storeMessage(parsedMessage, messageAsBytes);
+        messageHandler.handleMessage(parsedMessage);
+        verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
     @Test
     public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
-        ParsedMessage parsedMessage = new ParsedMessage(null, null);
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
 
         HttpException expectedError = new HttpException();
-        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage, messageAsBytes);
+        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
-        messageHandler.handleMessage(parsedMessage, bytesMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+        messageHandler.handleMessage(parsedMessage);
+        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, parsedMessage.getBytesMessage());
     }
 }

@@ -28,14 +28,13 @@ public class CopcMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void handleMessage(ParsedMessage parsedMessage, BytesMessage bytesMessage) {
+    public void handleMessage(ParsedMessage parsedMessage) {
         try {
-            byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-            ehrRepoService.storeMessage(parsedMessage, messageAsBytes);
-            logger.info("Successfully stored message");
+            ehrRepoService.storeMessage(parsedMessage);
+            logger.info("Successfully stored copc message");
         } catch (Exception e) {
-            logger.error("Failed to store message and send continue request", e);
-            jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+            logger.error("Failed to store copc message", e);
+            jmsTemplate.convertAndSend(unhandledQueue, parsedMessage.getBytesMessage());
         }
     }
 }

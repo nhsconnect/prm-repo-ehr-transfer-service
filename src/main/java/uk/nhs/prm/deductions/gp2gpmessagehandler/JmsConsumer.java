@@ -56,7 +56,7 @@ public class JmsConsumer {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
-            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage);
+            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, bytesMessage);
             logger.info("Successfully parsed message");
             String interactionId = parsedMessage.getAction();
 
@@ -74,7 +74,7 @@ public class JmsConsumer {
                 return;
             }
 
-            matchingHandler.handleMessage(parsedMessage, bytesMessage);
+            matchingHandler.handleMessage(parsedMessage);
         } catch (Exception e) {
             logger.error("Failed to process message from the queue", e);
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);

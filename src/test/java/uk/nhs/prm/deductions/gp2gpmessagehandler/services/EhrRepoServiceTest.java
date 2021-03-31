@@ -52,9 +52,9 @@ public class EhrRepoServiceTest {
         when(mockParsedMessage.getMessageId()).thenReturn(messageId);
         when(mockEhrRepoClient.fetchStorageUrl(conversationId, messageId)).thenReturn(mockPresignedUrl);
 
-        ehrRepoService.storeMessage(mockParsedMessage, messageAsBytes);
+        ehrRepoService.storeMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).fetchStorageUrl(conversationId, messageId);
-        verify(mockPresignedUrl, times(1)).uploadMessage(messageAsBytes);
+        verify(mockPresignedUrl, times(1)).uploadMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).confirmMessageStored(mockParsedMessage);
     }
 
@@ -72,7 +72,7 @@ public class EhrRepoServiceTest {
 
 
         Exception expected = assertThrows(HttpException.class, () ->
-                ehrRepoService.storeMessage(mockParsedMessage, messageAsBytes)
+                ehrRepoService.storeMessage(mockParsedMessage)
         );
         assertThat(expected, notNullValue());
     }
@@ -94,7 +94,7 @@ public class EhrRepoServiceTest {
 
 
         Exception expected = assertThrows(HttpException.class, () ->
-                ehrRepoService.storeMessage(mock(ParsedMessage.class), messageAsBytes)
+                ehrRepoService.storeMessage(mock(ParsedMessage.class))
         );
         assertThat(expected, notNullValue());
     }

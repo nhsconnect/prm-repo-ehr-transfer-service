@@ -7,5 +7,5 @@ import javax.jms.BytesMessage;
 public interface MessageHandler {
     String getInteractionId();
 
-    void handleMessage(ParsedMessage parsedMessage, BytesMessage bytesMessage);
+    void handleMessage(ParsedMessage parsedMessage);
 }

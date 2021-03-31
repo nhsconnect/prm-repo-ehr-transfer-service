@@ -7,6 +7,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageConte
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 
+import javax.jms.BytesMessage;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -20,12 +21,9 @@ import java.nio.charset.StandardCharsets;
  */
 @Component
 public class ParserService {
+    public ParserService() {}
 
-    public ParserService() {
-
-    }
-
-    public ParsedMessage parse(String contentAsString) throws IOException, MessagingException {
+    public ParsedMessage parse(String contentAsString, BytesMessage bytesMessage) throws IOException, MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsString, "multipart/related;charset=\"UTF-8\"");
         MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
         XmlMapper xmlMapper = new XmlMapper();
@@ -34,7 +32,7 @@ public class ParserService {
         if (envelope.header.messageHeader.action.equals("RCMR_IN030000UK06")) {
             message = xmlMapper.readValue(getStringForIndex(mimeMultipart, 1), EhrExtractMessageWrapper.class);
         }
-        return new ParsedMessage(envelope, message);
+        return new ParsedMessage(envelope, message, bytesMessage);
     }
 
     private String getStringForIndex(MimeMultipart mimeMultipart, int index) throws MessagingException, IOException {

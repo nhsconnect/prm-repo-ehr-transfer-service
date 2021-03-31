@@ -77,11 +77,11 @@ public class JmsConsumerTest {
     @Test
     void shouldHandleRCMR_IN030000UK06MessageInEhrExtractMessageHandler() throws IOException, JMSException, MessagingException {
         ActiveMQBytesMessage message = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope("RCMR_IN030000UK06"), null);
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope("RCMR_IN030000UK06"), null, null);
+        when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
-        verify(ehrExtractMessageHandler).handleMessage(parsedMessage, message);
+        verify(ehrExtractMessageHandler).handleMessage(parsedMessage);
     }
 
     @ParameterizedTest
@@ -90,29 +90,29 @@ public class JmsConsumerTest {
             ","
     })
     void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope(interactionId), null);
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope(interactionId), null, null);
+        when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnUnhandledQueue() throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(new SOAPEnvelope(), null);
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(new SOAPEnvelope(), null, null);
+        when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws JMSException, IOException, MessagingException {
         IOException expectedError = new IOException("failed to parse message");
-        when(parserService.parse(Mockito.any())).thenThrow(expectedError);
+        when(parserService.parse(Mockito.any(),Mockito.any())).thenThrow(expectedError);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenSanitizingFails() throws JMSException {
         RuntimeException expectedError = new RuntimeException("failed to sanitize message");
-        when(messageSanitizer.sanitize((byte[]) Mockito.any())).thenThrow(expectedError);
+        when(messageSanitizer.sanitize(Mockito.any())).thenThrow(expectedError);
         jmsConsumerTestFactory(unhandledQueue);
     }
 }

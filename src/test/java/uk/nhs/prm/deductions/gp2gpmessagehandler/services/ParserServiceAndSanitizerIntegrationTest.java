@@ -1,11 +1,13 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
+import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.MessageSanitizer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
+import javax.jms.JMSException;
 import javax.mail.MessagingException;
 import java.io.IOException;
 
@@ -30,7 +32,8 @@ public class ParserServiceAndSanitizerIntegrationTest {
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         byte[] message = loader.getDataAsBytes(fileName);
         String sanitizedMessage = sanitizer.sanitize(message);
-        ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
+
+        ParsedMessage parsedMessage = parser.parse(sanitizedMessage, null);
         assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
     }
 }

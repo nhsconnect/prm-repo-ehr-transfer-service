@@ -13,11 +13,11 @@ public class EhrRepoService {
         this.ehrRepoClient = ehrRepoClient;
     }
 
-    public void storeMessage(ParsedMessage parsedMessage, byte[] messageAsBytes) throws HttpException {
+    public void storeMessage(ParsedMessage parsedMessage) throws HttpException {
         try {
             PresignedUrl presignedUrl = ehrRepoClient.fetchStorageUrl(parsedMessage.getConversationId(), parsedMessage.getMessageId());
             logger.info("Retrieved Presigned URL");
-            presignedUrl.uploadMessage(messageAsBytes);
+            presignedUrl.uploadMessage(parsedMessage);
             logger.info("Uploaded message to S3");
             ehrRepoClient.confirmMessageStored(parsedMessage);
             logger.info("Message stored in EHR Repo");

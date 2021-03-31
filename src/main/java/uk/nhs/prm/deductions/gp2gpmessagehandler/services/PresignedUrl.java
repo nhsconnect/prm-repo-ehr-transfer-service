@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
-import javax.jms.BytesMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+
 import javax.jms.JMSException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,7 +16,8 @@ public class PresignedUrl {
         this.presignedUrl = presignedUrl;
     }
 
-    public void uploadMessage(byte[] messageAsBytes) throws URISyntaxException {
+    public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, JMSException {
+        byte[] messageAsBytes = new byte[(int) parsedMessage.getBytesMessage().getBodyLength()];
         HttpRequest.BodyPublisher message = HttpRequest.BodyPublishers.ofByteArray(messageAsBytes);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -33,5 +35,5 @@ public class PresignedUrl {
         } catch (Exception e) {
             throw new RuntimeException("Failed to store EHR in S3",e);
         }
-    };
+    }
 }

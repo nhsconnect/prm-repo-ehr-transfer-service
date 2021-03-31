@@ -40,11 +40,12 @@ public class EhrExtractMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void handleMessage(ParsedMessage parsedMessage, BytesMessage bytesMessage) {
+    public void handleMessage(ParsedMessage parsedMessage) {
+        BytesMessage bytesMessage = parsedMessage.getBytesMessage();
+
         if (parsedMessage.isLargeMessage()) {
             try {
-                byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-                ehrRepoService.storeMessage(parsedMessage, messageAsBytes);
+                ehrRepoService.storeMessage(parsedMessage);
                 logger.info("Successfully stored message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
                 logger.info("Successfully sent continue message");

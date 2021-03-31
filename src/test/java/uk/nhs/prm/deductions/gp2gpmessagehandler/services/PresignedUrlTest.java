@@ -5,6 +5,7 @@ import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
 import javax.jms.JMSException;
 import java.net.MalformedURLException;
@@ -22,39 +23,43 @@ public class PresignedUrlTest {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
 
-    private byte[] getMessageAsBytes() throws JMSException {
+    private ActiveMQBytesMessage getMessageAsBytes(byte[] bytesContent) throws JMSException {
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(new byte[10]);
+        bytesMessage.writeBytes(bytesContent);
         bytesMessage.reset();
-        return new byte[(int) bytesMessage.getBodyLength()];
+        return bytesMessage;
     }
 
     @Test
     void shouldUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
-        byte[] message = getMessageAsBytes();
+        byte[] bytesContent = new byte[10];
+        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(bytesContent);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
-        presignedUrl.uploadMessage(message);
+        presignedUrl.uploadMessage(parsedMessage);
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(message)));
+                .withRequestBody(binaryEqualTo(bytesContent)));
     }
 
     @Test
-    void shouldThrowErrorWhenCannotUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
+    void shouldThrowErrorWhenCannotUploadMessageToS3() throws JMSException, MalformedURLException {
         URL url = new URL(wireMock.baseUrl());
-        byte[] message = getMessageAsBytes();
+        byte[] bytesContent = new byte[10];
+        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(bytesContent);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
         Exception expected = assertThrows(RuntimeException.class, () ->
-                presignedUrl.uploadMessage(message)
+                presignedUrl.uploadMessage(parsedMessage)
         );
         assertThat(expected, notNullValue());
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(message)));
+                .withRequestBody(binaryEqualTo(bytesContent)));
     }
 }
