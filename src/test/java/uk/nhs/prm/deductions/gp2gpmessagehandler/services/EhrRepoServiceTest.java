@@ -43,8 +43,6 @@ public class EhrRepoServiceTest {
     void shouldCoordinateEhrRepoClientCalls() throws MalformedURLException, URISyntaxException, JMSException, HttpException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
 
         ParsedMessage mockParsedMessage = mock(ParsedMessage.class);
         PresignedUrl mockPresignedUrl = mock(PresignedUrl.class);
@@ -59,11 +57,9 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws MalformedURLException, URISyntaxException, HttpException, JMSException {
+    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws MalformedURLException, URISyntaxException, HttpException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
 
         ParsedMessage mockParsedMessage = mock(ParsedMessage.class);
         when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
@@ -78,10 +74,7 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldThrowStorageFailureExceptionWhenCannotStoreMessage() throws MalformedURLException, URISyntaxException, HttpException, JMSException {
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-
+    void shouldThrowStorageFailureExceptionWhenCannotStoreMessage() throws MalformedURLException, URISyntaxException, HttpException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
