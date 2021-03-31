@@ -4,11 +4,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
 import javax.jms.BytesMessage;
 
+@Service
 public class CopcMessageHandler implements MessageHandler {
     private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);
 
