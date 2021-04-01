@@ -2,6 +2,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -17,7 +18,10 @@ public class PresignedUrl {
     }
 
     public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, JMSException {
-        byte[] messageAsBytes = new byte[(int) parsedMessage.getBytesMessage().getBodyLength()];
+        BytesMessage bytesMessage = parsedMessage.getBytesMessage();
+        byte[] messageAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+        bytesMessage.readBytes(messageAsBytes);
+
         HttpRequest.BodyPublisher message = HttpRequest.BodyPublishers.ofByteArray(messageAsBytes);
 
         HttpRequest request = HttpRequest.newBuilder()

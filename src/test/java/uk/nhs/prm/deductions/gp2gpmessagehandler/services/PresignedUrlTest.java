@@ -23,9 +23,16 @@ public class PresignedUrlTest {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
 
-    private ActiveMQBytesMessage getMessageAsBytes(byte[] bytesContent) throws JMSException {
+    private byte[] messageContent;
+
+    public PresignedUrlTest() {
+        messageContent = new byte[10];
+        messageContent[0] = (byte) 234;
+    }
+
+    private ActiveMQBytesMessage getMessageAsBytes(byte[] messageContent) throws JMSException {
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(bytesContent);
+        bytesMessage.writeBytes(messageContent);
         bytesMessage.reset();
         return bytesMessage;
     }
@@ -33,8 +40,7 @@ public class PresignedUrlTest {
     @Test
     void shouldUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
-        byte[] bytesContent = new byte[10];
-        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(bytesContent);
+        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(messageContent);
         ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
@@ -42,14 +48,13 @@ public class PresignedUrlTest {
         presignedUrl.uploadMessage(parsedMessage);
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(bytesContent)));
+                .withRequestBody(binaryEqualTo(messageContent)));
     }
 
     @Test
     void shouldThrowErrorWhenCannotUploadMessageToS3() throws JMSException, MalformedURLException {
         URL url = new URL(wireMock.baseUrl());
-        byte[] bytesContent = new byte[10];
-        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(bytesContent);
+        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(messageContent);
         ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
@@ -60,6 +65,6 @@ public class PresignedUrlTest {
         assertThat(expected, notNullValue());
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(bytesContent)));
+                .withRequestBody(binaryEqualTo(messageContent)));
     }
 }
