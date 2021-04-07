@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
-import org.springframework.test.context.TestPropertySource;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -21,13 +20,10 @@ import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag("integration") // perhaps we need other name for tests that interact with external systems
 @SpringBootTest
-@TestPropertySource(properties = {
-        "ehrRepoUrl=http://localhost:8080"
-})
-
 class Gp2gpMessageHandlerApplicationTests {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
@@ -44,15 +40,6 @@ class Gp2gpMessageHandlerApplicationTests {
     @Value("${activemq.unhandledQueue}")
     private String unhandledQueue;
 
-    @Value("${gpToRepoUrl}")
-    String gpToRepoUrl;
-
-    @Value("${gpToRepoAuthKey}")
-    String gpToRepoAuthKey;
-
-    @Value("${ehrRepoUrl}")
-    String ehrRepoUrl;
-
     private TestDataLoader dataLoader = new TestDataLoader();
 
     @Test
@@ -61,6 +48,9 @@ class Gp2gpMessageHandlerApplicationTests {
         String url = String.format("%s/s3", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/s3")).willReturn(aResponse().withStatus(200)));
+        wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(201)));
+        wireMock.stubFor(patch(anyUrl()).willReturn(aResponse().withStatus(204)));
+
         jmsTemplate.send(inboundQueue, new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
@@ -71,6 +61,8 @@ class Gp2gpMessageHandlerApplicationTests {
         });
         sleep(5000);
         verify(putRequestedFor(urlMatching("/s3")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(copcMessage)));
+        jmsTemplate.setReceiveTimeout(1000);
+        assertNull(jmsTemplate.receive(unhandledQueue));
     }
 
     @Test
