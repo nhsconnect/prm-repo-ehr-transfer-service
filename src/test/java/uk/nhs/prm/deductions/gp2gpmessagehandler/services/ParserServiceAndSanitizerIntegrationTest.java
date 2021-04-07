@@ -33,7 +33,7 @@ public class ParserServiceAndSanitizerIntegrationTest {
         byte[] message = loader.getDataAsBytes(fileName);
         String sanitizedMessage = sanitizer.sanitize(message);
 
-        ParsedMessage parsedMessage = parser.parse(sanitizedMessage, null);
+        ParsedMessage parsedMessage = parser.parse(sanitizedMessage, null, null);
         assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
     }
 }

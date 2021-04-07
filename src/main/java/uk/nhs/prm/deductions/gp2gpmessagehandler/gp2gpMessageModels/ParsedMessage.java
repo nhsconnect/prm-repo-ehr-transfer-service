@@ -9,14 +9,18 @@ public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
     private MessageContent messageContent;
     private BytesMessage bytesMessage;
+    private String rawMessage;
 
-    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, BytesMessage bytesMessage) {
+    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, BytesMessage bytesMessage, String rawMessage) {
         this.soapEnvelope = soapEnvelope;
         this.messageContent = messageContent;
         this.bytesMessage = bytesMessage;
+        this.rawMessage = rawMessage;
     }
 
     public BytesMessage getBytesMessage() { return bytesMessage; }
+
+    public String getRawMessage() { return rawMessage; }
 
     public MessageContent getMessageContent() {
         return messageContent;

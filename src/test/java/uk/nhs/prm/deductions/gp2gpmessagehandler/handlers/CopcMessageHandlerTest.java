@@ -50,7 +50,7 @@ public class CopcMessageHandlerTest {
 
     @Test
     public void shouldCallEhrRepoToStoreMessage() throws HttpException {
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, null);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, null);
 
         messageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
@@ -59,7 +59,7 @@ public class CopcMessageHandlerTest {
     @Test
     public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage, null);
 
         HttpException expectedError = new HttpException();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);

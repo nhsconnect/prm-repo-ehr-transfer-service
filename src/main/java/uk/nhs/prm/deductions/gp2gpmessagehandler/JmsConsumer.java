@@ -14,6 +14,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -55,8 +56,9 @@ public class JmsConsumer {
         try {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
+            String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
-            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, bytesMessage);
+            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, bytesMessage, rawMessage);
             logger.info("Successfully parsed message");
             String interactionId = parsedMessage.getAction();
 

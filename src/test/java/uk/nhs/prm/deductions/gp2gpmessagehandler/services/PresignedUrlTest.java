@@ -1,13 +1,11 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import de.mkammerer.wiremock.WireMockExtension;
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
-import javax.jms.JMSException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,39 +21,25 @@ public class PresignedUrlTest {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
 
-    private byte[] messageContent;
-
-    public PresignedUrlTest() {
-        messageContent = new byte[10];
-        messageContent[0] = (byte) 234;
-    }
-
-    private ActiveMQBytesMessage getMessageAsBytes(byte[] messageContent) throws JMSException {
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(messageContent);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     @Test
-    void shouldUploadMessageToS3() throws JMSException, MalformedURLException, URISyntaxException {
+    void shouldUploadMessageToS3() throws MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
-        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(messageContent);
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
+        String rawMessage = "test";
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, rawMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
         presignedUrl.uploadMessage(parsedMessage);
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(messageContent)));
+                .withRequestBody(equalTo(rawMessage)));
     }
 
     @Test
-    void shouldThrowErrorWhenCannotUploadMessageToS3() throws JMSException, MalformedURLException {
+    void shouldThrowErrorWhenCannotUploadMessageToS3() throws MalformedURLException {
         URL url = new URL(wireMock.baseUrl());
-        ActiveMQBytesMessage bytesMessage = getMessageAsBytes(messageContent);
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage);
+        String rawMessage = "test";
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, rawMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
@@ -65,6 +49,6 @@ public class PresignedUrlTest {
         assertThat(expected, notNullValue());
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(binaryEqualTo(messageContent)));
+                .withRequestBody(equalTo(rawMessage)));
     }
 }

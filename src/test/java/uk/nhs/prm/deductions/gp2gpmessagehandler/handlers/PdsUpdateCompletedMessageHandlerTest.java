@@ -46,7 +46,7 @@ public class PdsUpdateCompletedMessageHandlerTest {
     public void shouldPutPdsUpdatedMessagesOnJSQueue() throws JMSException {
         SOAPEnvelope envelope = new SOAPEnvelope();
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(envelope, null, bytesMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, null, bytesMessage, null);
 
         messageHandler.handleMessage(parsedMessage);
         verify(mockJmsTemplate, times(1)).convertAndSend("outboundQueue", bytesMessage);
