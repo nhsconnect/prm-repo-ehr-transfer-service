@@ -30,13 +30,6 @@ public class PdsUpdateCompletedMessageHandlerTest {
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
 
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(new byte[10]);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     @Test
     public void shouldReturnCorrectInteractionId() {
         assertThat(messageHandler.getInteractionId(), equalTo("PRPA_IN000202UK01"));
@@ -44,9 +37,9 @@ public class PdsUpdateCompletedMessageHandlerTest {
 
     @Test
     public void shouldPutPdsUpdatedMessagesOnJSQueue() throws JMSException {
-        SOAPEnvelope envelope = new SOAPEnvelope();
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(envelope, null, bytesMessage, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
+        when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
 
         messageHandler.handleMessage(parsedMessage);
         verify(mockJmsTemplate, times(1)).convertAndSend("outboundQueue", bytesMessage);

@@ -34,7 +34,7 @@ public class ParserServiceTest {
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
     }
@@ -46,7 +46,7 @@ public class ParserServiceTest {
     })
     public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.isLargeMessage(), equalTo(isLargeMessage));
     }
@@ -59,7 +59,7 @@ public class ParserServiceTest {
     })
     public void shouldExtractConversationIdFromSanitizedMessage(String fileName, UUID expectedConversationId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getConversationId(), equalTo(expectedConversationId));
     }
@@ -72,7 +72,7 @@ public class ParserServiceTest {
     })
     public void shouldExtractMessageIdFromSanitizedMessage(String fileName, UUID expectedMessageId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getMessageId(), equalTo(expectedMessageId));
     }
@@ -81,7 +81,7 @@ public class ParserServiceTest {
     public void shouldExtractNhsNumberFromEhrExtract() throws IOException, MessagingException {
         String fileName = "RCMR_IN030000UK06Sanitized.xml";
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9442964410"));
     }
@@ -90,7 +90,7 @@ public class ParserServiceTest {
     public void shouldNotExtractNhsNumberFromEhrRequest() throws IOException, MessagingException {
         String fileName = "RCMR_IN010000UK05Sanitized.xml";
         String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null, null);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo(null));
     }

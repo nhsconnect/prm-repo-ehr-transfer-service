@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
-import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 
@@ -26,7 +26,11 @@ public abstract class JsQueueMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
-        logger.info("Sending message to outbound queue", v("queue", outboundQueue));
-        jmsTemplate.convertAndSend(outboundQueue, parsedMessage.getBytesMessage());
+        try {
+            logger.info("Sending message to outbound queue", v("queue", outboundQueue));
+            jmsTemplate.convertAndSend(outboundQueue, parsedMessage.getBytesMessage());
+        } catch (JMSException e) {
+            logger.error("Failed to send the message to outbound queue", e, v("queue", outboundQueue));
+        }
     }
 }

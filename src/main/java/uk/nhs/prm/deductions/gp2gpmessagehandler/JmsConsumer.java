@@ -58,7 +58,7 @@ public class JmsConsumer {
             bytesMessage.readBytes(contentAsBytes);
             String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
-            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, bytesMessage, rawMessage);
+            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, rawMessage);
             logger.info("Successfully parsed message");
             String interactionId = parsedMessage.getAction();
 

@@ -25,7 +25,7 @@ public class PresignedUrlTest {
     void shouldUploadMessageToS3() throws MalformedURLException, URISyntaxException {
         URL url = new URL(wireMock.baseUrl());
         String rawMessage = "test";
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, rawMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, rawMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
@@ -39,7 +39,7 @@ public class PresignedUrlTest {
     void shouldThrowErrorWhenCannotUploadMessageToS3() throws MalformedURLException {
         URL url = new URL(wireMock.baseUrl());
         String rawMessage = "test";
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, rawMessage);
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, rawMessage);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);

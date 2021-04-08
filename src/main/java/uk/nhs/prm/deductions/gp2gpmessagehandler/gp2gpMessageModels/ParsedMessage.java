@@ -1,6 +1,9 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels;
 
-import javax.jms.BytesMessage;
+import org.apache.activemq.command.ActiveMQBytesMessage;
+
+import javax.jms.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -8,17 +11,21 @@ import java.util.UUID;
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
     private MessageContent messageContent;
-    private BytesMessage bytesMessage;
     private String rawMessage;
 
-    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, BytesMessage bytesMessage, String rawMessage) {
+    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, String rawMessage) {
         this.soapEnvelope = soapEnvelope;
         this.messageContent = messageContent;
-        this.bytesMessage = bytesMessage;
         this.rawMessage = rawMessage;
     }
 
-    public BytesMessage getBytesMessage() { return bytesMessage; }
+    public BytesMessage getBytesMessage() throws JMSException {
+        final byte[] bytesArray = this.rawMessage.getBytes(StandardCharsets.UTF_8);
+        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
+        bytesMessage.writeBytes(bytesArray);
+        bytesMessage.reset();
+        return bytesMessage;
+    }
 
     public String getRawMessage() { return rawMessage; }
 

@@ -9,14 +9,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 
 import javax.jms.JMSException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @Tag("unit")
 /* here we list classes that we want to be instantiated in the test */
@@ -31,13 +30,6 @@ public class EhrRequestMessageHandlerTest {
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
 
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(new byte[10]);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     @Test
     public void shouldReturnCorrectInteractionId() {
         assertThat(messageHandler.getInteractionId(), equalTo("RCMR_IN010000UK05"));
@@ -45,9 +37,10 @@ public class EhrRequestMessageHandlerTest {
 
     @Test
     public void shouldPutEhrRequestMessagesOnJSQueue() throws JMSException {
-        SOAPEnvelope envelope = new SOAPEnvelope();
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(envelope, null, bytesMessage, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
+        when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
 
         messageHandler.handleMessage(parsedMessage);
         verify(mockJmsTemplate, times(1)).convertAndSend("outboundQueue", bytesMessage);

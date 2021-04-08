@@ -122,7 +122,7 @@ public class EhrRepoClientTest {
         // Create parsed message to store
         SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, attachmentId, interactionId);
         EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent(nhsNumber);
-        ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper, null, null);
+        ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper, null);
 
         // Store
         ehrRepoClient.confirmMessageStored(parsedMessage);

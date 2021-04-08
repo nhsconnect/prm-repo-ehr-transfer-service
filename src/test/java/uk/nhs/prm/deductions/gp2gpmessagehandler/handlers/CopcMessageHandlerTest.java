@@ -36,13 +36,6 @@ public class CopcMessageHandlerTest {
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(new byte[10]);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     @Test
     public void shouldReturnCorrectInteractionId() {
         assertThat(messageHandler.getInteractionId(), equalTo("COPC_IN000001UK01"));
@@ -50,7 +43,7 @@ public class CopcMessageHandlerTest {
 
     @Test
     public void shouldCallEhrRepoToStoreMessage() throws HttpException {
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, null, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
 
         messageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
@@ -58,13 +51,14 @@ public class CopcMessageHandlerTest {
 
     @Test
     public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
-        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, bytesMessage, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
+        when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
 
         HttpException expectedError = new HttpException();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
         messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, parsedMessage.getBytesMessage());
+        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
     }
 }

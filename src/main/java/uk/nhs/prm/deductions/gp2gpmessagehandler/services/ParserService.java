@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 public class ParserService {
     public ParserService() {}
 
-    public ParsedMessage parse(String contentAsString, BytesMessage bytesMessage, String rawMessage) throws IOException, MessagingException {
+    public ParsedMessage parse(String contentAsString, String rawMessage) throws IOException, MessagingException {
         ByteArrayDataSource dataSource = new ByteArrayDataSource(contentAsString, "multipart/related;charset=\"UTF-8\"");
         MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
         XmlMapper xmlMapper = new XmlMapper();
@@ -32,7 +32,7 @@ public class ParserService {
         if (envelope.header.messageHeader.action.equals("RCMR_IN030000UK06")) {
             message = xmlMapper.readValue(getStringForIndex(mimeMultipart, 1), EhrExtractMessageWrapper.class);
         }
-        return new ParsedMessage(envelope, message, bytesMessage, rawMessage);
+        return new ParsedMessage(envelope, message, rawMessage);
     }
 
     private String getStringForIndex(MimeMultipart mimeMultipart, int index) throws MessagingException, IOException {

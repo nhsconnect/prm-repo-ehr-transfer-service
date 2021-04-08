@@ -40,7 +40,7 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldCoordinateEhrRepoClientCalls() throws MalformedURLException, URISyntaxException, JMSException, HttpException {
+    void shouldCoordinateEhrRepoClientCalls() throws MalformedURLException, URISyntaxException, HttpException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 

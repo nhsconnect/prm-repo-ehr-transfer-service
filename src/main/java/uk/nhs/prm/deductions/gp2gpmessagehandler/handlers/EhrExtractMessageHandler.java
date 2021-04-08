@@ -41,21 +41,21 @@ public class EhrExtractMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
-        BytesMessage bytesMessage = parsedMessage.getBytesMessage();
-
-        if (parsedMessage.isLargeMessage()) {
-            try {
+        BytesMessage bytesMessage = null;
+        try {
+            bytesMessage = parsedMessage.getBytesMessage();
+            if (parsedMessage.isLargeMessage()) {
                 ehrRepoService.storeMessage(parsedMessage);
                 logger.info("Successfully stored message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
                 logger.info("Successfully sent continue message");
-            } catch (Exception e) {
-                logger.error("Failed to store message and send continue request", e);
-                jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+            } else {
+                logger.info("Sending message to outbound queue", v("queue", outboundQueue));
+                jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
             }
-        } else {
-            logger.info("Sending message to outbound queue", v("queue", outboundQueue));
-            jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
+        } catch (Exception e) {
+            logger.error("Failed to store message and send continue request", e);
+            jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
         }
     }
 }

@@ -3,6 +3,8 @@ import de.mkammerer.wiremock.WireMockExtension;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -87,9 +89,14 @@ class Gp2gpMessageHandlerApplicationTests {
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
 
-    @Test
-    void shouldPassThroughMessagesForOldWorker() throws IOException, JMSException {
-        String ehrRequest = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "RCMR_IN010000UK05.xml",  // EHR request
+            "RCMR_IN030000UK06.xml", // small EHR extract
+            "PRPA_IN000202UK01.xml" // PDS update
+    })
+    void shouldSendMessageWithKnownInteractionIdsToOldWorker(String fileName) throws IOException, JMSException {
+        String ehrRequest = dataLoader.getDataAsString(fileName);
         jmsTemplate.send(inboundQueue, new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
@@ -105,25 +112,5 @@ class Gp2gpMessageHandlerApplicationTests {
         message.readBytes(allTheBytes);
         String messageAsString = new String(allTheBytes, StandardCharsets.UTF_8);
         assertThat(messageAsString, equalTo(ehrRequest));
-    }
-
-    @Test
-    void shouldSendMalformedMessagesToUnhandledQueue() throws JMSException {
-        String malformedMessage = "clearly not a GP2GP message";
-        jmsTemplate.send(inboundQueue, new MessageCreator() {
-            @Override
-            public Message createMessage(Session session) throws JMSException {
-                BytesMessage bytesMessage = session.createBytesMessage();
-                bytesMessage.writeBytes(malformedMessage.getBytes(StandardCharsets.UTF_8));
-                return bytesMessage;
-            }
-        });
-        jmsTemplate.setReceiveTimeout(5000);
-        BytesMessage message = (BytesMessage) jmsTemplate.receive(unhandledQueue);
-        assertNotNull(message);
-        byte[] allTheBytes = new byte[(int) message.getBodyLength()];
-        message.readBytes(allTheBytes);
-        String messageAsString = new String(allTheBytes, StandardCharsets.UTF_8);
-        assertThat(messageAsString, equalTo(malformedMessage));
     }
 }
