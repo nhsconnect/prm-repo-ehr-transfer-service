@@ -3,10 +3,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
@@ -24,24 +21,17 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
-/* here we list classes that we want to be instantiated in the test */
-@SpringBootTest(classes = { EhrExtractMessageHandler.class })
 public class EhrExtractMessageHandlerTest {
-    @Autowired
-    EhrExtractMessageHandler messageHandler;
-
-    @MockBean
-    JmsTemplate mockJmsTemplate;
-    @MockBean
-    GPToRepoClient gpToRepoClient;
-    @MockBean
-    EhrRepoService ehrRepoService;
+    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    GPToRepoClient gpToRepoClient = mock(GPToRepoClient.class);
+    EhrRepoService ehrRepoService = mock(EhrRepoService.class);
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
-
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
+
+    EhrExtractMessageHandler ehrExtractMessageHandler = new EhrExtractMessageHandler(jmsTemplate, outboundQueue, unhandledQueue, gpToRepoClient, ehrRepoService);
 
     private UUID conversationId;
     private UUID ehrExtractMessageId;
@@ -53,7 +43,7 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldReturnCorrectInteractionId() {
-        assertThat(messageHandler.getInteractionId(), equalTo("RCMR_IN030000UK06"));
+        assertThat(ehrExtractMessageHandler.getInteractionId(), equalTo("RCMR_IN030000UK06"));
     }
 
     @Test
@@ -63,8 +53,8 @@ public class EhrExtractMessageHandlerTest {
         when(parsedMessage.isLargeMessage()).thenReturn(false);
         when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, only()).convertAndSend(outboundQueue, bytesMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, only()).convertAndSend(outboundQueue, bytesMessage);
     }
 
     @Test
@@ -74,8 +64,8 @@ public class EhrExtractMessageHandlerTest {
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, never()).convertAndSend("outboundQueue", bytesMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, never()).convertAndSend("outboundQueue", bytesMessage);
     }
 
     @Test
@@ -85,7 +75,7 @@ public class EhrExtractMessageHandlerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(ehrExtractMessageId);
 
-        messageHandler.handleMessage(parsedMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
         verify(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
     }
 
@@ -101,8 +91,8 @@ public class EhrExtractMessageHandlerTest {
         RuntimeException expectedError = new RuntimeException("Failed to send continue message");
         doThrow(expectedError).when(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
     }
 
     @Test
@@ -110,7 +100,7 @@ public class EhrExtractMessageHandlerTest {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.isLargeMessage()).thenReturn(true);
 
-        messageHandler.handleMessage(parsedMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
@@ -124,7 +114,7 @@ public class EhrExtractMessageHandlerTest {
         HttpException expectedError = new HttpException();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
     }
 }

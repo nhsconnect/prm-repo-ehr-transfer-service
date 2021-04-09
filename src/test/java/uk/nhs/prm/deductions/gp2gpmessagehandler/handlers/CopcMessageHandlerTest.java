@@ -19,16 +19,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
-/* here we list classes that we want to be instantiated in the test */
-@SpringBootTest(classes = { CopcMessageHandler.class })
 public class CopcMessageHandlerTest {
-    @Autowired
-    CopcMessageHandler messageHandler;
-
-    @MockBean
-    JmsTemplate mockJmsTemplate;
-    @MockBean
-    EhrRepoService ehrRepoService;
+    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    EhrRepoService ehrRepoService = mock(EhrRepoService.class);
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
@@ -36,16 +29,18 @@ public class CopcMessageHandlerTest {
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 
+    CopcMessageHandler copcMessageHandler = new CopcMessageHandler(jmsTemplate, ehrRepoService, unhandledQueue);
+
     @Test
     public void shouldReturnCorrectInteractionId() {
-        assertThat(messageHandler.getInteractionId(), equalTo("COPC_IN000001UK01"));
+        assertThat(copcMessageHandler.getInteractionId(), equalTo("COPC_IN000001UK01"));
     }
 
     @Test
     public void shouldCallEhrRepoToStoreMessage() throws HttpException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
 
-        messageHandler.handleMessage(parsedMessage);
+        copcMessageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
@@ -58,7 +53,7 @@ public class CopcMessageHandlerTest {
         HttpException expectedError = new HttpException();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+        copcMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
     }
 }

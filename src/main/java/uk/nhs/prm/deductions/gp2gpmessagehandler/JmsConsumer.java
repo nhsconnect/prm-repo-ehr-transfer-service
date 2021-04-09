@@ -27,7 +27,6 @@ import java.util.List;
 @Component
 public class JmsConsumer {
     final JmsTemplate jmsTemplate;
-    private String outboundQueue;
     private String inboundQueue;
     private String unhandledQueue;
     private static Logger logger = LogManager.getLogger(JmsConsumer.class);
@@ -37,9 +36,8 @@ public class JmsConsumer {
     private final List<MessageHandler> handlersList;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
+    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
         this.jmsTemplate = jmsTemplate;
-        this.outboundQueue = outboundQueue;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;

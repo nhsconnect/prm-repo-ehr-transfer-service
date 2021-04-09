@@ -3,10 +3,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
@@ -18,21 +15,17 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-/* here we list classes that we want to be instantiated in the test */
-@SpringBootTest(classes = { EhrRequestMessageHandler.class })
 public class EhrRequestMessageHandlerTest {
-    @Autowired
-    EhrRequestMessageHandler messageHandler;
-
-    @MockBean
-    JmsTemplate mockJmsTemplate;
+    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
 
+    EhrRequestMessageHandler ehrRequestMessageHandler = new EhrRequestMessageHandler(jmsTemplate, outboundQueue);
+
     @Test
     public void shouldReturnCorrectInteractionId() {
-        assertThat(messageHandler.getInteractionId(), equalTo("RCMR_IN010000UK05"));
+        assertThat(ehrRequestMessageHandler.getInteractionId(), equalTo("RCMR_IN010000UK05"));
     }
 
     @Test
@@ -42,7 +35,7 @@ public class EhrRequestMessageHandlerTest {
         when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
         when(parsedMessage.isLargeMessage()).thenReturn(false);
 
-        messageHandler.handleMessage(parsedMessage);
-        verify(mockJmsTemplate, times(1)).convertAndSend("outboundQueue", bytesMessage);
+        ehrRequestMessageHandler.handleMessage(parsedMessage);
+        verify(jmsTemplate, times(1)).convertAndSend(outboundQueue, bytesMessage);
     }
 }
