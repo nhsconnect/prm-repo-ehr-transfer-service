@@ -44,12 +44,34 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldUploadLargeEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
-        String copcMessage = dataLoader.getDataAsString("ehrOneLargeMessage.xml");
-        String url = String.format("%s/s3", wireMock.baseUrl());
+        String largeEhrExtract = dataLoader.getDataAsString("ehrOneLargeMessage.xml");
+        String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
-        wireMock.stubFor(put(urlMatching("/s3")).willReturn(aResponse().withStatus(200)));
+        wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
         wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(201)));
         wireMock.stubFor(patch(anyUrl()).willReturn(aResponse().withStatus(204)));
+
+        jmsTemplate.send(inboundQueue, new MessageCreator() {
+            @Override
+            public Message createMessage(Session session) throws JMSException {
+                BytesMessage bytesMessage = session.createBytesMessage();
+                bytesMessage.writeBytes(largeEhrExtract.getBytes(StandardCharsets.UTF_8));
+                return bytesMessage;
+            }
+        });
+        sleep(5000);
+        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(largeEhrExtract)));
+        jmsTemplate.setReceiveTimeout(1000);
+        assertNull(jmsTemplate.receive(unhandledQueue));
+    }
+
+    @Test
+    void shouldUploadAttachmentMessageToEhrRepoStorage() throws IOException, InterruptedException {
+        String copcMessage = dataLoader.getDataAsString("COPC_IN000001UK01.xml");
+        String url = String.format("%s/attachment-storage", wireMock.baseUrl());
+        wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
+        wireMock.stubFor(put(urlMatching("/attachment-storage")).willReturn(aResponse().withStatus(200)));
+        wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(201)));
 
         jmsTemplate.send(inboundQueue, new MessageCreator() {
             @Override
@@ -60,7 +82,7 @@ class Gp2gpMessageHandlerApplicationTests {
             }
         });
         sleep(5000);
-        verify(putRequestedFor(urlMatching("/s3")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(copcMessage)));
+        verify(putRequestedFor(urlMatching("/attachment-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(copcMessage)));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
