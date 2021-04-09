@@ -33,6 +33,10 @@ public class ParsedMessage {
         return messageContent;
     }
 
+    public SOAPEnvelope getSoapEnvelope() {
+        return soapEnvelope;
+    }
+
     public String getNhsNumber() {
         if (messageContent instanceof EhrExtractMessageWrapper) {
             return ((EhrExtractMessageWrapper) messageContent).getEhrExtract().getPatient().getNhsNumber();
@@ -41,6 +45,7 @@ public class ParsedMessage {
     }
 
     public String getAction() {
+        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;
         }
@@ -48,6 +53,7 @@ public class ParsedMessage {
     }
 
     public UUID getConversationId() {
+        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;
         }
@@ -55,6 +61,7 @@ public class ParsedMessage {
     }
 
     public UUID getMessageId() {
+        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.messageData == null) {
             return null;
         }
@@ -62,6 +69,8 @@ public class ParsedMessage {
     }
 
     public boolean isLargeMessage() {
+        SOAPEnvelope soapEnvelope = getSoapEnvelope();
+
         for (Reference reference: soapEnvelope.body.manifest) {
             if (reference.href.contains("mid")) {
                 return true;
@@ -72,6 +81,7 @@ public class ParsedMessage {
 
     public List<UUID> getAttachmentMessageIds(){
         List<UUID> attachmentMessageIds = new ArrayList<>();
+        SOAPEnvelope soapEnvelope = getSoapEnvelope();
 
         for (Reference reference : soapEnvelope.body.manifest) {
             if (reference.href.contains("mid")) {

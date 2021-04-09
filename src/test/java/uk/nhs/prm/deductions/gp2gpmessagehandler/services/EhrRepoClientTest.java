@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 @Tag("unit")
 public class EhrRepoClientTest {
-
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
 

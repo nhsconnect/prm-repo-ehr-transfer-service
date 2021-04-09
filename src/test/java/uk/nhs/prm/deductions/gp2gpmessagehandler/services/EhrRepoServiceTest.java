@@ -1,6 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -23,20 +22,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class EhrRepoServiceTest {
     EhrRepoService ehrRepoService;
-
     @Mock
     EhrRepoClient mockEhrRepoClient;
 
     @BeforeEach
     void setUp() {
         ehrRepoService = new EhrRepoService(mockEhrRepoClient);
-    }
-
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.writeBytes(new byte[10]);
-        message.reset();
-        return message;
     }
 
     @Test

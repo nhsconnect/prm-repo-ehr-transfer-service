@@ -1,5 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.MessageSanitizer;
@@ -12,12 +13,13 @@ import java.io.IOException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-public class ParserServiceAndSanitizerIntegrationTest {
+@Tag("unit")
+public class ParserServiceAndSanitizerTest {
     private final ParserService parser;
     private final TestDataLoader loader;
     private final MessageSanitizer sanitizer;
 
-    public ParserServiceAndSanitizerIntegrationTest() {
+    public ParserServiceAndSanitizerTest() {
         sanitizer = new MessageSanitizer();
         parser = new ParserService();
         loader = new TestDataLoader();

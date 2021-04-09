@@ -13,9 +13,6 @@ import javax.jms.BytesMessage;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 
-/*
- Can handle gp2gp message: RCMR_IN030000UK06
- */
 @Service
 public class EhrExtractMessageHandler implements MessageHandler {
     private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);

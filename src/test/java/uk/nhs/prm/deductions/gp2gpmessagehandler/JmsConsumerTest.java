@@ -5,41 +5,34 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jms.core.JmsTemplate;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeader;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPHeader;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
 import javax.jms.JMSException;
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
-/*
- Unit test for JmsConsumer
- */
 @Tag("unit")
-@SpringBootTest(classes = { JmsConsumer.class })
 public class JmsConsumerTest {
-    @Autowired
-    JmsConsumer jmsConsumer;
+    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
+    ParserService parserService = mock(ParserService.class);
+    EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
+    List<MessageHandler> handlerList = new ArrayList();
 
-    @MockBean
-    JmsTemplate jmsTemplate;
-    @MockBean
-    MessageSanitizer messageSanitizer;
-    @MockBean
-    ParserService parserService;
-    @MockBean
-    EhrExtractMessageHandler ehrExtractMessageHandler;
+    JmsConsumerTest(){
+        handlerList.add(ehrExtractMessageHandler);
+    }
+
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
     @Value("${activemq.unhandledQueue}")
@@ -47,37 +40,24 @@ public class JmsConsumerTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    private SOAPEnvelope getSoapEnvelope(String interactionId) {
-        SOAPEnvelope envelope = new SOAPEnvelope();
-        envelope.header = new SOAPHeader();
-        envelope.header.messageHeader = new MessageHeader();
-        envelope.header.messageHeader.action = interactionId;
-        return envelope;
-    }
-
-    private ActiveMQBytesMessage getActiveMQBytesMessage() throws JMSException {
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.writeBytes(new byte[10]);
-        message.reset();
-        return message;
-    }
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsTemplate, unhandledQueue, inboundQueue, messageSanitizer, parserService, handlerList);
 
     private void jmsConsumerTestFactory(String expectedQueue) throws JMSException {
-        ActiveMQBytesMessage message = getActiveMQBytesMessage();
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.reset();
 
         jmsConsumer.onMessage(message);
         verify(jmsTemplate, only()).convertAndSend(expectedQueue, message);
     }
 
-    @BeforeEach
-    void setupTest(){
-        when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-    }
-
     @Test
     void shouldHandleRCMR_IN030000UK06MessageInEhrExtractMessageHandler() throws IOException, JMSException, MessagingException {
-        ActiveMQBytesMessage message = getActiveMQBytesMessage();
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope("RCMR_IN030000UK06"), null, null);
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.reset();
+
+        when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getAction()).thenReturn("RCMR_IN030000UK06");
         when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -90,14 +70,17 @@ public class JmsConsumerTest {
             ","
     })
     void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(getSoapEnvelope(interactionId), null, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getAction()).thenReturn(interactionId);
         when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnUnhandledQueue() throws IOException, JMSException, MessagingException {
-        ParsedMessage parsedMessage = new ParsedMessage(new SOAPEnvelope(), null, null);
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getSoapEnvelope()).thenReturn(new SOAPEnvelope());
+
         when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }

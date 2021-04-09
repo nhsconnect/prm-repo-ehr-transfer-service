@@ -4,9 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 
-/*
- Can handle PRPA_IN000202UK01 message
- */
 @Service
 public class PdsUpdateCompletedMessageHandler extends JsQueueMessageHandler {
     public PdsUpdateCompletedMessageHandler(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue){
