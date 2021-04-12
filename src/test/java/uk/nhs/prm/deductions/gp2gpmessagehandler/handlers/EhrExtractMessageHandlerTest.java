@@ -80,7 +80,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException, HttpException {
+    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         when(parsedMessage.isLargeMessage()).thenReturn(true);

@@ -8,8 +8,13 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 
@@ -50,9 +55,11 @@ public class EhrExtractMessageHandler implements MessageHandler {
                 logger.info("Sending message to outbound queue", v("queue", outboundQueue));
                 jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
             }
-        } catch (Exception e) {
+        } catch (HttpException | MalformedURLException | URISyntaxException | RuntimeException e) {
             logger.error("Failed to store message and send continue request", e);
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+        } catch (JMSException e) {
+            logger.error("Failed to generate bytes message", e);
         }
     }
 }

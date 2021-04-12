@@ -7,8 +7,10 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
 import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 
 @Service
 public class CopcMessageHandler implements MessageHandler {
@@ -36,9 +38,11 @@ public class CopcMessageHandler implements MessageHandler {
             bytesMessage = parsedMessage.getBytesMessage();
             ehrRepoService.storeMessage(parsedMessage);
             logger.info("Successfully stored copc message");
-        } catch (Exception e) {
+        } catch (HttpException e) {
             logger.error("Failed to store copc message", e);
             jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+        } catch (JMSException e) {
+            logger.error("Failed to generate bytes message", e);
         }
     }
 }
