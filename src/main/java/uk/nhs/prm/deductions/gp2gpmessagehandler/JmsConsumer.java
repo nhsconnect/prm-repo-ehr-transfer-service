@@ -9,11 +9,14 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.mail.MessagingException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -26,7 +29,7 @@ import java.util.List;
  */
 @Component
 public class JmsConsumer {
-    final JmsTemplate jmsTemplate;
+    final JmsProducer jmsProducer;
     private String inboundQueue;
     private String unhandledQueue;
     private static Logger logger = LogManager.getLogger(JmsConsumer.class);
@@ -36,8 +39,8 @@ public class JmsConsumer {
     private final List<MessageHandler> handlersList;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsTemplate jmsTemplate, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
-        this.jmsTemplate = jmsTemplate;
+    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
+        this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
@@ -48,13 +51,13 @@ public class JmsConsumer {
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
         BytesMessage bytesMessage = (BytesMessage) message;
+        byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+        bytesMessage.readBytes(contentAsBytes);
+        String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
 
         logger.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", bytesMessage.getJMSCorrelationID()));
 
         try {
-            byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-            bytesMessage.readBytes(contentAsBytes);
-            String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
             ParsedMessage parsedMessage = parserService.parse(sanitizedMessage, rawMessage);
             logger.info("Successfully parsed message");
@@ -62,7 +65,7 @@ public class JmsConsumer {
 
             if (interactionId == null) {
                 logger.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
-                jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+                jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
 
@@ -70,14 +73,14 @@ public class JmsConsumer {
 
             if (matchingHandler == null) {
                 logger.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue), v("interactionId", interactionId));
-                jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+                jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
 
             matchingHandler.handleMessage(parsedMessage);
-        } catch (Exception e) {
+        } catch (RuntimeException | IOException | MessagingException e) {
             logger.error("Failed to process message from the queue", e);
-            jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
+            jmsProducer.sendMessageToQueue(unhandledQueue, rawMessage);
         }
     }
 

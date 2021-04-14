@@ -7,8 +7,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Value;
 
-import org.springframework.jms.core.JmsTemplate;
-
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -23,7 +21,7 @@ import static org.mockito.Mockito.*;
  */
 @Tag("unit")
 public class JmsConsumerIntegrationTest {
-    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    JmsProducer jmsProducer = mock(JmsProducer.class);
     MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
     ParserService parserService = mock(ParserService.class);
 
@@ -34,7 +32,7 @@ public class JmsConsumerIntegrationTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsTemplate, unhandledQueue, inboundQueue, messageSanitizer, parserService, null);
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parserService, null);
 
     private TestDataLoader dataLoader = new TestDataLoader();
 
@@ -56,8 +54,10 @@ public class JmsConsumerIntegrationTest {
     })
     void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
         byte[] bytes = dataLoader.getDataAsBytes(fileName);
-        ActiveMQBytesMessage message = getActiveMQBytesMessage(bytes);
-        jmsConsumer.onMessage(message);
-        verify(jmsTemplate, times(1)).convertAndSend(ArgumentMatchers.eq(unhandledQueue), ArgumentMatchers.eq(message));
+        String message = dataLoader.getDataAsString(fileName);
+
+        ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage(bytes);
+        jmsConsumer.onMessage(bytesMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(ArgumentMatchers.eq(unhandledQueue), ArgumentMatchers.eq(message));
     }
 }

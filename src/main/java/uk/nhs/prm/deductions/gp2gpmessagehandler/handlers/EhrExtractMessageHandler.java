@@ -3,15 +3,12 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
-
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -22,14 +19,14 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 public class EhrExtractMessageHandler implements MessageHandler {
     private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);
 
-    private final JmsTemplate jmsTemplate;
+    private final JmsProducer jmsProducer;
     private String outboundQueue;
     private String unhandledQueue;
     private GPToRepoClient gpToRepoClient;
     private EhrRepoService ehrRepoService;
 
-    public EhrExtractMessageHandler(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, GPToRepoClient gpToRepoClient, EhrRepoService ehrRepoService) {
-        this.jmsTemplate = jmsTemplate;
+    public EhrExtractMessageHandler(JmsProducer jmsProducer, @Value("${activemq.outboundQueue}") String outboundQueue, @Value("${activemq.unhandledQueue}") String unhandledQueue, GPToRepoClient gpToRepoClient, EhrRepoService ehrRepoService) {
+        this.jmsProducer = jmsProducer;
         this.outboundQueue = outboundQueue;
         this.gpToRepoClient = gpToRepoClient;
         this.unhandledQueue = unhandledQueue;
@@ -43,9 +40,7 @@ public class EhrExtractMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
-        BytesMessage bytesMessage = null;
         try {
-            bytesMessage = parsedMessage.getBytesMessage();
             if (parsedMessage.isLargeMessage()) {
                 ehrRepoService.storeMessage(parsedMessage);
                 logger.info("Successfully stored message");
@@ -53,13 +48,11 @@ public class EhrExtractMessageHandler implements MessageHandler {
                 logger.info("Successfully sent continue message");
             } else {
                 logger.info("Sending message to outbound queue", v("queue", outboundQueue));
-                jmsTemplate.convertAndSend(outboundQueue, bytesMessage);
+                jmsProducer.sendMessageToQueue(outboundQueue, parsedMessage.getRawMessage());
             }
         } catch (HttpException | MalformedURLException | URISyntaxException | RuntimeException e) {
             logger.error("Failed to store message and send continue request", e);
-            jmsTemplate.convertAndSend(unhandledQueue, bytesMessage);
-        } catch (JMSException e) {
-            logger.error("Failed to generate bytes message", e);
+            jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }
 }

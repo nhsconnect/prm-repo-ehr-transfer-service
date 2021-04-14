@@ -1,10 +1,9 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
 import javax.jms.JMSException;
@@ -16,12 +15,12 @@ import static org.mockito.Mockito.when;
 
 @Tag("unit")
 public class EhrRequestMessageHandlerTest {
-    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    JmsProducer jmsProducer = mock(JmsProducer.class);
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
 
-    EhrRequestMessageHandler ehrRequestMessageHandler = new EhrRequestMessageHandler(jmsTemplate, outboundQueue);
+    EhrRequestMessageHandler ehrRequestMessageHandler = new EhrRequestMessageHandler(jmsProducer, outboundQueue);
 
     @Test
     public void shouldReturnCorrectInteractionId() {
@@ -31,11 +30,11 @@ public class EhrRequestMessageHandlerTest {
     @Test
     public void shouldPutEhrRequestMessagesOnJSQueue() throws JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
+        String message = "test";
+        when(parsedMessage.getRawMessage()).thenReturn(message);
         when(parsedMessage.isLargeMessage()).thenReturn(false);
 
         ehrRequestMessageHandler.handleMessage(parsedMessage);
-        verify(jmsTemplate, times(1)).convertAndSend(outboundQueue, bytesMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(outboundQueue, message);
     }
 }

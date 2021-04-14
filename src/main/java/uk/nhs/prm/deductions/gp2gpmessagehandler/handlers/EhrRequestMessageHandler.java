@@ -1,13 +1,13 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 
 @Service
 public class EhrRequestMessageHandler extends JsQueueMessageHandler {
-    public EhrRequestMessageHandler(JmsTemplate jmsTemplate, @Value("${activemq.outboundQueue}") String outboundQueue){
-        super(jmsTemplate, outboundQueue);
+    public EhrRequestMessageHandler(JmsProducer jmsProducer, @Value("${activemq.outboundQueue}") String outboundQueue){
+        super(jmsProducer, outboundQueue);
     }
 
     @Override

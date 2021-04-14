@@ -1,15 +1,13 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.core.JmsTemplate;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
-import javax.jms.JMSException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -17,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 public class CopcMessageHandlerTest {
-    JmsTemplate jmsTemplate = mock(JmsTemplate.class);
+    JmsProducer jmsProducer = mock(JmsProducer.class);
     EhrRepoService ehrRepoService = mock(EhrRepoService.class);
 
     @Value("${activemq.outboundQueue}")
@@ -26,7 +24,7 @@ public class CopcMessageHandlerTest {
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 
-    CopcMessageHandler copcMessageHandler = new CopcMessageHandler(jmsTemplate, ehrRepoService, unhandledQueue);
+    CopcMessageHandler copcMessageHandler = new CopcMessageHandler(jmsProducer, ehrRepoService, unhandledQueue);
 
     @Test
     public void shouldReturnCorrectInteractionId() {
@@ -42,15 +40,15 @@ public class CopcMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
+    public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        when(parsedMessage.getBytesMessage()).thenReturn(bytesMessage);
+        String rawMessage = "test";
+        when(parsedMessage.getRawMessage()).thenReturn(rawMessage);
 
         HttpException expectedError = new HttpException();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
         copcMessageHandler.handleMessage(parsedMessage);
-        verify(jmsTemplate, times(1)).convertAndSend(unhandledQueue, bytesMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, rawMessage);
     }
 }
