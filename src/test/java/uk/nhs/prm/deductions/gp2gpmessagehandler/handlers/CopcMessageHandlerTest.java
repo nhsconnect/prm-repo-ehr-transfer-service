@@ -1,7 +1,12 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
@@ -15,8 +20,10 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 public class CopcMessageHandlerTest {
-    JmsProducer jmsProducer = mock(JmsProducer.class);
-    EhrRepoService ehrRepoService = mock(EhrRepoService.class);
+    @Mock
+    JmsProducer jmsProducer;
+    @Mock
+    EhrRepoService ehrRepoService;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
@@ -24,7 +31,20 @@ public class CopcMessageHandlerTest {
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 
-    CopcMessageHandler copcMessageHandler = new CopcMessageHandler(jmsProducer, ehrRepoService, unhandledQueue);
+    private AutoCloseable closeable;
+
+    @InjectMocks
+    CopcMessageHandler copcMessageHandler;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
 
     @Test
     public void shouldReturnCorrectInteractionId() {

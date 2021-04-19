@@ -1,8 +1,13 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
@@ -15,12 +20,26 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 public class PdsUpdateCompletedMessageHandlerTest {
-    JmsProducer jmsProducer = mock(JmsProducer.class);
+    @Mock
+    JmsProducer jmsProducer;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
 
-    PdsUpdateCompletedMessageHandler pdsUpdateCompletedMessageHandler = new PdsUpdateCompletedMessageHandler(jmsProducer, outboundQueue);
+    private AutoCloseable closeable;
+
+    @InjectMocks
+    PdsUpdateCompletedMessageHandler pdsUpdateCompletedMessageHandler;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
 
     @Test
     public void shouldReturnCorrectInteractionId() {

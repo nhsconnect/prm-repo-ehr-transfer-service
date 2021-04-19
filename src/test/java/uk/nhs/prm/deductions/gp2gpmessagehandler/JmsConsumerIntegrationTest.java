@@ -1,10 +1,15 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
@@ -21,9 +26,8 @@ import static org.mockito.Mockito.*;
  */
 @Tag("unit")
 public class JmsConsumerIntegrationTest {
-    JmsProducer jmsProducer = mock(JmsProducer.class);
-    MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
-    ParserService parserService = mock(ParserService.class);
+    @Mock
+    JmsProducer jmsProducer;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
@@ -32,7 +36,20 @@ public class JmsConsumerIntegrationTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parserService, null);
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
+
+    @InjectMocks
+    JmsConsumer jmsConsumer;
 
     private TestDataLoader dataLoader = new TestDataLoader();
 

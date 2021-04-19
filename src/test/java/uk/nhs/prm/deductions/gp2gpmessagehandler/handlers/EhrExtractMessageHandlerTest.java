@@ -1,8 +1,12 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
@@ -22,16 +26,33 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 public class EhrExtractMessageHandlerTest {
-    JmsProducer jmsProducer = mock(JmsProducer.class);
-    GPToRepoClient gpToRepoClient = mock(GPToRepoClient.class);
-    EhrRepoService ehrRepoService = mock(EhrRepoService.class);
+    @Mock
+    JmsProducer jmsProducer;
+    @Mock
+    GPToRepoClient gpToRepoClient;
+    @Mock
+    EhrRepoService ehrRepoService;
+    @Mock
+    ParsedMessage parsedMessage;
+    private AutoCloseable closeable;
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 
-    EhrExtractMessageHandler ehrExtractMessageHandler = new EhrExtractMessageHandler(jmsProducer, outboundQueue, unhandledQueue, gpToRepoClient, ehrRepoService);
+    @InjectMocks
+    EhrExtractMessageHandler ehrExtractMessageHandler;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
 
     private UUID conversationId;
     private UUID ehrExtractMessageId;
@@ -48,7 +69,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldPutSmallHealthRecordsOnJSQueue() throws JMSException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(false);
         when(parsedMessage.getRawMessage()).thenReturn(message);
@@ -59,7 +79,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldNotPutLargeHealthRecordsOnJSQueue() throws JMSException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getRawMessage()).thenReturn(message);
@@ -70,7 +89,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws MalformedURLException, URISyntaxException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(ehrExtractMessageId);
@@ -81,7 +99,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
@@ -97,7 +114,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldCallEhrRepoToStoreMessageForLargeHealthRecords() throws HttpException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.isLargeMessage()).thenReturn(true);
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
@@ -106,7 +122,6 @@ public class EhrExtractMessageHandlerTest {
 
     @Test
     public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getRawMessage()).thenReturn(message);
