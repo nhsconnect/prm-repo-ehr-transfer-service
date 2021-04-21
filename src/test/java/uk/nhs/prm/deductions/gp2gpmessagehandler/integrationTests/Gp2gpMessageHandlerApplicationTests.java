@@ -91,7 +91,6 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "RCMR_IN010000UK05.xml",  // EHR request
             "RCMR_IN030000UK06.xml", // small EHR extract
             "PRPA_IN000202UK01.xml" // PDS update
     })

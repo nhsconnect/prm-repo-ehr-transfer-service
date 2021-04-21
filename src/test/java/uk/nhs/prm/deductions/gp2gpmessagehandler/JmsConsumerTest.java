@@ -8,7 +8,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.CopcMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
@@ -27,12 +29,11 @@ public class JmsConsumerTest {
     MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
     ParserService parserService = mock(ParserService.class);
     EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
+    CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
+    EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
+
     List<MessageHandler> handlerList = new ArrayList();
     String messageContent = "test";
-
-    JmsConsumerTest(){
-        handlerList.add(ehrExtractMessageHandler);
-    }
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
@@ -55,6 +56,8 @@ public class JmsConsumerTest {
 
     @Test
     void shouldHandleRCMR_IN030000UK06MessageInEhrExtractMessageHandler() throws IOException, JMSException, MessagingException {
+        handlerList.add(ehrExtractMessageHandler);
+
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
         message.reset();
 
@@ -66,6 +69,38 @@ public class JmsConsumerTest {
         jmsConsumer.onMessage(message);
         verify(ehrExtractMessageHandler).handleMessage(parsedMessage);
     }
+
+
+    @Test
+    void shouldHandleCOPC_IN000001UK01MessageInCopcMessageHandler() throws IOException, JMSException, MessagingException {
+        handlerList.add(copcMessageHandler);
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.reset();
+
+        when(copcMessageHandler.getInteractionId()).thenReturn("COPC_IN000001UK01");
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getAction()).thenReturn("COPC_IN000001UK01");
+        when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
+
+        jmsConsumer.onMessage(message);
+        verify(copcMessageHandler).handleMessage(parsedMessage);
+    }
+
+    @Test
+    void shouldHandleRCMR_IN010000UK05MessageInEhrRequestMessageHandler() throws IOException, JMSException, MessagingException {
+        handlerList.add(ehrRequestMessageHandler);
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.reset();
+
+        when(ehrRequestMessageHandler.getInteractionId()).thenReturn("RCMR_IN010000UK05");
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getAction()).thenReturn("RCMR_IN010000UK05");
+        when(parserService.parse(Mockito.any(), Mockito.any())).thenReturn(parsedMessage);
+
+        jmsConsumer.onMessage(message);
+        verify(ehrRequestMessageHandler).handleMessage(parsedMessage);
+    }
+
 
     @ParameterizedTest
     @CsvSource({

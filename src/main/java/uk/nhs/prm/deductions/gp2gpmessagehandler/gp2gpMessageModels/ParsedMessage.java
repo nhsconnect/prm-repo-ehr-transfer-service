@@ -41,9 +41,14 @@ public class ParsedMessage {
         if (messageContent instanceof EhrExtractMessageWrapper) {
             return ((EhrExtractMessageWrapper) messageContent).getEhrExtract().getPatient().getNhsNumber();
         }
+
+        if (messageContent instanceof EhrRequestMessageWrapper) {
+            return ((EhrRequestMessageWrapper) messageContent).getEhrRequest().getPatient().getNhsNumber();
+        }
         return null;
     }
 
+    // FIXME: Refactor to getInteractionId
     public String getAction() {
         SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
@@ -66,6 +71,20 @@ public class ParsedMessage {
             return null;
         }
         return soapEnvelope.header.messageHeader.messageData.messageId;
+    }
+
+    public String getEhrRequestId() {
+        if (messageContent instanceof EhrRequestMessageWrapper) {
+            return ((EhrRequestMessageWrapper) messageContent).getEhrRequest().getId();
+        }
+        return null;
+    }
+
+    public String getOdsCode() {
+        if (messageContent instanceof EhrRequestMessageWrapper) {
+            return ((EhrRequestMessageWrapper) messageContent).getEhrRequest().getRequestingPractice().getOdsCode();
+        }
+        return null;
     }
 
     public boolean isLargeMessage() {
@@ -91,4 +110,5 @@ public class ParsedMessage {
         }
         return attachmentMessageIds;
     }
+
 }

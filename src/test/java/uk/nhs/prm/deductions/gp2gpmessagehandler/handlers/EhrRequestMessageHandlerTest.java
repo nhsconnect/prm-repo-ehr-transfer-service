@@ -10,8 +10,12 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.services.RepoToGPClient;
 
-import javax.jms.JMSException;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -26,9 +30,17 @@ public class EhrRequestMessageHandlerTest {
     @Mock
     ParsedMessage parsedMessage;
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
+    @Mock
+    RepoToGPClient repoToGPClient;
+
+    @Value("${activemq.unhandledQueue}")
+    String unhandledQueue;
+
     private AutoCloseable closeable;
+    private UUID conversationId;
+    private String ehrRequestMessageId;
+    private String nhsNumber = "1234567890";
+    private String odsCode = "A12345";
 
     @InjectMocks
     EhrRequestMessageHandler ehrRequestMessageHandler;
@@ -36,6 +48,13 @@ public class EhrRequestMessageHandlerTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        conversationId = UUID.randomUUID();
+        ehrRequestMessageId = UUID.randomUUID().toString();
+
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getEhrRequestId()).thenReturn(ehrRequestMessageId);
+        when(parsedMessage.getNhsNumber()).thenReturn(nhsNumber);
+        when(parsedMessage.getOdsCode()).thenReturn(odsCode);
     }
 
     @AfterEach
@@ -49,12 +68,20 @@ public class EhrRequestMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutEhrRequestMessagesOnJSQueue() throws JMSException {
+    public void shouldCallRepoToGPToSendEhrRequest() throws HttpException, URISyntaxException, InterruptedException, IOException {
+        ehrRequestMessageHandler.handleMessage(parsedMessage);
+        verify(repoToGPClient).sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
+    }
+
+    @Test
+    public void shouldPutMessageOnUnhandledQueueWhenRepoToGPCallThrows() throws HttpException, InterruptedException, IOException, URISyntaxException {
         String message = "test";
         when(parsedMessage.getRawMessage()).thenReturn(message);
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
+        // do we want a runtime or HTTP exception?
+        RuntimeException expectedError = new RuntimeException("Failed to send deduction request");
+        doThrow(expectedError).when(repoToGPClient).sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
 
         ehrRequestMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(outboundQueue, message);
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
 }

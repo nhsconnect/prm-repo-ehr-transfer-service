@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtract;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequestMessageWrapper;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequest;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.RequestingPractice;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Identifier;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeader;
@@ -30,6 +33,7 @@ public class ParsedMessageTest {
     private final String action;
     private final UUID conversationId;
     private final UUID messageId;
+    private final String ehrRequestId;
 
     public ParsedMessageTest() {
         mid = new Reference();
@@ -47,6 +51,7 @@ public class ParsedMessageTest {
         action = "RCMR_IN030000UK06";
         conversationId = UUID.randomUUID();
         messageId = UUID.randomUUID();
+        ehrRequestId = UUID.randomUUID().toString();
     }
 
     @Test
@@ -70,11 +75,6 @@ public class ParsedMessageTest {
 
     @Test
     public void shouldReturnNhsNumberForEhrExtract() {
-        SOAPEnvelope envelope = new SOAPEnvelope();
-        envelope.header = new SOAPHeader();
-        envelope.header.messageHeader = new MessageHeader();
-        envelope.header.messageHeader.action = action;
-
         EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
         ehrExtractMessageWrapper.controlActEvent = new EhrExtractMessageWrapper.ControlActEvent();
         ehrExtractMessageWrapper.controlActEvent.subject = new EhrExtractMessageWrapper.ControlActEvent.Subject();
@@ -84,8 +84,52 @@ public class ParsedMessageTest {
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= "1234567890";
 
-        ParsedMessage message = new ParsedMessage(envelope, ehrExtractMessageWrapper, null);
+        ParsedMessage message = new ParsedMessage(null, ehrExtractMessageWrapper, null);
         assertThat(message.getNhsNumber(), equalTo("1234567890"));
+    }
+
+    @Test
+    public void shouldReturnEhrRequestId() {
+        EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
+        ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
+        ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest = new EhrRequest();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.id = new Identifier();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.id.root = ehrRequestId;
+
+        ParsedMessage message = new ParsedMessage(null, ehrRequestMessageWrapper, null);
+        assertThat(message.getEhrRequestId(), equalTo(ehrRequestId));
+    }
+
+    @Test
+    public void shouldReturnNhsNumberForEhrRequest() {
+        EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
+        ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
+        ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest = new EhrRequest();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget = new EhrRequest.RecordTarget();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient = new Patient();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient.id = new Identifier();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient.id.extension= "1234567890";
+
+        ParsedMessage message = new ParsedMessage(null, ehrRequestMessageWrapper, null);
+        assertThat(message.getNhsNumber(), equalTo("1234567890"));
+    }
+
+    @Test
+    public void shouldReturnRequestingPracticeOdsCodeForEhrRequest() {
+        EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
+        ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
+        ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest = new EhrRequest();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.author = new EhrRequest.Author();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.author.requestingPractice = new RequestingPractice();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.author.requestingPractice.agentOrganizationSDS = new RequestingPractice.AgentOrganizationSDS();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.author.requestingPractice.agentOrganizationSDS.id = new Identifier();
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.author.requestingPractice.agentOrganizationSDS.id.extension = "A154321";
+
+        ParsedMessage message = new ParsedMessage(null, ehrRequestMessageWrapper, null);
+        assertThat(message.getOdsCode(), equalTo("A154321"));
     }
 
     @Test

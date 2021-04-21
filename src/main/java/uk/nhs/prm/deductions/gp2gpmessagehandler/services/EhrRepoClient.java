@@ -17,7 +17,6 @@ import java.util.UUID;
 
 @Service
 public class EhrRepoClient {
-
     private final URL ehrRepoUrl;
     private final String ehrRepoAuthKey;
 
@@ -46,7 +45,7 @@ public class EhrRepoClient {
             URL url = new URL(response.body());
             return new PresignedUrl(url);
         } catch (Exception e) {
-            throw new HttpException("Failed to retrieve presigned URL from EHR Repo",e);
+            throw new HttpException("Failed to retrieve presigned URL from EHR Repo", e);
         }
     }
 
