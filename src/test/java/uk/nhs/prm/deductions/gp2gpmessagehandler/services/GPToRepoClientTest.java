@@ -21,7 +21,7 @@ public class GPToRepoClientTest {
     WireMockExtension wireMock = new WireMockExtension();
 
     @Test
-    public void shouldCallApiWithValidEhrExtractId() throws URISyntaxException, MalformedURLException {
+    public void shouldCallApiContinueMessageWithValidEhrExtractId() throws URISyntaxException, MalformedURLException, HttpException {
 
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
         String ehrExtractMessageId = "ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717";
@@ -41,7 +41,7 @@ public class GPToRepoClientTest {
     }
 
     @Test
-    public void shouldThrowErrorWhenUnexpectedResponse() throws MalformedURLException {
+    public void shouldThrowErrorWhenUnexpectedResponseForContinueMessage() throws MalformedURLException {
 
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
         String ehrExtractMessageId = "ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717";
@@ -51,7 +51,7 @@ public class GPToRepoClientTest {
                         .withStatus(503)
                         .withHeader("Content-Type", "application/json")));
         GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
-        Exception expected = assertThrows(RuntimeException.class, () ->
+        Exception expected = assertThrows(HttpException.class, () ->
             gpToRepoClient.sendContinueMessage(UUID.fromString(ehrExtractMessageId), UUID.fromString(conversationId))
         );
         assertThat(expected, notNullValue());
@@ -61,4 +61,44 @@ public class GPToRepoClientTest {
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
     }
+
+    @Test
+    public void shouldCallPdsUpdatedEndpointSuccessfully() throws MalformedURLException, URISyntaxException, HttpException {
+        String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/pds-updated"))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(204)
+                        .withHeader("Content-Type", "application/json")));
+        GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
+
+        gpToRepoClient.sendPdsUpdated(UUID.fromString(conversationId));
+
+        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/pds-updated"))
+                .withRequestBody(equalToJson("{}"))
+                .withHeader("Content-Type", matching("application/json"))
+                .withHeader("Authorization", matching("secret")));
+    }
+
+    @Test
+    public void shouldThrowErrorWhenUnexpectedResponseForPdsUpdated() throws MalformedURLException {
+
+        String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/pds-updated"))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(503)
+                        .withHeader("Content-Type", "application/json")));
+        GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
+        Exception expected = assertThrows(HttpException.class, () ->
+                gpToRepoClient.sendPdsUpdated(UUID.fromString(conversationId))
+        );
+        assertThat(expected, notNullValue());
+
+        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/pds-updated"))
+                .withRequestBody(equalToJson("{}"))
+                .withHeader("Content-Type", matching("application/json"))
+                .withHeader("Authorization", matching("secret")));
+    }
+
 }

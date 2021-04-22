@@ -27,9 +27,9 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-//            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
-//            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
-//            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01",
+            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
+            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
+            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01",
             "tppSmallEhrSanitized.xml, RCMR_IN030000UK06"
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {

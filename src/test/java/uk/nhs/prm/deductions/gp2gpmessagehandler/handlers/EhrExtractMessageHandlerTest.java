@@ -88,7 +88,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws MalformedURLException, URISyntaxException {
+    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws MalformedURLException, URISyntaxException, HttpException {
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(ehrExtractMessageId);
@@ -98,7 +98,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException {
+    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException, HttpException {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);

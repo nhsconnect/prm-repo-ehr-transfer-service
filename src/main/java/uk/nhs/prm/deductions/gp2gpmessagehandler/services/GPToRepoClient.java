@@ -24,7 +24,7 @@ public class GPToRepoClient {
         this.gpToRepoAuthKey = gpToRepoAuthKey;
     }
 
-    public void sendContinueMessage(UUID ehrExtractMessageId, UUID conversationId) throws MalformedURLException, URISyntaxException {
+    public void sendContinueMessage(UUID ehrExtractMessageId, UUID conversationId) throws MalformedURLException, URISyntaxException, HttpException {
         String jsonPayloadString = new Gson().toJson(new EhrExtractMessage(ehrExtractMessageId));
         String endpoint = "/deduction-requests/"+ conversationId + "/large-ehr-started";
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
@@ -34,16 +34,37 @@ public class GPToRepoClient {
                 .header("Authorization", gpToRepoAuthKey)
                 .header("Content-Type", "application/json")
                 .build();
-        HttpResponse<String> response;
         try {
-            response = HttpClient.newBuilder()
+            HttpResponse<String> response = HttpClient.newBuilder()
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 204) {
+                throw new HttpException("Unexpected response from gp-to-repo when sending continue message");
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send a request to gp-to-repo to send continue message",e);
+            throw new HttpException("Failed to send a request to gp-to-repo to send continue message",e);
         }
-        if (response.statusCode() != 204) {
-            throw new RuntimeException("Unexpected response from gp-to-repo when sending continue message");
+    }
+
+    public void sendPdsUpdated(UUID conversationId) throws MalformedURLException, URISyntaxException, HttpException {
+        String endpoint = "/deduction-requests/"+ conversationId + "/pds-updated";
+        HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString("{}");
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URL(gpToRepoUrl, endpoint).toURI())
+                .method("PATCH", jsonPayload)
+                .header("Authorization", gpToRepoAuthKey)
+                .header("Content-Type", "application/json")
+                .build();
+
+        try {
+            HttpResponse<String> response = HttpClient.newBuilder()
+                    .build()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() != 204) {
+                throw new HttpException("Unexpected response from gp-to-repo when sending pds updated message");
+            }
+        } catch (Exception e) {
+            throw new HttpException("Failed to send a request to gp-to-repo to send pds updated message", e);
         }
     }
 }
