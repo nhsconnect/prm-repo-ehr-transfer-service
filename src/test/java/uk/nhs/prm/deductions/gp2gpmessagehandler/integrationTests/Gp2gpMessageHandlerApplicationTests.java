@@ -1,4 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.integrationTests;
+import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import de.mkammerer.wiremock.WireMockExtension;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -85,6 +86,26 @@ class Gp2gpMessageHandlerApplicationTests {
         });
         sleep(5000);
         verify(putRequestedFor(urlMatching("/attachment-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(copcMessage)));
+        jmsTemplate.setReceiveTimeout(1000);
+        assertNull(jmsTemplate.receive(unhandledQueue));
+    }
+
+    @Test
+    void shouldCallGpToRepoWhenReceivedPdsUpdateCompleted() throws IOException, InterruptedException {
+        String copcMessage = dataLoader.getDataAsString("PRPA_IN000202UK01");
+        String url = String.format("%s/deduction-requests/%s/pds-updated", wireMock.baseUrl(), "3B71EB7E-5F87-426D-AE23-E0EAFEB60BD4");
+        wireMock.stubFor(patch(urlMatching(url)).willReturn(aResponse().withStatus(204)));
+
+        jmsTemplate.send(inboundQueue, new MessageCreator() {
+            @Override
+            public Message createMessage(Session session) throws JMSException {
+                BytesMessage bytesMessage = session.createBytesMessage();
+                bytesMessage.writeBytes(copcMessage.getBytes(StandardCharsets.UTF_8));
+                return bytesMessage;
+            }
+        });
+        sleep(5000);
+        verify(patchRequestedFor(urlMatching(url)).withHeader("Authorization", new EqualToPattern("gp-to-repo-auth-key")));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
