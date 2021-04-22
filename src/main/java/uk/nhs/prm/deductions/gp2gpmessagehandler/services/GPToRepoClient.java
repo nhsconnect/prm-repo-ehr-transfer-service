@@ -46,7 +46,7 @@ public class GPToRepoClient {
         }
     }
 
-    public void sendPdsUpdated(UUID conversationId) throws MalformedURLException, URISyntaxException, HttpException {
+    public void sendPdsUpdatedMessage(UUID conversationId) throws MalformedURLException, URISyntaxException, HttpException {
         String endpoint = "/deduction-requests/"+ conversationId + "/pds-updated";
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString("{}");
         HttpRequest request = HttpRequest.newBuilder()

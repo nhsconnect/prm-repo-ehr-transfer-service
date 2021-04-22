@@ -92,20 +92,20 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldCallGpToRepoWhenReceivedPdsUpdateCompleted() throws IOException, InterruptedException {
-        String copcMessage = dataLoader.getDataAsString("PRPA_IN000202UK01");
-        String url = String.format("%s/deduction-requests/%s/pds-updated", wireMock.baseUrl(), "3B71EB7E-5F87-426D-AE23-E0EAFEB60BD4");
+        String pdsUpdatedMessage = dataLoader.getDataAsString("PRPA_IN000202UK01.xml");
+        String url = String.format("/deduction-requests/%s/pds-updated", "3b71eb7e-5f87-426d-ae23-e0eafeb60bd4");
         wireMock.stubFor(patch(urlMatching(url)).willReturn(aResponse().withStatus(204)));
 
         jmsTemplate.send(inboundQueue, new MessageCreator() {
             @Override
             public Message createMessage(Session session) throws JMSException {
                 BytesMessage bytesMessage = session.createBytesMessage();
-                bytesMessage.writeBytes(copcMessage.getBytes(StandardCharsets.UTF_8));
+                bytesMessage.writeBytes(pdsUpdatedMessage.getBytes(StandardCharsets.UTF_8));
                 return bytesMessage;
             }
         });
         sleep(5000);
-        verify(patchRequestedFor(urlMatching(url)).withHeader("Authorization", new EqualToPattern("gp-to-repo-auth-key")));
+        verify(patchRequestedFor(urlMatching(url)).withHeader("Authorization", new EqualToPattern("auth-key-1")));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
@@ -113,7 +113,6 @@ class Gp2gpMessageHandlerApplicationTests {
     @ParameterizedTest
     @ValueSource(strings = {
             "RCMR_IN030000UK06.xml", // small EHR extract
-            "PRPA_IN000202UK01.xml" // PDS update
     })
     void shouldSendMessageWithKnownInteractionIdsToOldWorker(String fileName) throws IOException, JMSException {
         String ehrRequest = dataLoader.getDataAsString(fileName);

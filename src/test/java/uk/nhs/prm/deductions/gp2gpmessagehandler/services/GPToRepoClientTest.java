@@ -72,7 +72,7 @@ public class GPToRepoClientTest {
                         .withHeader("Content-Type", "application/json")));
         GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
 
-        gpToRepoClient.sendPdsUpdated(UUID.fromString(conversationId));
+        gpToRepoClient.sendPdsUpdatedMessage(UUID.fromString(conversationId));
 
         verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/pds-updated"))
                 .withRequestBody(equalToJson("{}"))
@@ -91,7 +91,7 @@ public class GPToRepoClientTest {
                         .withHeader("Content-Type", "application/json")));
         GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
         Exception expected = assertThrows(HttpException.class, () ->
-                gpToRepoClient.sendPdsUpdated(UUID.fromString(conversationId))
+                gpToRepoClient.sendPdsUpdatedMessage(UUID.fromString(conversationId))
         );
         assertThat(expected, notNullValue());
 

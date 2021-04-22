@@ -1,6 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -17,8 +16,6 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPHeader;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import javax.jms.JMSException;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -38,6 +35,9 @@ public class PdsUpdateCompletedMessageHandlerTest {
 
     @Value("${activemq.outboundQueue}")
     String outboundQueue;
+
+    @Value("${activemq.unhandledQueue}")
+    String unhandledQueue;
 
     private AutoCloseable closeable;
 
@@ -68,25 +68,17 @@ public class PdsUpdateCompletedMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutPdsUpdatedMessagesOnJSQueue() throws JMSException {
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getRawMessage()).thenReturn("test");
-
-        pdsUpdateCompletedMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(outboundQueue, parsedMessage.getRawMessage());
-    }
-
-    @Test
     public void shouldCallGpToRepoWithTheCorrelationId() throws URISyntaxException, HttpException, MalformedURLException {
         ParsedMessage parsedMessage = createParsedMessage();
         pdsUpdateCompletedMessageHandler.handleMessage(parsedMessage);
-        verify(gpToRepoClient, times(1)).sendPdsUpdated(parsedMessage.getSoapEnvelope().header.messageHeader.conversationId);
+        verify(gpToRepoClient, times(1)).sendPdsUpdatedMessage(parsedMessage.getSoapEnvelope().header.messageHeader.conversationId);
     }
 
     @Test
-    public void shouldThrowWhenGpToRepoClientFails() throws URISyntaxException, HttpException, MalformedURLException {
+    public void shouldSendToUnhandledQueueAndThrowWhenGpToRepoClientFails() throws URISyntaxException, HttpException, MalformedURLException {
         ParsedMessage parsedMessage = createParsedMessage();
-        doThrow(new HttpException("could not connect in test")).when(gpToRepoClient).sendPdsUpdated(any());
+        doThrow(new HttpException("could not connect in test")).when(gpToRepoClient).sendPdsUpdatedMessage(any());
         assertThrows(RuntimeException.class, () -> pdsUpdateCompletedMessageHandler.handleMessage(parsedMessage));
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
     }
 }
