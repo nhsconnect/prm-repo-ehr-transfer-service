@@ -110,6 +110,25 @@ class Gp2gpMessageHandlerApplicationTests {
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
 
+    @Test
+    void shouldSendRegistrationRequestToRepoToGp() throws IOException, InterruptedException {
+        String registrationRequestMessage = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
+        wireMock.stubFor(post(urlMatching("/registration-requests")).willReturn(aResponse().withStatus(204)));
+
+        jmsTemplate.send(inboundQueue, new MessageCreator() {
+            @Override
+            public Message createMessage(Session session) throws JMSException {
+                BytesMessage bytesMessage = session.createBytesMessage();
+                bytesMessage.writeBytes(registrationRequestMessage.getBytes(StandardCharsets.UTF_8));
+                return bytesMessage;
+            }
+        });
+        sleep(5000);
+        verify(postRequestedFor(urlMatching("/registration-requests")));
+        jmsTemplate.setReceiveTimeout(1000);
+        assertNull(jmsTemplate.receive(unhandledQueue));
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
             "RCMR_IN030000UK06.xml", // small EHR extract

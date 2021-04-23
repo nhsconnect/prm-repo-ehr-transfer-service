@@ -44,8 +44,8 @@ public class EhrRequestMessageHandler implements MessageHandler {
         try {
             repoToGPClient.sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
         } catch (HttpException | URISyntaxException | RuntimeException | IOException | InterruptedException e) {
-            logger.info("Sending message to the queue", v("queue", unhandledQueue));
             logger.error("Failed to send the deduction request", e);
+            logger.info("Sending message to the queue", v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }
