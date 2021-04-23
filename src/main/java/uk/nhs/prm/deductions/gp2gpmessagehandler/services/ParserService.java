@@ -3,11 +3,11 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequestMessageWrapper;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageContent;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
 
-import javax.jms.BytesMessage;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMultipart;
@@ -31,6 +31,8 @@ public class ParserService {
         MessageContent message = null;
         if (envelope.header.messageHeader.action.equals("RCMR_IN030000UK06")) {
             message = xmlMapper.readValue(getStringForIndex(mimeMultipart, 1), EhrExtractMessageWrapper.class);
+        } else if (envelope.header.messageHeader.action.equals("RCMR_IN010000UK05")) {
+            message = xmlMapper.readValue(getStringForIndex(mimeMultipart, 1), EhrRequestMessageWrapper.class);
         }
         return new ParsedMessage(envelope, message, rawMessage);
     }

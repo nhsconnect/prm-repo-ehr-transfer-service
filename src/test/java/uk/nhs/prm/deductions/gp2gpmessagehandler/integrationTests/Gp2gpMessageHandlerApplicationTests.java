@@ -113,6 +113,12 @@ class Gp2gpMessageHandlerApplicationTests {
     @Test
     void shouldSendRegistrationRequestToRepoToGp() throws IOException, InterruptedException {
         String registrationRequestMessage = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
+        String conversationId = "dff5321c-c6ea-468e-bbc2-b0e48000e071";
+        String ehrRequestId = "041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC";
+        String odsCode = "N82668";
+        String nhsNumber = "9692294935";
+
+        String requestBody = "{\"data\":{\"type\":\"registration-requests\",\"id\":\"" + conversationId + "\",\"attributes\":{\"ehrRequestId\":\"" + ehrRequestId + "\",\"odsCode\":\"" + odsCode + "\",\"nhsNumber\":\"" + nhsNumber + "\"}}}";
         wireMock.stubFor(post(urlMatching("/registration-requests")).willReturn(aResponse().withStatus(204)));
 
         jmsTemplate.send(inboundQueue, new MessageCreator() {
@@ -124,7 +130,7 @@ class Gp2gpMessageHandlerApplicationTests {
             }
         });
         sleep(5000);
-        verify(postRequestedFor(urlMatching("/registration-requests")));
+        verify(postRequestedFor(urlMatching("/registration-requests")).withRequestBody(equalToJson(requestBody)));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
