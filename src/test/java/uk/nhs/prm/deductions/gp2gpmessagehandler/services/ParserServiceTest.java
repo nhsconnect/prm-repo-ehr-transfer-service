@@ -85,13 +85,4 @@ public class ParserServiceTest {
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9442964410"));
     }
-
-    @Test
-    public void shouldNotExtractNhsNumberFromEhrRequest() throws IOException, MessagingException {
-        String fileName = "RCMR_IN010000UK05Sanitized.xml";
-        String messageAsString = loader.getDataAsString(fileName);
-        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
-
-        assertThat(parsedMessage.getNhsNumber(), equalTo(null));
-    }
 }
