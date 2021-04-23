@@ -68,7 +68,7 @@ public class PdsUpdateCompletedMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallGpToRepoWithTheCorrelationId() throws URISyntaxException, HttpException, MalformedURLException {
+    public void shouldCallGpToRepoWithTheConversationId() throws URISyntaxException, HttpException, MalformedURLException {
         ParsedMessage parsedMessage = createParsedMessage();
         pdsUpdateCompletedMessageHandler.handleMessage(parsedMessage);
         verify(gpToRepoClient, times(1)).sendPdsUpdatedMessage(parsedMessage.getSoapEnvelope().header.messageHeader.conversationId);

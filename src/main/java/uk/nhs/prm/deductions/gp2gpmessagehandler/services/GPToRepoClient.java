@@ -61,7 +61,7 @@ public class GPToRepoClient {
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 204) {
-                throw new HttpException("Unexpected response from gp-to-repo when sending pds updated message");
+                throw new HttpException("Unexpected response from gp-to-repo when sending pds updated message: " + response.statusCode());
             }
         } catch (Exception e) {
             throw new HttpException("Failed to send a request to gp-to-repo to send pds updated message", e);
