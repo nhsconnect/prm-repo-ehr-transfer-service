@@ -1,17 +1,16 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
 import de.mkammerer.wiremock.WireMockExtension;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Parsed;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
@@ -38,6 +37,11 @@ public class RepoToGPClientTest {
         closeable = MockitoAnnotations.openMocks(this);
         conversationId = UUID.randomUUID();
         ehrRequestId = UUID.randomUUID().toString();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
     }
 
     @Test

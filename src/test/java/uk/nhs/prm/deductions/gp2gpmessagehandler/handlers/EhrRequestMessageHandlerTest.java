@@ -77,8 +77,7 @@ public class EhrRequestMessageHandlerTest {
     public void shouldPutMessageOnUnhandledQueueWhenRepoToGPCallThrows() throws HttpException, InterruptedException, IOException, URISyntaxException {
         String message = "test";
         when(parsedMessage.getRawMessage()).thenReturn(message);
-        // do we want a runtime or HTTP exception?
-        RuntimeException expectedError = new RuntimeException("Failed to send deduction request");
+        HttpException expectedError = new HttpException("Failed to send deduction request");
         doThrow(expectedError).when(repoToGPClient).sendEhrRequest(parsedMessage);
 
         ehrRequestMessageHandler.handleMessage(parsedMessage);

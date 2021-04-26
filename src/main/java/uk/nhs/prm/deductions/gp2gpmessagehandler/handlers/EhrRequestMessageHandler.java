@@ -10,9 +10,7 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.RepoToGPClient;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 
@@ -39,7 +37,7 @@ public class EhrRequestMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
             repoToGPClient.sendEhrRequest(parsedMessage);
-        } catch (HttpException | URISyntaxException | RuntimeException | IOException | InterruptedException e) {
+        } catch (HttpException | URISyntaxException | IOException | InterruptedException e) {
             logger.error("Failed to send the registration request", e);
             logger.info("Sending message to the unhandled queue", v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
