@@ -6,9 +6,9 @@ import java.util.UUID;
 public class EhrExtractMessage {
 
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public UUID ehrExtractMessageId;
+    public UUID messageId;
 
-    public EhrExtractMessage(UUID ehrExtractMessageId) {
-        this.ehrExtractMessageId = ehrExtractMessageId;
+    public EhrExtractMessage(UUID messageId) {
+        this.messageId = messageId;
     }
 }

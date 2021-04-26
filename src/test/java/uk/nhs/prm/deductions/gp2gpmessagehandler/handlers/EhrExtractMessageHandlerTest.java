@@ -14,10 +14,6 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
-import javax.jms.JMSException;
-
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -55,61 +51,16 @@ public class EhrExtractMessageHandlerTest {
     }
 
     private UUID conversationId;
-    private UUID ehrExtractMessageId;
+    private UUID messageId;
 
     public EhrExtractMessageHandlerTest() {
         conversationId = UUID.randomUUID();
-        ehrExtractMessageId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
     }
 
     @Test
     public void shouldReturnCorrectInteractionId() {
         assertThat(ehrExtractMessageHandler.getInteractionId(), equalTo("RCMR_IN030000UK06"));
-    }
-
-    @Test
-    public void shouldPutSmallHealthRecordsOnJSQueue() throws JMSException {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, only()).sendMessageToQueue(outboundQueue, message);
-    }
-
-    @Test
-    public void shouldNotPutLargeHealthRecordsOnJSQueue() throws JMSException {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(true);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, never()).sendMessageToQueue("outboundQueue", message);
-    }
-
-    @Test
-    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws MalformedURLException, URISyntaxException, HttpException {
-        when(parsedMessage.isLargeMessage()).thenReturn(true);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getMessageId()).thenReturn(ehrExtractMessageId);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
-    }
-
-    @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws JMSException, MalformedURLException, URISyntaxException, HttpException {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(true);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getMessageId()).thenReturn(ehrExtractMessageId);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        RuntimeException expectedError = new RuntimeException("Failed to send continue message");
-        doThrow(expectedError).when(gpToRepoClient).sendContinueMessage(ehrExtractMessageId, conversationId);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
 
     @Test
@@ -121,7 +72,32 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws JMSException, HttpException {
+    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws HttpException {
+        when(parsedMessage.isLargeMessage()).thenReturn(true);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getMessageId()).thenReturn(messageId);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(gpToRepoClient).sendContinueMessage(messageId, conversationId);
+    }
+
+    @Test
+    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws HttpException {
+        String message = "test";
+        when(parsedMessage.isLargeMessage()).thenReturn(true);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getMessageId()).thenReturn(messageId);
+        when(parsedMessage.getRawMessage()).thenReturn(message);
+
+        RuntimeException expectedError = new RuntimeException("Failed to send continue message");
+        doThrow(expectedError).when(gpToRepoClient).sendContinueMessage(messageId, conversationId);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
+    }
+
+    @Test
+    public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getRawMessage()).thenReturn(message);
@@ -131,5 +107,72 @@ public class EhrExtractMessageHandlerTest {
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
+    }
+
+    @Test
+    public void shouldCallEhrRepoToStoreMessageForSmallHealthRecords() throws HttpException {
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(ehrRepoService).storeMessage(parsedMessage);
+    }
+
+    @Test
+    public void shouldCallGPToRepoToSendEhrExtractReceivedNotificationForSmallHealthRecords() throws HttpException {
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getMessageId()).thenReturn(messageId);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(gpToRepoClient).notifySmallEhrExtractArrived(messageId, conversationId);
+    }
+
+    @Test
+    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
+        String message = "test";
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
+        when(parsedMessage.getRawMessage()).thenReturn(message);
+
+        HttpException expectedError = new HttpException();
+        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
+    }
+
+    @Test
+    public void shouldPutSmallMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws HttpException {
+        String message = "test";
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getMessageId()).thenReturn(messageId);
+        when(parsedMessage.getRawMessage()).thenReturn(message);
+
+        HttpException expectedError = new HttpException("Failed to send the small EHR extract received notification");
+        doThrow(expectedError).when(gpToRepoClient).notifySmallEhrExtractArrived(messageId, conversationId);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
+    }
+
+    @Test
+    public void shouldNotPutLargeHealthRecordsOnJSQueue() {
+        String message = "test";
+        when(parsedMessage.isLargeMessage()).thenReturn(true);
+        when(parsedMessage.getRawMessage()).thenReturn(message);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+        verify(jmsProducer, never()).sendMessageToQueue("outboundQueue", message);
+    }
+
+    @Test
+    public void shouldNotPutSmallHealthRecordsOnJSQueue() {
+        String message = "test";
+        when(parsedMessage.isLargeMessage()).thenReturn(false);
+        when(parsedMessage.getRawMessage()).thenReturn(message);
+
+        ehrExtractMessageHandler.handleMessage(parsedMessage);
+
+        verify(jmsProducer, never()).sendMessageToQueue(any(), any());
     }
 }

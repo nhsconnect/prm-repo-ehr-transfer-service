@@ -12,6 +12,6 @@ public class EhrExtractMessageTest {
     @Test
     public void shouldSerializeToJson() {
         String jsonText = new Gson().toJson(new EhrExtractMessage(UUID.fromString("ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717")));
-        assertThat(jsonText, equalTo("{\"ehrExtractMessageId\":\"ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717\"}"));
+        assertThat(jsonText, equalTo("{\"messageId\":\"ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717\"}"));
     }
 }

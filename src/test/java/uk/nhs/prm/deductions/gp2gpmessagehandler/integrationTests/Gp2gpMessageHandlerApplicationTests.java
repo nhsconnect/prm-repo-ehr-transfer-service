@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.Thread.sleep;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag("integration") // perhaps we need other name for tests that interact with external systems
@@ -37,17 +34,18 @@ class Gp2gpMessageHandlerApplicationTests {
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
 
-    @Value("${activemq.outboundQueue}")
-    private String outboundQueue;
-
     @Value("${activemq.unhandledQueue}")
     private String unhandledQueue;
 
     private TestDataLoader dataLoader = new TestDataLoader();
 
-    @Test
-    void shouldUploadLargeEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
-        String largeEhrExtract = dataLoader.getDataAsString("ehrOneLargeMessage.xml");
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "RCMR_IN030000UK06.xml",
+            "ehrOneLargeMessage.xml"
+    })
+    void shouldUploadEhrExtractToEhrRepoStorage(String fileName) throws IOException, InterruptedException {
+        String ehrExtract = dataLoader.getDataAsString(fileName);
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -58,12 +56,12 @@ class Gp2gpMessageHandlerApplicationTests {
             @Override
             public Message createMessage(Session session) throws JMSException {
                 BytesMessage bytesMessage = session.createBytesMessage();
-                bytesMessage.writeBytes(largeEhrExtract.getBytes(StandardCharsets.UTF_8));
+                bytesMessage.writeBytes(ehrExtract.getBytes(StandardCharsets.UTF_8));
                 return bytesMessage;
             }
         });
         sleep(5000);
-        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(largeEhrExtract)));
+        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(ehrExtract))); // upload
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
@@ -133,28 +131,5 @@ class Gp2gpMessageHandlerApplicationTests {
         verify(postRequestedFor(urlMatching("/registration-requests")).withRequestBody(equalToJson(requestBody)));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "RCMR_IN030000UK06.xml", // small EHR extract
-    })
-    void shouldSendMessageWithKnownInteractionIdsToOldWorker(String fileName) throws IOException, JMSException {
-        String ehrRequest = dataLoader.getDataAsString(fileName);
-        jmsTemplate.send(inboundQueue, new MessageCreator() {
-            @Override
-            public Message createMessage(Session session) throws JMSException {
-                BytesMessage bytesMessage = session.createBytesMessage();
-                bytesMessage.writeBytes(ehrRequest.getBytes(StandardCharsets.UTF_8));
-                return bytesMessage;
-            }
-        });
-        jmsTemplate.setReceiveTimeout(5000);
-        BytesMessage message = (BytesMessage) jmsTemplate.receive(outboundQueue);
-        assertNotNull(message);
-        byte[] allTheBytes = new byte[(int) message.getBodyLength()];
-        message.readBytes(allTheBytes);
-        String messageAsString = new String(allTheBytes, StandardCharsets.UTF_8);
-        assertThat(messageAsString, equalTo(ehrRequest));
     }
 }
