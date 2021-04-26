@@ -37,15 +37,11 @@ public class EhrRequestMessageHandler implements MessageHandler {
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
-        UUID conversationId = parsedMessage.getConversationId();
-        String ehrRequestMessageId = parsedMessage.getEhrRequestId();
-        String nhsNumber = parsedMessage.getNhsNumber();
-        String odsCode = parsedMessage.getOdsCode();
         try {
-            repoToGPClient.sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
+            repoToGPClient.sendEhrRequest(parsedMessage);
         } catch (HttpException | URISyntaxException | RuntimeException | IOException | InterruptedException e) {
             logger.error("Failed to send the registration request", e);
-            logger.info("Sending message to the unhandled gqueue", v("queue", unhandledQueue));
+            logger.info("Sending message to the unhandled queue", v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }

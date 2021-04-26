@@ -3,6 +3,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.jsonModels.sendEhrRequest.RegistrationRequestBody;
 
 import java.io.IOException;
@@ -24,9 +25,12 @@ public class RepoToGPClient {
         this.repoToGPAuthKey = repoToGPAuthKey;
     }
 
-    // TODO: refactor to pass parsedMessage instead of the properties
-    public void sendEhrRequest(String ehrRequestMessageId, UUID conversationId, String nhsNumber, String odsCode) throws IOException, HttpException, InterruptedException, URISyntaxException {
+    public void sendEhrRequest(ParsedMessage parsedMessage) throws IOException, HttpException, InterruptedException, URISyntaxException {
         String endpoint = "/registration-requests";
+        String ehrRequestMessageId = parsedMessage.getEhrRequestId();
+        UUID conversationId = parsedMessage.getConversationId();
+        String nhsNumber = parsedMessage.getNhsNumber();
+        String odsCode = parsedMessage.getOdsCode();
 
         String jsonPayloadString = new Gson().toJson(new RegistrationRequestBody(ehrRequestMessageId, conversationId, nhsNumber, odsCode));
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);

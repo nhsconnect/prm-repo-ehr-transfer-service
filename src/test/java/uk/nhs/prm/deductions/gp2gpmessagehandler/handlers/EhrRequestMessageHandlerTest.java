@@ -70,7 +70,7 @@ public class EhrRequestMessageHandlerTest {
     @Test
     public void shouldCallRepoToGPToSendEhrRequest() throws HttpException, URISyntaxException, InterruptedException, IOException {
         ehrRequestMessageHandler.handleMessage(parsedMessage);
-        verify(repoToGPClient).sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
+        verify(repoToGPClient).sendEhrRequest(parsedMessage);
     }
 
     @Test
@@ -79,7 +79,7 @@ public class EhrRequestMessageHandlerTest {
         when(parsedMessage.getRawMessage()).thenReturn(message);
         // do we want a runtime or HTTP exception?
         RuntimeException expectedError = new RuntimeException("Failed to send deduction request");
-        doThrow(expectedError).when(repoToGPClient).sendEhrRequest(ehrRequestMessageId, conversationId, nhsNumber, odsCode);
+        doThrow(expectedError).when(repoToGPClient).sendEhrRequest(parsedMessage);
 
         ehrRequestMessageHandler.handleMessage(parsedMessage);
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
