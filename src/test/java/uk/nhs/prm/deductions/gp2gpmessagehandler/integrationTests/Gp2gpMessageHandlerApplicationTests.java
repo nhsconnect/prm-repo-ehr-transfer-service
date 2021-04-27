@@ -39,13 +39,9 @@ class Gp2gpMessageHandlerApplicationTests {
 
     private TestDataLoader dataLoader = new TestDataLoader();
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "RCMR_IN030000UK06.xml",
-            "ehrOneLargeMessage.xml"
-    })
-    void shouldUploadEhrExtractToEhrRepoStorage(String fileName) throws IOException, InterruptedException {
-        String ehrExtract = dataLoader.getDataAsString(fileName);
+    @Test
+    void shouldUploadSmallEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
+        String smallEhrExtract = dataLoader.getDataAsString("RCMR_IN030000UK06.xml");
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -56,12 +52,41 @@ class Gp2gpMessageHandlerApplicationTests {
             @Override
             public Message createMessage(Session session) throws JMSException {
                 BytesMessage bytesMessage = session.createBytesMessage();
-                bytesMessage.writeBytes(ehrExtract.getBytes(StandardCharsets.UTF_8));
+                bytesMessage.writeBytes(smallEhrExtract.getBytes(StandardCharsets.UTF_8));
                 return bytesMessage;
             }
         });
         sleep(5000);
-        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(ehrExtract))); // upload
+        verify(getRequestedFor(urlMatching("/messages/5a36471b-036b-48e1-bbb4-a89aee0652e1/31fa3430-6e88-11ea-9384-e83935108fd5")));
+        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(smallEhrExtract)));
+        verify(postRequestedFor(urlMatching("/messages")));
+        verify(patchRequestedFor(urlMatching("/deduction-requests/5a36471b-036b-48e1-bbb4-a89aee0652e1/ehr-message-received")));
+        jmsTemplate.setReceiveTimeout(1000);
+        assertNull(jmsTemplate.receive(unhandledQueue));
+    }
+
+    @Test
+    void shouldUploadLargeEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
+        String largeEhrExtract = dataLoader.getDataAsString("ehrOneLargeMessage.xml");
+        String url = String.format("%s/ehr-storage", wireMock.baseUrl());
+        wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
+        wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
+        wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(201)));
+        wireMock.stubFor(patch(anyUrl()).willReturn(aResponse().withStatus(204)));
+
+        jmsTemplate.send(inboundQueue, new MessageCreator() {
+            @Override
+            public Message createMessage(Session session) throws JMSException {
+                BytesMessage bytesMessage = session.createBytesMessage();
+                bytesMessage.writeBytes(largeEhrExtract.getBytes(StandardCharsets.UTF_8));
+                return bytesMessage;
+            }
+        });
+        sleep(5000);
+        verify(getRequestedFor(urlMatching("/messages/8b373671-5884-45df-a22c-b3ef768e1dc4/72eaa355-b152-4b24-a088-ac2f66ae8a21")));
+        verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(largeEhrExtract)));
+        verify(postRequestedFor(urlMatching("/messages")));
+        verify(patchRequestedFor(urlMatching("/deduction-requests/8b373671-5884-45df-a22c-b3ef768e1dc4/large-ehr-started")));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
