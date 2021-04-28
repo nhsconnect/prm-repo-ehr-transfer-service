@@ -154,25 +154,4 @@ public class EhrExtractMessageHandlerTest {
         ehrExtractMessageHandler.handleMessage(parsedMessage);
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
-
-    @Test
-    public void shouldNotPutLargeHealthRecordsOnJSQueue() {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(true);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, never()).sendMessageToQueue("outboundQueue", message);
-    }
-
-    @Test
-    public void shouldNotPutSmallHealthRecordsOnJSQueue() {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-
-        verify(jmsProducer, never()).sendMessageToQueue(any(), any());
-    }
 }

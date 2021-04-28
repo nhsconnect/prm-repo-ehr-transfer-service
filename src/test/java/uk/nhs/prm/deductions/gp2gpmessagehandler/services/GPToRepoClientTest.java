@@ -100,7 +100,7 @@ public class GPToRepoClientTest {
     }
 
     @Test
-    public void shouldCallGpToRepoToSendSmallEhrExtractReceivedNotificationWithValidEhrExtractIdAndMessageId() throws IOException, HttpException {
+    public void shouldCallGpToRepoToSendSmallEhrExtractReceivedNotificationWithValidEhrExtractMessageId() throws IOException, HttpException {
         String conversationId = "491b821f-3839-431d-abc8-246a8b0db886";
         String messageId = "5b974231-2848-49fc-97ab-c13a87eaf416";
         wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/ehr-message-received"))
