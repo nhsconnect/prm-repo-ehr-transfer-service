@@ -8,7 +8,7 @@ locals {
       { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_URL_1", value = data.aws_ssm_parameter.openwire_endpoint_0.value },
       { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_URL_2", value = data.aws_ssm_parameter.openwire_endpoint_1.value },
       { name = "GP2GP_MESSAGE_HANDLER_GP_TO_REPO_URL", value = data.aws_ssm_parameter.gp2gp_message_handler_gp_to_repo_url.value },
-      { name = "GP2GP_MESSAGE_HANDLER_REPO_TO_GP_URL", value = data.aws_ssm_parameter.gp2gp_message_handler_repo_to_gp_url.value },
+      { name = "GP2GP_MESSAGE_HANDLER_REPO_TO_GP_URL", value = "https://repo-to-gp.${var.environment}.non-prod.patient-deductions.nhs.uk" },
       { name = "GP2GP_MESSAGE_HANDLER_EHR_REPO_URL", value = "https://${var.environment}.ehr-repo.patient-deductions.nhs.uk" },
     ]
     secret_environment_variables = [
