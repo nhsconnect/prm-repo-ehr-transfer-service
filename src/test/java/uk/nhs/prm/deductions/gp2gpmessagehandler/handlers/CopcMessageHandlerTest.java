@@ -25,9 +25,6 @@ public class CopcMessageHandlerTest {
     @Mock
     EhrRepoService ehrRepoService;
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
-
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 

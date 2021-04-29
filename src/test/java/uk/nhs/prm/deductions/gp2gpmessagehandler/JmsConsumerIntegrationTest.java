@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 
-import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
 import javax.jms.JMSException;
@@ -29,8 +28,6 @@ public class JmsConsumerIntegrationTest {
     @Mock
     JmsProducer jmsProducer;
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
     @Value("${activemq.inboundQueue}")

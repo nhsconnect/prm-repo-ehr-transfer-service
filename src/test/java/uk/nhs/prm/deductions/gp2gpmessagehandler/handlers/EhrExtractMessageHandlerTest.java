@@ -32,8 +32,6 @@ public class EhrExtractMessageHandlerTest {
     ParsedMessage parsedMessage;
     private AutoCloseable closeable;
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 

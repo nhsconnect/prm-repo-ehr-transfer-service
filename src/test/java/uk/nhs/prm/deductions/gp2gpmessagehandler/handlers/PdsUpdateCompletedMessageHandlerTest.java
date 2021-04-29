@@ -33,9 +33,6 @@ public class PdsUpdateCompletedMessageHandlerTest {
     @Mock
     GPToRepoClient gpToRepoClient;
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
-
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
 

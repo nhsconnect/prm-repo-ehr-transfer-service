@@ -35,8 +35,6 @@ public class JmsConsumerTest {
     List<MessageHandler> handlerList = new ArrayList();
     String messageContent = "test";
 
-    @Value("${activemq.outboundQueue}")
-    String outboundQueue;
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
     @Value("${activemq.inboundQueue}")
