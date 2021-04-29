@@ -32,15 +32,6 @@ data "aws_ssm_parameter" "openwire_endpoint_1" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/openwire-endpoint-1"
 }
 
-data "aws_ssm_parameter" "gp2gp_message_handler_gp_to_repo_url" {
-  name = "/repo/${var.environment}/output/prm-deductions-gp-to-repo/service-url"
-}
-
-data "aws_ssm_parameter" "gp2gp_message_handler_repo_to_gp_url" {
-  name = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/repo-to-gp-service-url"
-}
-
-
 data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_gp_to_repo" {
   name = "/repo/${var.environment}/user-input/gp-to-repo-authorization-keys"
 }
