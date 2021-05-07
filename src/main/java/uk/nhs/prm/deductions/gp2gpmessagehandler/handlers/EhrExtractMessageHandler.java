@@ -48,7 +48,7 @@ public class EhrExtractMessageHandler implements MessageHandler {
                 logger.info("Small ehr extract arrived notification sent");
             }
         } catch (HttpException | RuntimeException e) {
-            logger.warn("Sending EHR extract message to the queue", v("queue", unhandledQueue));
+            logger.warn("Sending EHR extract message to the unhandled queue", e, v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }
