@@ -23,4 +23,15 @@ public class MessageSanitizer {
         }
         return fullContent.substring(startOfMessage);
     }
+
+    public String sanitizeNew(byte[] rawMessage) {
+        String fullContent = new String(rawMessage, StandardCharsets.UTF_8);
+        int startOfMessage = fullContent.indexOf("{\"ebXML\":");
+
+        if (startOfMessage == -1) {
+            return fullContent;
+        }
+
+        return fullContent.substring(startOfMessage);
+    }
 }

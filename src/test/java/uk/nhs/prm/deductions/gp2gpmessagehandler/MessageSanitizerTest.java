@@ -50,4 +50,20 @@ class MessageSanitizerTest {
         assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "JSONMessages/PRPA_IN000202UK01, JSONMessages/PRPA_IN000202UK01Sanitized",
+    })
+    void shouldRemovePrefixCharactersFromJsonMessage(String rawMessageFile, String sanitizedMessageFile) throws IOException {
+        byte[] rawMessageFromQueue = loader.getDataAsBytes(rawMessageFile);
+        String sanitizedMessage = loader.getDataAsString(sanitizedMessageFile);
+        assertThat(messageSanitizer.sanitizeNew(rawMessageFromQueue), equalTo(sanitizedMessage));
+    }
+
+    @Test
+    void shouldNotChangeAMessageWithoutExpectedEbxml() {
+        String nonEbxmlMessage = "Not an ebxml message";
+        assertThat(messageSanitizer.sanitizeNew(nonEbxmlMessage.getBytes(StandardCharsets.UTF_8)), equalTo(nonEbxmlMessage));
+    }
+
 }
