@@ -27,10 +27,9 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized.xml, RCMR_IN010000UK05",
-            "RCMR_IN030000UK06Sanitized.xml, RCMR_IN030000UK06",
-            "PRPA_IN000202UK01Sanitized.xml, PRPA_IN000202UK01",
-            "tppSmallEhrSanitized.xml, RCMR_IN030000UK06"
+            "JSONMessages/RCMR_IN010000UK05Sanitized, RCMR_IN010000UK05",
+            "JSONMessages/RCMR_IN030000UK06Sanitized, RCMR_IN030000UK06",
+            "JSONMessages/PRPA_IN000202UK01Sanitized, PRPA_IN000202UK01"
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
@@ -41,8 +40,8 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "ehrOneLargeMessageSanitized.xml, true",
-            "RCMR_IN030000UK06Sanitized.xml, false"
+            "JSONMessages/RCMR_IN030000UK06WithMidSanitized, true",
+            "JSONMessages/RCMR_IN030000UK06Sanitized, false"
     })
     public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
@@ -53,9 +52,9 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
-            "RCMR_IN030000UK06Sanitized.xml, 5A36471B-036B-48E1-BBB4-A89AEE0652E1",
-            "PRPA_IN000202UK01Sanitized.xml, 3B71EB7E-5F87-426D-AE23-E0EAFEB60BD4"
+            "JSONMessages/RCMR_IN010000UK05Sanitized, 17a757f2-f4d2-444e-a246-9cb77bef7f22",
+            "JSONMessages/RCMR_IN030000UK06Sanitized, ff27abc3-9730-40f7-ba82-382152e6b90a",
+            "JSONMessages/PRPA_IN000202UK01Sanitized, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
     })
     public void shouldExtractConversationIdFromSanitizedMessage(String fileName, UUID expectedConversationId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
@@ -66,9 +65,9 @@ public class ParserServiceTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized.xml, DFF5321C-C6EA-468E-BBC2-B0E48000E071",
-            "RCMR_IN030000UK06Sanitized.xml, 31FA3430-6E88-11EA-9384-E83935108FD5",
-            "PRPA_IN000202UK01Sanitized.xml, D9B0D972-79C5-4144-B7FD-FE61EEF33E5F"
+            "JSONMessages/RCMR_IN010000UK05Sanitized, C445C720-B0EB-4E36-AF8A-48CD1CA5DE4F",
+            "JSONMessages/RCMR_IN030000UK06Sanitized, 1C66BB0E-811E-4956-8F9C-33424695B75F",
+            "JSONMessages/PRPA_IN000202UK01Sanitized, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
     })
     public void shouldExtractMessageIdFromSanitizedMessage(String fileName, UUID expectedMessageId) throws IOException, MessagingException {
         String messageAsString = loader.getDataAsString(fileName);
@@ -79,10 +78,10 @@ public class ParserServiceTest {
 
     @Test
     public void shouldExtractNhsNumberFromEhrExtract() throws IOException, MessagingException {
-        String fileName = "RCMR_IN030000UK06Sanitized.xml";
+        String fileName = "JSONMessages/RCMR_IN030000UK06Sanitized";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
-        assertThat(parsedMessage.getNhsNumber(), equalTo("9442964410"));
+        assertThat(parsedMessage.getNhsNumber(), equalTo("9692842304"));
     }
 }

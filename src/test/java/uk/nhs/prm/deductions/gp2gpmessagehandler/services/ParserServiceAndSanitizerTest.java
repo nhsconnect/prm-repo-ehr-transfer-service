@@ -27,7 +27,7 @@ public class ParserServiceAndSanitizerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "tppSmallEhr.xml, RCMR_IN030000UK06"
+            "JSONMessages/RCMR_IN030000UK06, RCMR_IN030000UK06"
     })
     public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
         byte[] message = loader.getDataAsBytes(fileName);

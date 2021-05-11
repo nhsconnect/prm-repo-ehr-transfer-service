@@ -21,49 +21,21 @@ class MessageSanitizerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "tppSmallEhr.xml, tppSmallEhrSanitized.xml"
-    })
-    public void shouldExtractActionNameFromSanitizedMessage(String inputMessage, String expectedOutputMessage) throws IOException {
-        byte[] message = loader.getDataAsBytes(inputMessage);
-        String sanitizedMessage = messageSanitizer.sanitize(message);
-        String expectedText = loader.getDataAsString(expectedOutputMessage);
-        assertThat(sanitizedMessage, equalTo(expectedText));
-    }
-
-    @Test
-    void shouldNotChangeAMessageWithoutABoundary() {
-        String nonMultipartMessage = "Not a multipart message";
-        assertThat(messageSanitizer.sanitize(nonMultipartMessage.getBytes(StandardCharsets.UTF_8)), equalTo(nonMultipartMessage));
-    }
-
-    @Test
-    void shouldRemoveExtraCharactersFromEMISResponse() throws IOException {
-        byte[] rawMessageFromQueue = loader.getDataAsBytes("RCMR_IN010000UK05.xml");
-        String sanitizedMessage = loader.getDataAsString("RCMR_IN010000UK05Sanitized.xml");
-        assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
-    }
-
-    @Test
-    void shouldRemoveExtraCharactersFromTPPResponse() throws IOException {
-        byte[] rawMessageFromQueue = loader.getDataAsBytes("RCMR_IN030000UK06.xml");
-        String sanitizedMessage = loader.getDataAsString("RCMR_IN030000UK06Sanitized.xml");
-        assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
-    }
-
-    @ParameterizedTest
-    @CsvSource({
             "JSONMessages/PRPA_IN000202UK01, JSONMessages/PRPA_IN000202UK01Sanitized",
+            "JSONMessages/RCMR_IN030000UK06, JSONMessages/RCMR_IN030000UK06Sanitized",
+            "JSONMessages/RCMR_IN010000UK05, JSONMessages/RCMR_IN010000UK05Sanitized",
+            "JSONMessages/COPC_IN000001UK01, JSONMessages/COPC_IN000001UK01Sanitized",
     })
     void shouldRemovePrefixCharactersFromJsonMessage(String rawMessageFile, String sanitizedMessageFile) throws IOException {
         byte[] rawMessageFromQueue = loader.getDataAsBytes(rawMessageFile);
         String sanitizedMessage = loader.getDataAsString(sanitizedMessageFile);
-        assertThat(messageSanitizer.sanitizeNew(rawMessageFromQueue), equalTo(sanitizedMessage));
+        assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
     }
 
     @Test
     void shouldNotChangeAMessageWithoutExpectedEbxml() {
         String nonEbxmlMessage = "Not an ebxml message";
-        assertThat(messageSanitizer.sanitizeNew(nonEbxmlMessage.getBytes(StandardCharsets.UTF_8)), equalTo(nonEbxmlMessage));
+        assertThat(messageSanitizer.sanitize(nonEbxmlMessage.getBytes(StandardCharsets.UTF_8)), equalTo(nonEbxmlMessage));
     }
 
 }

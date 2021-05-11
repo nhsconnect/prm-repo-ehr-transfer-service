@@ -60,11 +60,10 @@ public class JmsConsumerIntegrationTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "simpleTextMessage.txt",
-            "nonSoapMimeMessage.xml",
-            "ehrRequestWithoutInteractionId.xml",
-            "ehrRequestWithoutMessageHeader.xml",
-            "ehrRequestWithoutSoapHeader.xml",
-            "ehrRequestIncorrectInteractionId.xml"
+            "JSONMessages/RCMR_IN030000UK06WithoutInteractionId",
+            "JSONMessages/RCMR_IN030000UK06WithoutMessageHeader",
+            "JSONMessages/RCMR_IN030000UK06WithoutSoapHeader",
+            "JSONMessages/RCMR_IN030000UK06WithIncorrectInteractionId"
     })
     void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
         byte[] bytes = dataLoader.getDataAsBytes(fileName);

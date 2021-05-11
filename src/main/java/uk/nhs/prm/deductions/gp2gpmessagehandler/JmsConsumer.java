@@ -5,17 +5,14 @@ import org.apache.logging.log4j.Logger;
 import static net.logstash.logback.argument.StructuredArguments.v;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.mail.MessagingException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
@@ -78,7 +75,7 @@ public class JmsConsumer {
             }
 
             matchingHandler.handleMessage(parsedMessage);
-        } catch (RuntimeException | IOException | MessagingException e) {
+        } catch (RuntimeException | IOException e) {
             logger.error("Failed to process message from the queue", e);
             jmsProducer.sendMessageToQueue(unhandledQueue, rawMessage);
         }

@@ -38,8 +38,8 @@ class Gp2gpMessageHandlerApplicationTests {
     private TestDataLoader dataLoader = new TestDataLoader();
 
     @Test
-    void shouldUploadSmallEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
-        String smallEhrExtract = dataLoader.getDataAsString("RCMR_IN030000UK06.xml");
+    void shouldProcessAndStoreJsonFormattedSmallEhrExtract() throws IOException, InterruptedException {
+        String smallEhrExtract = dataLoader.getDataAsString("JSONMessages/RCMR_IN030000UK06");
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -55,17 +55,17 @@ class Gp2gpMessageHandlerApplicationTests {
             }
         });
         sleep(5000);
-        verify(getRequestedFor(urlMatching("/messages/5a36471b-036b-48e1-bbb4-a89aee0652e1/31fa3430-6e88-11ea-9384-e83935108fd5")));
+        verify(getRequestedFor(urlMatching("/messages/ff27abc3-9730-40f7-ba82-382152e6b90a/1c66bb0e-811e-4956-8f9c-33424695b75f")));
         verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(smallEhrExtract)));
         verify(postRequestedFor(urlMatching("/messages")));
-        verify(patchRequestedFor(urlMatching("/deduction-requests/5a36471b-036b-48e1-bbb4-a89aee0652e1/ehr-message-received")));
+        verify(patchRequestedFor(urlMatching("/deduction-requests/ff27abc3-9730-40f7-ba82-382152e6b90a/ehr-message-received")));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
 
     @Test
     void shouldUploadLargeEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
-        String largeEhrExtract = dataLoader.getDataAsString("ehrOneLargeMessage.xml");
+        String largeEhrExtract = dataLoader.getDataAsString("JSONMessages/RCMR_IN030000UK06WithMid");
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -81,17 +81,17 @@ class Gp2gpMessageHandlerApplicationTests {
             }
         });
         sleep(5000);
-        verify(getRequestedFor(urlMatching("/messages/8b373671-5884-45df-a22c-b3ef768e1dc4/72eaa355-b152-4b24-a088-ac2f66ae8a21")));
+        verify(getRequestedFor(urlMatching("/messages/ff27abc3-9730-40f7-ba82-382152e6b90a/1c66bb0e-811e-4956-8f9c-33424695b75f")));
         verify(putRequestedFor(urlMatching("/ehr-storage")).withRequestBody(com.github.tomakehurst.wiremock.client.WireMock.equalTo(largeEhrExtract)));
         verify(postRequestedFor(urlMatching("/messages")));
-        verify(patchRequestedFor(urlMatching("/deduction-requests/8b373671-5884-45df-a22c-b3ef768e1dc4/large-ehr-started")));
+        verify(patchRequestedFor(urlMatching("/deduction-requests/ff27abc3-9730-40f7-ba82-382152e6b90a/large-ehr-started")));
         jmsTemplate.setReceiveTimeout(1000);
         assertNull(jmsTemplate.receive(unhandledQueue));
     }
 
     @Test
     void shouldUploadAttachmentMessageToEhrRepoStorage() throws IOException, InterruptedException {
-        String copcMessage = dataLoader.getDataAsString("COPC_IN000001UK01.xml");
+        String copcMessage = dataLoader.getDataAsString("JSONMessages/COPC_IN000001UK01");
         String url = String.format("%s/attachment-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/attachment-storage")).willReturn(aResponse().withStatus(200)));
@@ -113,8 +113,8 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldCallGpToRepoWhenReceivedPdsUpdateCompleted() throws IOException, InterruptedException {
-        String pdsUpdatedMessage = dataLoader.getDataAsString("PRPA_IN000202UK01.xml");
-        String url = String.format("/deduction-requests/%s/pds-updated", "3b71eb7e-5f87-426d-ae23-e0eafeb60bd4");
+        String pdsUpdatedMessage = dataLoader.getDataAsString("JSONMessages/PRPA_IN000202UK01");
+        String url = String.format("/deduction-requests/%s/pds-updated", "723c5f3a-1ab8-4515-a582-3e5cc600bf59");
         wireMock.stubFor(patch(urlMatching(url)).willReturn(aResponse().withStatus(204)));
 
         jmsTemplate.send(inboundQueue, new MessageCreator() {
@@ -133,11 +133,11 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldSendRegistrationRequestToRepoToGp() throws IOException, InterruptedException {
-        String registrationRequestMessage = dataLoader.getDataAsString("RCMR_IN010000UK05.xml");
-        String conversationId = "dff5321c-c6ea-468e-bbc2-b0e48000e071";
-        String ehrRequestId = "041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC";
-        String odsCode = "N82668";
-        String nhsNumber = "9692294935";
+        String registrationRequestMessage = dataLoader.getDataAsString("JSONMessages/RCMR_IN010000UK05");
+        String conversationId = "17a757f2-f4d2-444e-a246-9cb77bef7f22";
+        String ehrRequestId = "FFFB3C70-0BCC-4D9E-A441-7E9C41A897AA";
+        String odsCode = "A91720";
+        String nhsNumber = "9692842304";
 
         String requestBody = "{\"data\":{\"type\":\"registration-requests\",\"id\":\"" + conversationId + "\",\"attributes\":{\"ehrRequestId\":\"" + ehrRequestId + "\",\"odsCode\":\"" + odsCode + "\",\"nhsNumber\":\"" + nhsNumber + "\"}}}";
         wireMock.stubFor(post(urlMatching("/registration-requests")).willReturn(aResponse().withStatus(204)));
