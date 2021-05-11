@@ -1,9 +1,11 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
@@ -12,7 +14,9 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 public class ParserServiceTest {
@@ -31,7 +35,7 @@ public class ParserServiceTest {
             "RCMR_IN030000UK06Sanitized, RCMR_IN030000UK06",
             "PRPA_IN000202UK01Sanitized, PRPA_IN000202UK01"
     })
-    public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
+    public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException {
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
@@ -43,7 +47,7 @@ public class ParserServiceTest {
             "RCMR_IN030000UK06WithMidSanitized, true",
             "RCMR_IN030000UK06Sanitized, false"
     })
-    public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException, MessagingException {
+    public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException {
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
@@ -77,11 +81,37 @@ public class ParserServiceTest {
     }
 
     @Test
-    public void shouldExtractNhsNumberFromEhrExtract() throws IOException, MessagingException {
+    public void shouldExtractNhsNumberFromEhrExtract() throws IOException  {
         String fileName = "RCMR_IN030000UK06Sanitized";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString, null);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9692842304"));
+    }
+
+    @Test
+    public void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
+        String fileName = "RCMR_IN030000UK06SanitizedWithUnexpectedBackslash";
+        String messageAsString = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(messageAsString, null);
+
+        assertThat(parsedMessage.getNhsNumber(), equalTo("9692\\842304"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "simpleTextMessage.txt",
+            "RCMR_IN030000UK06WithoutInteractionId",
+            "RCMR_IN030000UK06WithoutMessageHeader",
+            "RCMR_IN030000UK06WithoutSoapHeader",
+            "RCMR_IN030000UK06WithIncorrectInteractionId"
+    })
+    void shouldThrowJsonParseExceptionWhenCannotParseMessage(String fileName) throws IOException {
+        String messageAsString = loader.getDataAsString(fileName);
+
+        Exception expected = assertThrows(JsonParseException.class, () ->
+                parser.parse(messageAsString, null)
+        );
+        assertThat(expected, notNullValue());
     }
 }
