@@ -39,7 +39,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldProcessAndStoreJsonFormattedSmallEhrExtract() throws IOException, InterruptedException {
-        String smallEhrExtract = dataLoader.getDataAsString("JSONMessages/RCMR_IN030000UK06");
+        String smallEhrExtract = dataLoader.getDataAsString("RCMR_IN030000UK06");
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -65,7 +65,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldUploadLargeEhrExtractToEhrRepoStorage() throws IOException, InterruptedException {
-        String largeEhrExtract = dataLoader.getDataAsString("JSONMessages/RCMR_IN030000UK06WithMid");
+        String largeEhrExtract = dataLoader.getDataAsString("RCMR_IN030000UK06WithMid");
         String url = String.format("%s/ehr-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/ehr-storage")).willReturn(aResponse().withStatus(200)));
@@ -91,7 +91,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldUploadAttachmentMessageToEhrRepoStorage() throws IOException, InterruptedException {
-        String copcMessage = dataLoader.getDataAsString("JSONMessages/COPC_IN000001UK01");
+        String copcMessage = dataLoader.getDataAsString("COPC_IN000001UK01");
         String url = String.format("%s/attachment-storage", wireMock.baseUrl());
         wireMock.stubFor(get(anyUrl()).willReturn(aResponse().withBody(url).withStatus(200)));
         wireMock.stubFor(put(urlMatching("/attachment-storage")).willReturn(aResponse().withStatus(200)));
@@ -113,7 +113,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldCallGpToRepoWhenReceivedPdsUpdateCompleted() throws IOException, InterruptedException {
-        String pdsUpdatedMessage = dataLoader.getDataAsString("JSONMessages/PRPA_IN000202UK01");
+        String pdsUpdatedMessage = dataLoader.getDataAsString("PRPA_IN000202UK01");
         String url = String.format("/deduction-requests/%s/pds-updated", "723c5f3a-1ab8-4515-a582-3e5cc600bf59");
         wireMock.stubFor(patch(urlMatching(url)).willReturn(aResponse().withStatus(204)));
 
@@ -133,7 +133,7 @@ class Gp2gpMessageHandlerApplicationTests {
 
     @Test
     void shouldSendRegistrationRequestToRepoToGp() throws IOException, InterruptedException {
-        String registrationRequestMessage = dataLoader.getDataAsString("JSONMessages/RCMR_IN010000UK05");
+        String registrationRequestMessage = dataLoader.getDataAsString("RCMR_IN010000UK05");
         String conversationId = "17a757f2-f4d2-444e-a246-9cb77bef7f22";
         String ehrRequestId = "FFFB3C70-0BCC-4D9E-A441-7E9C41A897AA";
         String odsCode = "A91720";

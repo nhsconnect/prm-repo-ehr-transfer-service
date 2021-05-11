@@ -21,10 +21,10 @@ class MessageSanitizerTest {
 
     @ParameterizedTest
     @CsvSource({
-            "JSONMessages/PRPA_IN000202UK01, JSONMessages/PRPA_IN000202UK01Sanitized",
-            "JSONMessages/RCMR_IN030000UK06, JSONMessages/RCMR_IN030000UK06Sanitized",
-            "JSONMessages/RCMR_IN010000UK05, JSONMessages/RCMR_IN010000UK05Sanitized",
-            "JSONMessages/COPC_IN000001UK01, JSONMessages/COPC_IN000001UK01Sanitized",
+            "PRPA_IN000202UK01, PRPA_IN000202UK01Sanitized",
+            "RCMR_IN030000UK06, RCMR_IN030000UK06Sanitized",
+            "RCMR_IN010000UK05, RCMR_IN010000UK05Sanitized",
+            "COPC_IN000001UK01, COPC_IN000001UK01Sanitized",
     })
     void shouldRemovePrefixCharactersFromJsonMessage(String rawMessageFile, String sanitizedMessageFile) throws IOException {
         byte[] rawMessageFromQueue = loader.getDataAsBytes(rawMessageFile);
