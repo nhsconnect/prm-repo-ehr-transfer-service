@@ -29,11 +29,11 @@ public class ParserServiceAndSanitizerTest {
     @CsvSource({
             "RCMR_IN030000UK06, RCMR_IN030000UK06"
     })
-    public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException, MessagingException {
+    public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException {
         byte[] message = loader.getDataAsBytes(fileName);
         String sanitizedMessage = sanitizer.sanitize(message);
 
-        ParsedMessage parsedMessage = parser.parse(sanitizedMessage, null);
+        ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
         assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
     }
 }

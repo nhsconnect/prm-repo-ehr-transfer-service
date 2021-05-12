@@ -14,7 +14,7 @@ import java.io.IOException;
 public class ParserService {
     public ParserService() {}
 
-    public ParsedMessage parse(String contentAsString, String rawMessage) throws IOException {
+    public ParsedMessage parse(String contentAsString) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         MhsJsonMessage mhsJsonMessage = objectMapper.readValue(contentAsString, MhsJsonMessage.class);
         XmlMapper xmlMapper = new XmlMapper();
@@ -25,6 +25,6 @@ public class ParserService {
         } else if (envelope.header.messageHeader.action.equals("RCMR_IN010000UK05")) {
             message = xmlMapper.readValue(mhsJsonMessage.payload, EhrRequestMessageWrapper.class);
         }
-        return new ParsedMessage(envelope, message, rawMessage);
+        return new ParsedMessage(envelope, message, contentAsString);
     }
 }
