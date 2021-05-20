@@ -68,9 +68,9 @@ data "aws_iam_policy_document" "ssm_policy_doc" {
     resources = [
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-username",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-password",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/gp-to-repo-authorization-keys",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/repo-to-gp-authorization-keys",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/ehr-repo-authorization-keys",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/gp-to-repo/message-handler",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/repo-to-gp/message-handler",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/ehr-repo/message-handler",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/output/prm-deductions-gp-to-repo/service-url",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/output/prm-deductions-repo-to-gp/repo-to-gp-service-url",
     ]

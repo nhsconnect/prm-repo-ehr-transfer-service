@@ -33,13 +33,13 @@ data "aws_ssm_parameter" "openwire_endpoint_1" {
 }
 
 data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_gp_to_repo" {
-  name = "/repo/${var.environment}/user-input/gp-to-repo-authorization-keys"
+  name = "/repo/${var.environment}/user-input/api-keys/gp-to-repo/message-handler"
 }
 
 data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_repo_to_gp" {
-  name = "/repo/${var.environment}/user-input/repo-to-gp-authorization-keys"
+  name = "/repo/${var.environment}/user-input/api-keys/repo-to-gp/message-handler"
 }
 
 data "aws_ssm_parameter" "gp2gp_message_handler_authorization_keys_for_ehr_repo" {
-  name = "/repo/${var.environment}/user-input/ehr-repo-authorization-keys"
+  name = "/repo/${var.environment}/user-input/api-keys/ehr-repo/message-handler"
 }
