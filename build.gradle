@@ -39,6 +39,8 @@ configurations {
 	compile.exclude module: 'activemq-broker'
 }
 
+//Without this task two jars are built, the additional "-plain.jar" is not needed
+// for more details refer to: https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
 jar {
 	enabled = false
 }
