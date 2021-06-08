@@ -5,7 +5,7 @@ This is an implementation of a component to handle the receiving of the GP2GP me
 ## Prerequisites
 
 - Java 14
-- Gradle 7.x
+- Gradle 6.8.1
 
 # Set up
 
