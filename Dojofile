@@ -1,1 +1,1 @@
-DOJO_DOCKER_IMAGE="kudulab/openjdk-dojo:1.4.1"
+DOJO_DOCKER_IMAGE="kudulab/openjdk-dojo:1.5.0"
