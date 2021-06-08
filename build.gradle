@@ -39,6 +39,10 @@ configurations {
 	compile.exclude module: 'activemq-broker'
 }
 
+jar {
+	enabled = false
+}
+
 test {
 	useJUnitPlatform()
 }
