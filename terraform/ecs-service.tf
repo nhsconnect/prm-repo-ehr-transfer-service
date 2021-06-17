@@ -43,6 +43,19 @@ resource "aws_security_group_rule" "gp2gp-message-handler-to-gp-to-repo" {
   source_security_group_id = data.aws_ssm_parameter.deductions_private_gp2gp_message_handler_sg_id.value
 }
 
+data "aws_ssm_parameter" "service-to-mq-sg-id" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/service-to-mq-sg-id"
+}
+
+resource "aws_security_group_rule" "gp2gp-message-handler-to-mq" {
+  type = "ingress"
+  protocol            = "tcp"
+  from_port           = "61617"
+  to_port             = "61617"
+  security_group_id = data.aws_ssm_parameter.service-to-mq-sg-id.value
+  source_security_group_id = data.aws_ssm_parameter.deductions_private_gp2gp_message_handler_sg_id.value
+}
+
 data "aws_ssm_parameter" "service-to-repo-to-gp-sg-id" {
   name = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
 }
