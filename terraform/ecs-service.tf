@@ -47,7 +47,7 @@ data "aws_ssm_parameter" "service-to-repo-to-gp-sg-id" {
   name = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
 }
 
-resource "aws_security_group_rule" "gp2gp-message-handler-to-gp-to-repo" {
+resource "aws_security_group_rule" "gp2gp-message-handler-to-repo-to-gp" {
   type = "ingress"
   protocol = "TCP"
   from_port = 443
