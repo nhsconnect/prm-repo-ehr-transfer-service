@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-buster
+FROM openjdk:11-jdk-alpine
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 COPY build/libs/*.jar app.jar
