@@ -48,7 +48,7 @@ pipelines:
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
-        stage: deploy_dev
+        stage: wait_dns_dev
     environment_variables:
       NHS_ENVIRONMENT: dev
     stages: *common_stages
@@ -66,10 +66,31 @@ pipelines:
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
-        stage: deploy_test
+        stage: wait_dns_test
       dev_env:
         pipeline: prm-deductions-gp2gp-message-handler.dev
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: test
+    stages: *common_stages
+
+  'prm-deductions-gp2gp-message-handler.pre-prod':
+    group: deductions
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - docs/**/*.*
+      app:
+        pipeline: prm-deductions-gp2gp-message-handler
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: wait_dns_pre_prod
+      test_env:
+        pipeline: prm-deductions-gp2gp-message-handler.test
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: pre-prod
     stages: *common_stages
