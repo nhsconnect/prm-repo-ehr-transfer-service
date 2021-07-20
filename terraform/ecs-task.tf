@@ -9,6 +9,8 @@ locals {
       { name = "GP2GP_MESSAGE_HANDLER_GP_TO_REPO_URL", value = "https://gp-to-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
       { name = "GP2GP_MESSAGE_HANDLER_REPO_TO_GP_URL", value = "https://repo-to-gp.${var.environment}.non-prod.patient-deductions.nhs.uk" },
       { name = "GP2GP_MESSAGE_HANDLER_EHR_REPO_URL", value = "https://ehr-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
+      { name = "GP2GP_MESSAGE_HANDLER_LOG_LEVEL", value = var.log_level },
+
     ]
     secret_environment_variables = [
       { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },

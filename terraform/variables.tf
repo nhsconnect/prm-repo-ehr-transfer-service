@@ -16,3 +16,8 @@ variable "task_cpu" {}
 variable "task_memory" {}
 
 variable "service_desired_count" {}
+
+variable "log_level" {
+  type = string
+  default = "debug"
+}
