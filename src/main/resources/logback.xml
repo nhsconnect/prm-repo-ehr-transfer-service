@@ -11,7 +11,7 @@
 				<pattern>
 					<pattern>
 						{
-						"level": "${log_level}",
+						"level": "${GP2GP_MESSAGE_HANDLER_LOG_LEVEL}",
 						"service": "gp2gp-message-handler",
 						"class": "%C{0}",
 						"line": "%L",
