@@ -7,9 +7,15 @@ This is an implementation of a component to handle the receiving of the GP2GP me
 - Java v11 LTS
 - Gradle 6.8.1
 
-# Set up
+### AWS helpers
 
-## Running the application
+This repository imports shared AWS helpers from [prm-deductions-support-infra](https://github.com/nhsconnect/prm-deductions-support-infra/).
+They can be found `utils` directory after running any task from `tasks` file.
+
+
+## Set up
+
+### Running the application
 
 In IntelliJ editor, use the green `play` button next to the main class `Gp2gpmessagehandlerApplication` to run the application
 
@@ -20,7 +26,7 @@ This application relies on the queues to send/receive messages.
 They are spun up with `docker-compose-itest.yml` when running the tests in `dojo`.
 You can access the queues using the Active MQ console on: `http://localhost:8161/`
 
-## Running the tests
+### Running the tests
 
 Run the unit tests with dojo
 1. Enter ` dojo `
@@ -49,7 +55,7 @@ To run all the checks before committing with one command
 1. Enter `dojo `
 2. `./tasks _test_all`
 
-## Config
+### Config
 
 If you need to add any new configuration items, update the `src/main/resources/application.properties` file per environment as well as add the environment variables in `./tasks` `configure_local_envariables`. 
 Note that `test` directory has its own `application.properties` file used in the test suite.
@@ -66,7 +72,7 @@ Note that `test` directory has its own `application.properties` file used in the
 Ensure you have VPN connection set up to both `dev` and `test` environments:
 [CLICK HERE](https://gpitbjss.atlassian.net/wiki/spaces/TW/pages/1832779966/VPN+for+Deductions+Services)
 
-## Setup
+### Setup
 
 In AmazonMQ settings for either the `dev` or `test` provision. Edit the `deductor-amq-broker-${NHS_ENVIRONMENT}`
 security group inbound rules. Add new rule that allows All TCP from the `${NHS_ENVIRONMENT} VPN VM security group`,
