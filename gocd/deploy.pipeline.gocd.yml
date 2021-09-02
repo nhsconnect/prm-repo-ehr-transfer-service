@@ -48,7 +48,7 @@ pipelines:
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
-        stage: wait_dns_dev
+        stage: deploy_dev
     environment_variables:
       NHS_ENVIRONMENT: dev
     stages: *common_stages
@@ -66,7 +66,7 @@ pipelines:
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
-        stage: wait_dns_test
+        stage: deploy_test
       dev_env:
         pipeline: prm-deductions-gp2gp-message-handler.dev
         stage: deploy
@@ -87,7 +87,7 @@ pipelines:
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
-        stage: wait_dns_pre_prod
+        stage: deploy_pre_prod
       test_env:
         pipeline: prm-deductions-gp2gp-message-handler.test
         stage: deploy
