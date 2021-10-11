@@ -82,11 +82,28 @@ resource "aws_security_group" "gp2gp-message-handler-ecs-task-sg" {
   vpc_id      = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
-    description = "Allow All Outbound"
+    description = "Allow outbound to deductions private and deductions core"
     protocol    = "-1"
     from_port   = 0
     to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [data.aws_vpc.deductions-private.cidr_block, data.aws_vpc.deductions-core.cidr_block]
+  }
+
+  egress {
+    description = "Allow outbound to VPC Endpoints"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    security_groups = concat(tolist(data.aws_vpc_endpoint.ecr-dkr.security_group_ids), tolist(data.aws_vpc_endpoint.ecr-api.security_group_ids),
+    tolist(data.aws_vpc_endpoint.logs.security_group_ids), tolist(data.aws_vpc_endpoint.ssm.security_group_ids))
+  }
+
+  egress {
+    description = "Allow outbound to S3 VPC Endpoint"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
+    cidr_blocks = data.aws_vpc_endpoint.s3.cidr_blocks
   }
 
   tags = {
@@ -97,3 +114,35 @@ resource "aws_security_group" "gp2gp-message-handler-ecs-task-sg" {
 }
 
 
+data "aws_vpc" "deductions-private" {
+  id = data.aws_ssm_parameter.deductions_private_vpc_id.value
+}
+
+data "aws_vpc" "deductions-core" {
+  id = data.aws_ssm_parameter.deductions_core_vpc_id.value
+}
+
+data "aws_vpc_endpoint" "ecr-dkr" {
+  vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  service_name = "com.amazonaws.${var.region}.ecr.dkr"
+}
+
+data "aws_vpc_endpoint" "ecr-api" {
+  vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  service_name = "com.amazonaws.${var.region}.ecr.api"
+}
+
+data "aws_vpc_endpoint" "logs" {
+  vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  service_name = "com.amazonaws.${var.region}.logs"
+}
+
+data "aws_vpc_endpoint" "ssm" {
+  vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  service_name = "com.amazonaws.${var.region}.ssm"
+}
+
+data "aws_vpc_endpoint" "s3" {
+  vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  service_name = "com.amazonaws.${var.region}.s3"
+}
