@@ -54,15 +54,12 @@ function configure_local_envs {
 
 function tf_init {
   check_env
-  #  Condition [ $NHS_ENVIRONMENT == "test" ] is required as test environment infrastructure is deployed in CI AWS account
-  [ $NHS_ENVIRONMENT == "ci" ] || [ $NHS_ENVIRONMENT == "test" ] &&  bucket_env_infix=""  || bucket_env_infix="$NHS_ENVIRONMENT-"
-
   cd terraform
 
   terraform init -reconfigure \
     -backend-config key="${NHS_SERVICE}-${NHS_ENVIRONMENT}/terraform.tfstate" \
-    -backend-config bucket="prm-deductions-${bucket_env_infix}terraform-state" \
-    -backend-config dynamodb_table="prm-deductions-${bucket_env_infix}terraform-table" \
+    -backend-config bucket="prm-deductions-${NHS_ENVIRONMENT}-terraform-state" \
+    -backend-config dynamodb_table="prm-deductions-${NHS_ENVIRONMENT}-terraform-table" \
     -backend-config region=${AWS_DEFAULT_REGION}
 }
 
