@@ -1,14 +1,28 @@
 format_version: 4
 common:
-  deploy_job: &deploy_job
+  plan: &plan
     resources:
       - docker
+    artifacts:
+      - build:
+          source: terraform/deployment.tfplan
+          destination: terraform/
     tasks:
       - exec:
           command: /bin/bash
           arguments:
             - -c
             - ./tasks tf_plan create
+  deploy: &deploy
+    resources:
+      - docker
+    tasks:
+      - fetch:
+          stage: plan
+          job: plan
+          source: terraform/deployment.tfplan
+          destination: terraform/
+          is_file: yes
       - exec:
           command: /bin/bash
           arguments:
@@ -19,21 +33,7 @@ common:
           arguments:
             - -c
             - ./tasks wait_ecs
-  common_stages: &common_stages
-    - promote_docker_image:
-        resources:
-          - docker
-        clean_workspace: true
-        tasks:
-          - exec:
-              command: /bin/bash
-              arguments:
-                - -c
-                - ./tasks promote_docker_image
-    - deploy:
-        clean_workspace: true
-        jobs:
-          deploy: *deploy_job
+
 pipelines:
   'prm-deductions-gp2gp-message-handler.dev':
     group: deductions
@@ -51,7 +51,25 @@ pipelines:
         stage: deploy_dev
     environment_variables:
       NHS_ENVIRONMENT: dev
-    stages: *common_stages
+    stages:
+      - promote_docker_image:
+          resources:
+            - docker
+          clean_workspace: true
+          tasks:
+            - exec:
+                command: /bin/bash
+                arguments:
+                  - -c
+                  - ./tasks promote_docker_image
+      - plan:
+          clean_workspace: true
+          jobs:
+            plan: *plan
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy
 
   'prm-deductions-gp2gp-message-handler.test':
     group: deductions
@@ -72,7 +90,25 @@ pipelines:
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: test
-    stages: *common_stages
+    stages:
+      - promote_docker_image:
+          resources:
+            - docker
+          clean_workspace: true
+          tasks:
+            - exec:
+                command: /bin/bash
+                arguments:
+                  - -c
+                  - ./tasks promote_docker_image
+      - plan:
+          clean_workspace: true
+          jobs:
+            plan: *plan
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy
 
   'prm-deductions-gp2gp-message-handler.pre-prod':
     group: deductions
@@ -93,4 +129,61 @@ pipelines:
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
-    stages: *common_stages
+    stages:
+      - promote_docker_image:
+          resources:
+            - docker
+          clean_workspace: true
+          tasks:
+            - exec:
+                command: /bin/bash
+                arguments:
+                  - -c
+                  - ./tasks promote_docker_image
+      - plan:
+          clean_workspace: true
+          jobs:
+            plan: *plan
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy
+
+  'prm-deductions-gp2gp-message-handler.prod':
+    group: deductions
+    label_template: '${git[:8]}'
+    materials:
+      git:
+        type: configrepo
+        blacklist:
+          - docs/**/*.*
+      app:
+        pipeline: prm-deductions-gp2gp-message-handler
+        stage: docker
+      base_infra:
+        pipeline: prm-deductions-infra
+        stage: deploy_prod
+      pre-prod_env:
+        pipeline: prm-deductions-gp2gp-message-handler.test
+        stage: deploy
+    environment_variables:
+      NHS_ENVIRONMENT: prod
+    stages:
+      - promote_docker_image:
+          resources:
+            - docker
+          clean_workspace: true
+          tasks:
+            - exec:
+                command: /bin/bash
+                arguments:
+                  - -c
+                  - ./tasks promote_docker_image
+      - plan:
+          clean_workspace: true
+          jobs:
+            plan: *plan
+      - deploy:
+          clean_workspace: true
+          jobs:
+            deploy: *deploy

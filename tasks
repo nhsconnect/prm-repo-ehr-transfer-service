@@ -76,9 +76,9 @@ function tf_plan {
 
   terraform get # modules
   if [[ "${operation}" == "create" ]]; then
-    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="nhs_deployment.tfplan"
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="deployment.tfplan"
   elif [[ "${operation}" == "destroy" ]]; then
-    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="nhs_deployment.tfplan" -destroy
+    terraform plan -var task_image_tag=$IMAGE_TAG -var-file=$NHS_ENVIRONMENT.tfvars -out="deployment.tfplan" -destroy
   else
     echo "Unknown operation (should be create or destroy), got: ${operation}"
     exit 1
@@ -88,8 +88,7 @@ function tf_plan {
 function tf_apply {
   tf_init
   terraform get # modules
-  terraform apply nhs_deployment.tfplan
-  terraform output -json > tf-out.json
+  terraform apply deployment.tfplan
 }
 
 ############################
