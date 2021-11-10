@@ -55,15 +55,17 @@ resource "aws_security_group_rule" "gp2gp-message-handler-to-mq" {
 }
 
 data "aws_ssm_parameter" "service-to-repo-to-gp-sg-id" {
+  count = var.environment == "prod" ? 0 : 1
   name = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
 }
 
 resource "aws_security_group_rule" "gp2gp-message-handler-to-repo-to-gp" {
+  count = var.environment == "prod" ? 0 : 1
   type = "ingress"
   protocol = "TCP"
   from_port = 443
   to_port = 443
-  security_group_id = data.aws_ssm_parameter.service-to-repo-to-gp-sg-id.value
+  security_group_id = data.aws_ssm_parameter.service-to-repo-to-gp-sg-id[count.index].value
   source_security_group_id = aws_security_group.gp2gp-message-handler-ecs-task-sg.id
 }
 
