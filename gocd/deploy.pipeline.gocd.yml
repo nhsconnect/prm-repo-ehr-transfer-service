@@ -164,7 +164,7 @@ pipelines:
         pipeline: prm-deductions-infra
         stage: deploy_prod
       pre-prod_env:
-        pipeline: prm-deductions-gp2gp-message-handler.test
+        pipeline: prm-deductions-gp2gp-message-handler.pre-prod
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: prod
