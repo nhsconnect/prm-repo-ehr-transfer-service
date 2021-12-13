@@ -5,5 +5,4 @@ RUN useradd --home-dir /home/spring --uid 1000 --gid 102 --shell /bin/bash sprin
 RUN usermod -a -G spring spring
 USER spring
 COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
-
+ENTRYPOINT ["java","-Dlog4j2.formatMsgNoLookups=true","-jar","/app.jar"]
