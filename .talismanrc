@@ -1,4 +1,6 @@
 fileignoreconfig:
+- filename: Dojofile-itest
+  checksum: e41d7bb3997c5fcf860112c17d8d184783dc432ff69bb894473724508b48996f
 - filename: Dojofile
   checksum: 2c1682b4e1385eb608c9059d14daad9fc004f3f66fe78f5854ae68a6aff3cba3
 version: ""
