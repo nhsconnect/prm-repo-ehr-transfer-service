@@ -17,7 +17,9 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-activemq'
-	implementation 'net.logstash.logback:logstash-logback-encoder:6.4'
+	implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
+	implementation 'ch.qos.logback:logback-classic:1.2.9'
+	implementation 'ch.qos.logback:logback-core:1.2.9'
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.1'
 	implementation 'com.fasterxml.woodstox:woodstox-core:5.1.0'
 	implementation 'org.apache.activemq:activemq-broker:5.16.1'
