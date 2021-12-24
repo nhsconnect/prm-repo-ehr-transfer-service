@@ -24,6 +24,8 @@ public class ParserService {
             message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
         } else if (envelope.header.messageHeader.action.equals("RCMR_IN010000UK05")) {
             message = xmlMapper.readValue(mhsJsonMessage.payload, EhrRequestMessageWrapper.class);
+        } else if (envelope.header.messageHeader.action.equals("MCCI_IN010000UK13")) {
+            message = xmlMapper.readValue(mhsJsonMessage.payload, AcknowledgementMessageWrapper.class);
         }
         return new ParsedMessage(envelope, message, contentAsString);
     }

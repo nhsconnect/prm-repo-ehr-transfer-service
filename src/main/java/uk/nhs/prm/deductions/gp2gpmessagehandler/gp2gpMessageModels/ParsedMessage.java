@@ -111,4 +111,10 @@ public class ParsedMessage {
         return attachmentMessageIds;
     }
 
+    public List<String> getReasons() {
+        if (messageContent instanceof AcknowledgementMessageWrapper) {
+            return ((AcknowledgementMessageWrapper) messageContent).getReasons();
+        }
+        return new ArrayList<>();
+    }
 }

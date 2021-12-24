@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -87,6 +88,25 @@ public class ParserServiceTest {
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9692842304"));
+    }
+
+    @Test
+    public void shouldExtractErrorMessageFromAcknowledgement() throws IOException  {
+        String fileName = "MCCI_IN010000UK13FailureSanitized";
+        String messageAsString = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(messageAsString);
+
+        assertThat(parsedMessage.getReasons().size(), equalTo(2));
+        assertThat(parsedMessage.getReasons().get(1), equalTo("Update Failed - invalid GP Registration data supplied"));
+    }
+
+    @Test
+    public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException  {
+        String fileName = "MCCI_IN010000UK13Empty";
+        String messageAsString = loader.getDataAsString(fileName);
+        ParsedMessage parsedMessage = parser.parse(messageAsString);
+
+        assertThat(parsedMessage.getReasons().size(), is(0));
     }
 
     @Test
