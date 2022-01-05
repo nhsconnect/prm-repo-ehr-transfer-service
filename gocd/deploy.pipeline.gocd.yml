@@ -37,7 +37,7 @@ common:
 pipelines:
   'prm-deductions-gp2gp-message-handler.dev':
     group: deductions
-    label_template: '${git[:8]}'
+    label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
         type: configrepo
@@ -73,7 +73,7 @@ pipelines:
 
   'prm-deductions-gp2gp-message-handler.test':
     group: deductions
-    label_template: '${git[:8]}'
+    label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
         type: configrepo
@@ -112,7 +112,7 @@ pipelines:
 
   'prm-deductions-gp2gp-message-handler.pre-prod':
     group: deductions
-    label_template: '${git[:8]}'
+    label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
         type: configrepo
@@ -151,7 +151,7 @@ pipelines:
 
   'prm-deductions-gp2gp-message-handler.prod':
     group: deductions
-    label_template: '${git[:8]}'
+    label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
         type: configrepo

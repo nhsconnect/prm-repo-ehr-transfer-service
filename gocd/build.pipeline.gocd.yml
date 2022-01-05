@@ -2,7 +2,7 @@ format_version: 4
 pipelines:
   'prm-deductions-gp2gp-message-handler':
     group: deductions
-    label_template: '${git[:8]}'
+    label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
         type: configrepo

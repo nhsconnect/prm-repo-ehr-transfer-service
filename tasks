@@ -34,7 +34,7 @@ function check_env {
 }
 
 function set_image_tag() {
-  export IMAGE_TAG=$(git rev-parse HEAD | cut -c 1-8)
+  export IMAGE_TAG=${GO_PIPELINE_LABEL:-$(git rev-parse HEAD | cut -c 1-8)}
 }
 
 function get_aws_account_id {
