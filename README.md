@@ -5,7 +5,7 @@ This is an implementation of a component to handle the receiving of the GP2GP me
 ## Prerequisites
 
 - Java v11 LTS
-- Gradle 6.8.1
+- Gradle 7.3.2
 
 ### AWS helpers
 
