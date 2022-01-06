@@ -37,6 +37,7 @@ public class EhrRequestMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
             repoToGPClient.sendEhrRequest(parsedMessage);
+            logger.info("Successfully sent EHR request to repo-to-gp for ", v("conversationId", parsedMessage.getConversationId()));
         } catch (HttpException | URISyntaxException | IOException | InterruptedException e) {
             logger.error("Failed to send the registration request", e);
             logger.info("Sending message to the unhandled queue", v("queue", unhandledQueue));
