@@ -33,7 +33,7 @@ public class PdsUpdateCompletedMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
             gpToRepoClient.sendPdsUpdatedMessage(parsedMessage.getConversationId());
-            logger.info("Successfully notified gp-to-repo that PDS Update completed for ", v("conversationId", parsedMessage.getConversationId()));
+            logger.info("Successfully notified gp-to-repo that PDS Update completed", v("conversationId", parsedMessage.getConversationId()));
         } catch (Exception e) {
             logger.info("Sending message to the queue", v("queue", unhandledQueue));
             logger.error("Failed to notify gp-to-repo about pds update completed", v("conversationId", parsedMessage.getConversationId()), e);
