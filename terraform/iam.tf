@@ -71,9 +71,9 @@ data "aws_iam_policy_document" "ssm_policy_doc" {
     resources = [
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-username",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/mq-app-password",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/gp-to-repo/gp2gp-message-handler",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/repo-to-gp/gp2gp-message-handler",
-      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/ehr-repo/gp2gp-message-handler",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/gp-to-repo/ehr-transfer-service",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/repo-to-gp/ehr-transfer-service",
+      "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/user-input/api-keys/ehr-repo/ehr-transfer-service",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/output/prm-deductions-gp-to-repo/service-url",
       "arn:aws:ssm:${var.region}:${local.account_id}:parameter/repo/${var.environment}/output/prm-deductions-repo-to-gp/repo-to-gp-service-url",
     ]
@@ -82,17 +82,17 @@ data "aws_iam_policy_document" "ssm_policy_doc" {
 
 
 resource "aws_iam_policy" "gp2gp-ecr" {
-  name   = "${var.environment}-gp2gp-message-handler-ecr"
+  name   = "${var.environment}-ehr-transfer-service-ecr"
   policy = data.aws_iam_policy_document.ecr_policy_doc.json
 }
 
 resource "aws_iam_policy" "gp2gp-logs" {
-  name   = "${var.environment}-gp2gp-message-handler-logs"
+  name   = "${var.environment}-ehr-transfer-service-logs"
   policy = data.aws_iam_policy_document.logs_policy_doc.json
 }
 
 resource "aws_iam_policy" "gp2gp-ssm" {
-  name   = "${var.environment}-gp2gp-message-handler-ssm"
+  name   = "${var.environment}-ehr-transfer-service-ssm"
   policy = data.aws_iam_policy_document.ssm_policy_doc.json
 }
 

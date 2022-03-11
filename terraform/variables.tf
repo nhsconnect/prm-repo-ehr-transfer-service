@@ -5,12 +5,15 @@ variable "region" {
 
 variable "repo_name" {
   type = string
-  default = "prm-deductions-gp2gp-message-handler"
+  default = "prm-deductions-ehr-transfer-service"
 }
 
 variable "environment" {}
 
-variable "component_name" {}
+variable "component_name" {
+  type = string
+  default = "ehr-transfer-service"
+}
 variable "task_image_tag" {}
 variable "task_cpu" {}
 variable "task_memory" {}

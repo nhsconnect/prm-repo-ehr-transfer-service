@@ -7,8 +7,8 @@ set -Eeo pipefail
 ###########################
 
 AWS_DEFAULT_REGION=eu-west-2
-IMAGE_REPO_NAME=deductions/gp2gp-message-handler
-export NHS_SERVICE=gp2gp-message-handler
+IMAGE_REPO_NAME=deductions/ehr-transfer-service
+export NHS_SERVICE=ehr-transfer-service
 AWS_HELPERS_VERSION=0.2.18
 echo "AWS helper scripts version: $AWS_HELPERS_VERSION"
 

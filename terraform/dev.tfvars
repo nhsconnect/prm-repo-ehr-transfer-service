@@ -1,6 +1,4 @@
 environment    = "dev"
-component_name = "gp2gp-message-handler"
-repo_name      = "prm-deductions-gp2gp-message-handler"
 
 task_cpu    = 256
 task_memory = 512

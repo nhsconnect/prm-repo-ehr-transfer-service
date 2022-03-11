@@ -13,7 +13,7 @@
 					<pattern>
 						{
 						"level": "${log_level}",
-						"service": "gp2gp-message-handler",
+						"service": "ehr-transfer-service",
 						"class": "%C{0}",
 						"line": "%L",
 						"message": "%message",
