@@ -5,7 +5,7 @@ variable "region" {
 
 variable "repo_name" {
   type = string
-  default = "prm-deductions-ehr-transfer-service"
+  default = "prm-repo-ehr-transfer-service"
 }
 
 variable "environment" {}

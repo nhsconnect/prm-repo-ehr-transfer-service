@@ -1,6 +1,6 @@
 format_version: 4
 pipelines:
-  'prm-deductions-ehr-transfer-service':
+  'ehr-transfer-service':
     group: deductions
     label_template: "${COUNT}-${git[:8]}"
     materials:

@@ -1,6 +1,6 @@
 format_version: 4
 pipelines:
-  'prm-deductions-ehr-transfer-service.audit':
+  'prm-repo-ehr-transfer-service.audit':
     group: deductions-audit
     label_template: "${COUNT}-${git[:8]}"
     materials:

@@ -35,7 +35,7 @@ common:
             - ./tasks wait_ecs
 
 pipelines:
-  'prm-deductions-ehr-transfer-service.dev':
+  'ehr-transfer-service.dev':
     group: deductions
     label_template: "${COUNT}-${git[:8]}"
     materials:
@@ -44,7 +44,7 @@ pipelines:
         blacklist:
           - docs/**/*.*
       app:
-        pipeline: prm-deductions-ehr-transfer-service
+        pipeline: ehr-transfer-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
@@ -71,7 +71,7 @@ pipelines:
           jobs:
             deploy: *deploy
 
-  'prm-deductions-ehr-transfer-service.test':
+  'ehr-transfer-service.test':
     group: deductions
     label_template: "${COUNT}-${git[:8]}"
     materials:
@@ -80,13 +80,13 @@ pipelines:
         blacklist:
           - docs/**/*.*
       app:
-        pipeline: prm-deductions-ehr-transfer-service
+        pipeline: ehr-transfer-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_test
       dev_env:
-        pipeline: prm-deductions-ehr-transfer-service.dev
+        pipeline: ehr-transfer-service.dev
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: test
@@ -110,7 +110,7 @@ pipelines:
           jobs:
             deploy: *deploy
 
-  'prm-deductions-ehr-transfer-service.pre-prod':
+  'ehr-transfer-service.pre-prod':
     group: deductions
     label_template: "${COUNT}-${git[:8]}"
     materials:
@@ -119,13 +119,13 @@ pipelines:
         blacklist:
           - docs/**/*.*
       app:
-        pipeline: prm-deductions-ehr-transfer-service
+        pipeline: ehr-transfer-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_pre_prod
       test_env:
-        pipeline: prm-deductions-ehr-transfer-service.test
+        pipeline: ehr-transfer-service.test
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
@@ -149,7 +149,7 @@ pipelines:
           jobs:
             deploy: *deploy
 
-  'prm-deductions-ehr-transfer-service.prod':
+  'ehr-transfer-service.prod':
     group: deductions
     label_template: "${COUNT}-${git[:8]}"
     materials:
@@ -158,13 +158,13 @@ pipelines:
         blacklist:
           - docs/**/*.*
       app:
-        pipeline: prm-deductions-ehr-transfer-service
+        pipeline: ehr-transfer-service
         stage: docker
       base_infra:
         pipeline: prm-deductions-infra
         stage: deploy_prod
       pre-prod_env:
-        pipeline: prm-deductions-ehr-transfer-service.pre-prod
+        pipeline: ehr-transfer-service.pre-prod
         stage: deploy
     environment_variables:
       NHS_ENVIRONMENT: prod
