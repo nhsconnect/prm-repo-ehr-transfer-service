@@ -4,21 +4,22 @@ locals {
     task_ecr_url                 = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
     task_log_group               = "/nhs/deductions/${var.environment}-${data.aws_caller_identity.current.account_id}/${var.component_name}"
     environment_variables        = [
-      { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_URL_1", value = data.aws_ssm_parameter.openwire_endpoint_0.value },
-      { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_URL_2", value = data.aws_ssm_parameter.openwire_endpoint_1.value },
-      { name = "GP2GP_MESSAGE_HANDLER_GP_TO_REPO_URL", value = "https://gp-to-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
-      { name = "GP2GP_MESSAGE_HANDLER_REPO_TO_GP_URL", value = "https://repo-to-gp.${var.environment}.non-prod.patient-deductions.nhs.uk" },
-      { name = "GP2GP_MESSAGE_HANDLER_EHR_REPO_URL", value = "https://ehr-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
-      { name = "GP2GP_MESSAGE_HANDLER_LOG_LEVEL", value = var.log_level },
+      { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_1", value = data.aws_ssm_parameter.openwire_endpoint_0.value },
+      { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_2", value = data.aws_ssm_parameter.openwire_endpoint_1.value },
+      { name = "EHR_TRANSFER_SERVICE_GP_TO_REPO_URL", value = "https://gp-to-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
+      { name = "EHR_TRANSFER_SERVICE_REPO_TO_GP_URL", value = "https://repo-to-gp.${var.environment}.non-prod.patient-deductions.nhs.uk" },
+      { name = "EHR_TRANSFER_SERVICE_EHR_REPO_URL", value = "https://ehr-repo.${var.environment}.non-prod.patient-deductions.nhs.uk" },
+      { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
+      { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
       { name = "NHS_ENVIRONMENT", value = var.environment }
 
     ]
     secret_environment_variables = [
-      { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
-      { name = "GP2GP_MESSAGE_HANDLER_MHS_QUEUE_PASSWORD", valueFrom = data.aws_ssm_parameter.amq-password.arn },
-      { name = "GP2GP_MESSAGE_HANDLER_AUTHORIZATION_KEYS_FOR_GP_TO_REPO", valueFrom = data.aws_ssm_parameter.gp2gp_message_handler_authorization_keys_for_gp_to_repo.arn },
-      { name = "GP2GP_MESSAGE_HANDLER_AUTHORIZATION_KEYS_FOR_REPO_TO_GP", valueFrom = data.aws_ssm_parameter.gp2gp_message_handler_authorization_keys_for_repo_to_gp.arn },
-      { name = "GP2GP_MESSAGE_HANDLER_AUTHORIZATION_KEYS_FOR_EHR_REPO", valueFrom = data.aws_ssm_parameter.gp2gp_message_handler_authorization_keys_for_ehr_repo.arn },
+      { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
+      { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_PASSWORD", valueFrom = data.aws_ssm_parameter.amq-password.arn },
+      { name = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_GP_TO_REPO", valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_gp_to_repo.arn },
+      { name = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_REPO_TO_GP", valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_repo_to_gp.arn },
+      { name = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_EHR_REPO", valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_ehr_repo.arn },
     ]
 }
 

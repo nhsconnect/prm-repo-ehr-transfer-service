@@ -4,7 +4,7 @@ locals {
 
 resource "aws_ecs_service" "ecs-service" {
   name            = "${var.environment}-${var.component_name}"
-  cluster         = aws_ecs_cluster.gp2gp_message_handler_ecs_cluster.id
+  cluster         = aws_ecs_cluster.ehr_transfer_service_ecs_cluster.id
   task_definition = aws_ecs_task_definition.task.arn
   desired_count   = var.service_desired_count
   launch_type     = "FARGATE"
@@ -69,7 +69,7 @@ resource "aws_security_group_rule" "ehr-transfer-service-to-repo-to-gp" {
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
-resource "aws_ecs_cluster" "gp2gp_message_handler_ecs_cluster" {
+resource "aws_ecs_cluster" "ehr_transfer_service_ecs_cluster" {
   name = "${var.environment}-${var.component_name}-ecs-cluster"
 
   tags = {
