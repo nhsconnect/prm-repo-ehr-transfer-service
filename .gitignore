@@ -40,7 +40,9 @@ out/
 # Local .terraform directories
 **/.terraform/*
 /terraform/nhs_deployment.tfplan
+/terraform/deployment.tfplan
 /terraform/tf-out.json
+/terraform/.terraform.lock.hcl
 
 # Imported utilities
 /utils/*
