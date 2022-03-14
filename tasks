@@ -160,14 +160,15 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
   _code_quality)
-      gradle check
+    # run for integration as well?
+      gradle check -x test
       ;;
   code_quality)
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
-    gradle unitTest integrationTest jacocoTestCoverageVerification check
+    gradle test integration jacocoTestCoverageVerification check
     ;;
   test_all)
     configure_local_envs

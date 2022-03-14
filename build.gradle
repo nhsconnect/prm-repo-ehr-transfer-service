@@ -140,5 +140,3 @@ dependencyCheck {
 	failBuildOnCVSS = 7
 	suppressionFile = './dependency-checks-suppression.xml'
 }
-
-check.dependsOn integration
