@@ -3,14 +3,14 @@ resource "aws_kms_key" "repo_incoming" {
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
 
   tags = {
-    Name        = "${var.environment}-repo-incoming-queue-encryption-kms-key"
+    Name        = "${var.environment}-${var.component_name}-repo-incoming-encryption-kms-key"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
 resource "aws_kms_alias" "repo_incoming_encryption" {
-  name          = "alias/repo-incoming-queue-encryption-kms-key"
+  name          = "alias/repo-incoming-encryption-kms-key"
   target_key_id = aws_kms_key.repo_incoming.id
 }
 
