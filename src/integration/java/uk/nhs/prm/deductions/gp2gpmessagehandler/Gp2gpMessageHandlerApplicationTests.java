@@ -1,4 +1,4 @@
-package uk.nhs.prm.deductions.gp2gpmessagehandler.integrationTests;
+package uk.nhs.prm.deductions.gp2gpmessagehandler;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import de.mkammerer.wiremock.WireMockExtension;
 import org.junit.jupiter.api.Tag;

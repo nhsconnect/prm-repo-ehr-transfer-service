@@ -146,7 +146,7 @@ case "${command}" in
       dojo "./tasks _test_unit"
       ;;
   _test_integration)
-      gradle --info integrationTest
+      gradle --info integration
       ;;
   test_integration)
       configure_local_envs

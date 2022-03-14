@@ -25,6 +25,8 @@ pipelines:
                       - -c
                       - ./tasks test_unit
             test_integration:
+              environment_variables:
+                NHS_ENVIRONMENT: dev
               resources:
                 - docker
               artifacts:

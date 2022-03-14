@@ -11,8 +11,21 @@ group = 'uk.nhs.prm.deductions'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+	compile.exclude module: 'activemq-broker'
+}
+
 repositories {
 	mavenCentral()
+}
+
+//Without this task two jars are built, the additional "-plain.jar" is not needed
+// for more details refer to: https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
+jar {
+	enabled = false
 }
 
 dependencies {
@@ -40,34 +53,39 @@ dependencies {
 	testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
 }
 
-configurations {
-	compile.exclude module: 'activemq-broker'
-}
-
-//Without this task two jars are built, the additional "-plain.jar" is not needed
-// for more details refer to: https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
-jar {
-	enabled = false
-}
-
 test {
 	useJUnitPlatform()
 }
 
-task unitTest(type: Test) {
-	useJUnitPlatform {
-		excludeTags 'integration'
+test.outputs.upToDateWhen {false}
+
+sourceSets {
+	integration {
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
 	}
 }
 
-task integrationTest(type: Test) {
-	useJUnitPlatform {
-		excludeTags 'unit'
-	}
+configurations {
+	integrationImplementation.extendsFrom testImplementation
+	integrationRuntime.extendsFrom testRuntime
 }
+
+tasks.withType(Test) {
+	useJUnitPlatform()
+}
+
+task integration(type: Test) {
+	testClassesDirs = sourceSets.integration.output.classesDirs
+	classpath = sourceSets.integration.runtimeClasspath
+	mustRunAfter tasks.test
+}
+
+integration.outputs.upToDateWhen {false}
 
 jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
+	shouldRunAfter integration
 }
 
 jacocoTestCoverageVerification {
@@ -79,6 +97,12 @@ jacocoTestCoverageVerification {
 				minimum = 0.7
 			}
 		}
+	}
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: '**/model/**')
+		}))
 	}
 }
 
@@ -102,7 +126,19 @@ spotbugsTest {
 	}
 }
 
-dependencyCheck {
-	failBuildOnCVSS=7
-	suppressionFile='./dependency-checks-suppression.xml'
+spotbugsIntegration {
+	reports {
+		html {
+			enabled = true
+			destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
+			stylesheet = 'fancy-hist.xsl'
+		}
+	}
 }
+
+dependencyCheck {
+	failBuildOnCVSS = 7
+	suppressionFile = './dependency-checks-suppression.xml'
+}
+
+check.dependsOn integration

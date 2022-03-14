@@ -1,4 +1,4 @@
-package uk.nhs.prm.deductions.gp2gpmessagehandler;
+package uk.nhs.prm.deductions.gp2gpmessagehandler.config;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Value;
