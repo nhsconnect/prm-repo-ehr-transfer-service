@@ -14,6 +14,17 @@ resource "aws_kms_alias" "repo_incoming_encryption" {
   target_key_id = aws_kms_key.repo_incoming.id
 }
 
+resource "aws_kms_key" "transfer_tracker_dynamodb_kms_key" {
+  description = "Custom KMS Key to enable server side encryption for Transfer Tracker DB"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-${var.component_name}-transfer-tracker-dynamodb-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"
