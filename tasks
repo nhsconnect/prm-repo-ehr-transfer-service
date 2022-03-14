@@ -139,7 +139,7 @@ case "${command}" in
       dojo "./tasks _build"
       ;;
   _test_unit)
-      gradle unitTest
+      gradle test
       ;;
   test_unit)
       configure_local_envs
