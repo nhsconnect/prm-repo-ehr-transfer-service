@@ -1,8 +1,9 @@
-FROM openjdk:11.0.7-jdk-buster
-RUN mkdir /home/spring
-RUN groupadd -r spring --gid 102
-RUN useradd --home-dir /home/spring --uid 1000 --gid 102 --shell /bin/bash spring
-RUN usermod -a -G spring spring
-USER spring
+FROM eclipse-temurin:11.0.14.1_1-jre-alpine
+
+RUN apk add --no-cache bash
+
+RUN addgroup -S spring && adduser -S spring -G spring
+USER spring:spring
+
 COPY build/libs/*.jar app.jar
 ENTRYPOINT ["java","-Dlog4j2.formatMsgNoLookups=true","-jar","/app.jar"]
