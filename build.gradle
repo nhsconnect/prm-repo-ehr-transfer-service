@@ -112,7 +112,19 @@ spotbugsTest {
 	}
 }
 
+spotbugsIntegration {
+	reports {
+		html {
+			enabled = true
+			destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
+			stylesheet = 'fancy-hist.xsl'
+		}
+	}
+}
+
 dependencyCheck {
 	failBuildOnCVSS = 7
 	suppressionFile = './dependency-checks-suppression.xml'
 }
+
+check.dependsOn integration

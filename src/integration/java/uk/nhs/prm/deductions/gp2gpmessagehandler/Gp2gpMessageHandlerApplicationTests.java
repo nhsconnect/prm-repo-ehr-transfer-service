@@ -36,8 +36,6 @@ class Gp2gpMessageHandlerApplicationTests {
     private TestDataLoader dataLoader = new TestDataLoader();
     private WireMockServer wireMock;
 
-    private String suspensionQueueUrl;
-
     @BeforeEach
     public void setUp() {
         wireMock = initializeWebServer();
