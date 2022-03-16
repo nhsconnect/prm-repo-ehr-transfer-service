@@ -1,9 +1,10 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,9 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @Tag("integration") // perhaps we need other name for tests that interact with external systems
 @SpringBootTest
 class Gp2gpMessageHandlerApplicationTests {
-    @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension();
-
     @Autowired
     JmsTemplate jmsTemplate;
 
@@ -36,6 +34,25 @@ class Gp2gpMessageHandlerApplicationTests {
     private String unhandledQueue;
 
     private TestDataLoader dataLoader = new TestDataLoader();
+    private WireMockServer wireMock;
+
+    private String suspensionQueueUrl;
+
+    @BeforeEach
+    public void setUp() {
+        wireMock = initializeWebServer();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        wireMock.stop();
+    }
+
+    private WireMockServer initializeWebServer() {
+        final WireMockServer wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+        return wireMockServer;
+    }
 
     @Test
     void shouldProcessAndStoreJsonFormattedSmallEhrExtract() throws IOException, InterruptedException {
