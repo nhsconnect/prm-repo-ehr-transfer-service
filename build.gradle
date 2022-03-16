@@ -30,27 +30,28 @@ jar {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-activemq'
-	implementation 'net.logstash.logback:logstash-logback-encoder:6.6'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.1'
-	implementation 'com.fasterxml.woodstox:woodstox-core:5.1.0'
-	implementation 'org.apache.activemq:activemq-broker:5.16.1'
-	implementation 'org.apache.activemq:activemq-client:5.16.1'
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2'
+	implementation 'com.fasterxml.woodstox:woodstox-core:6.2.8'
+	implementation 'org.apache.activemq:activemq-broker:5.16.4'
+	implementation 'org.apache.activemq:activemq-client:5.16.4'
 	implementation 'com.sun.mail:javax.mail:1.6.2'
-	implementation 'com.google.code.gson:gson:2.8.6'
-	implementation 'com.github.spotbugs:spotbugs-annotations:3.1.3'
+	implementation 'com.google.code.gson:gson:2.9.0'
+	implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
 	implementation 'junit:junit:4.13.2'
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
 
-        // force log4j related jars beyond log4shell vulnerability to ensure no false positives
-        implementation 'org.apache.logging.log4j:log4j-api:2.17.0'
+	// force log4j related jars beyond log4shell vulnerability to ensure no false positives
+        implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
         implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.0'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.5.0'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
 	testImplementation 'org.hamcrest:hamcrest:2.2'
 	testImplementation group: 'de.mkammerer.wiremock-junit5', name: 'wiremock-junit5', version: '1.1.0'
 	testImplementation(platform('org.junit:junit-bom:5.7.2'))
 	testImplementation('org.junit.jupiter:junit-jupiter')
 	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
-	testImplementation "com.github.tomakehurst:wiremock-jre8:2.27.2"
+	testImplementation "com.github.tomakehurst:wiremock-jre8:2.32.0"
 }
 
 test {
@@ -90,20 +91,6 @@ jacocoTestReport {
 
 jacocoTestCoverageVerification {
 	dependsOn jacocoTestReport
-
-	violationRules {
-		rule {
-			limit {
-				minimum = 0.7
-			}
-		}
-	}
-
-	afterEvaluate {
-		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: '**/model/**')
-		}))
-	}
 }
 
 spotbugsMain {
