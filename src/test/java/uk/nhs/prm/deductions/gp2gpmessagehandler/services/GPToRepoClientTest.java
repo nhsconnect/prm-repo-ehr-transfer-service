@@ -1,6 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
-import de.mkammerer.wiremock.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
