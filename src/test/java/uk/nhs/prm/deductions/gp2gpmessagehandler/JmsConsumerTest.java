@@ -6,8 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.SOAPEnvelope;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.CopcMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.EhrRequestMessageHandler;
@@ -15,7 +15,6 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.handlers.MessageHandler;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.ParserService;
 
 import javax.jms.JMSException;
-import javax.mail.MessagingException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

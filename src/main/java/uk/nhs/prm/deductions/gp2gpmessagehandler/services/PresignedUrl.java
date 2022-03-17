@@ -1,8 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
 
-import javax.jms.JMSException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;

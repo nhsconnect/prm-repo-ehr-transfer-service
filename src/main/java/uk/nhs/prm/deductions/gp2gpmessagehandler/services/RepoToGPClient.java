@@ -3,8 +3,8 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.jsonModels.sendEhrRequest.RegistrationRequestBody;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.jsonmodels.sendEhrRequest.RegistrationRequestBody;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

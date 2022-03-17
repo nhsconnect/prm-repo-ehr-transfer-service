@@ -50,6 +50,8 @@ function configure_local_envs {
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_2=tcp://mq-2:61616
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME=admin
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_PASSWORD=admin
+  export LOCALSTACK_URL="http://localstack:4566"
+  export AWS_REGION=${AWS_DEFAULT_REGION}
 }
 
 #######################
@@ -198,6 +200,9 @@ case "${command}" in
   tf_apply)
       check_env
       dojo -c Dojofile-infra "./tasks _tf_apply"
+      ;;
+  run_localstack_local)
+      docker-compose -f docker-compose.localstack-local.yaml up -d
       ;;
   promote_docker_image)
       check_env

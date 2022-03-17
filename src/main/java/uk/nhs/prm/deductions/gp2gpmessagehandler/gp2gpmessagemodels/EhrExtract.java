@@ -1,0 +1,20 @@
+package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EhrExtract {
+    @JacksonXmlProperty(localName = "recordTarget")
+    public RecordTarget recordTarget;
+
+    public Patient getPatient() {
+        return this.recordTarget.patient;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RecordTarget {
+        @JacksonXmlProperty(localName = "patient")
+        public Patient patient;
+    }
+}

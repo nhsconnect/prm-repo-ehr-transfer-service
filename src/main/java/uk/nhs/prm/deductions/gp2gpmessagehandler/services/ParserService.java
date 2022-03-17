@@ -3,7 +3,7 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.*;
 
 import java.io.IOException;
 

@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 import javax.jms.BytesMessage;
@@ -23,9 +24,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@SpringBootTest
+@SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = LocalStackAwsConfig.class)
 class Gp2gpMessageHandlerApplicationTests {
     @Autowired
     JmsTemplate jmsTemplate;

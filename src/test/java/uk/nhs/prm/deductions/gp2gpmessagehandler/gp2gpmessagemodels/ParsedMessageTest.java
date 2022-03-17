@@ -2,20 +2,6 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtractMessageWrapper;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrExtract;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequestMessageWrapper;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequest;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.RequestingPractice;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Identifier;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageData;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.MessageHeader;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Patient;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Reference;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPEnvelope;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPHeader;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.SOAPBody;
 
 import java.util.ArrayList;
 import java.util.List;

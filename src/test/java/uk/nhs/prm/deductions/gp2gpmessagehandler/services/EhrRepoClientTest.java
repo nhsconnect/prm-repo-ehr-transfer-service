@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.*;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.*;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

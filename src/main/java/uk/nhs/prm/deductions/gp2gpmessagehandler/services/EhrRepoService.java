@@ -1,7 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
 
 @Service
 @Slf4j

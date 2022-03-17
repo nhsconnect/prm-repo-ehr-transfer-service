@@ -4,6 +4,7 @@ services:
     links:
       - mq-1:mq-1
       - mq-2:mq-2
+      - localstack:localstack
   mq-1:
     image: rmohr/activemq:5.15.9-alpine
     ports:
@@ -12,3 +13,14 @@ services:
     image: rmohr/activemq:5.15.9-alpine
     ports:
       - 61617:61616
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns,dynamodb
+      - DEFAULT_REGION=eu-west-2
+      - HOSTNAME_EXTERNAL=localstack
+    volumes:
+      - "${TMPDIR:-/tmp}/localstack:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

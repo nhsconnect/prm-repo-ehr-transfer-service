@@ -4,13 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequest;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.EhrRequestMessageWrapper;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.Patient;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.RequestingPractice;
 
-
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

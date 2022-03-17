@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.RepoToGPClient;
 

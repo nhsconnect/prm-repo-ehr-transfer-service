@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessage;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessage;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
 @Service
