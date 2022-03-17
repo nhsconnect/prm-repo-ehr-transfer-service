@@ -1,7 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
@@ -10,8 +9,8 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpMessageModels.ParsedMessag
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
 @Service
+@Slf4j
 public class CopcMessageHandler implements MessageHandler {
-    private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);
 
     private EhrRepoService ehrRepoService;
     private String unhandledQueue;
@@ -32,9 +31,9 @@ public class CopcMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
             ehrRepoService.storeMessage(parsedMessage);
-            logger.info("Successfully stored copc message");
+            log.info("Successfully stored copc message");
         } catch (HttpException e) {
-            logger.error("Failed to store copc message", e);
+            log.error("Failed to store copc message", e);
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }

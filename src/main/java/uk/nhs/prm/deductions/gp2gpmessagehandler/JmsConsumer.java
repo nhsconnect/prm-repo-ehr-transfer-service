@@ -1,7 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import static net.logstash.logback.argument.StructuredArguments.v;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
@@ -25,11 +24,11 @@ import java.util.List;
   - deciding where to put each message
  */
 @Component
+@Slf4j
 public class JmsConsumer {
     final JmsProducer jmsProducer;
     private String inboundQueue;
     private String unhandledQueue;
-    private static Logger logger = LogManager.getLogger(JmsConsumer.class);
     final MessageSanitizer messageSanitizer;
     final ParserService parserService;
     // can't initialize the dictionary in the constructor because it makes mocking harder
@@ -52,16 +51,16 @@ public class JmsConsumer {
         bytesMessage.readBytes(contentAsBytes);
         String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
 
-        logger.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", bytesMessage.getJMSCorrelationID()));
+        log.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", bytesMessage.getJMSCorrelationID()));
 
         try {
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
             ParsedMessage parsedMessage = parserService.parse(sanitizedMessage);
-            logger.info("Successfully parsed message");
+            log.info("Successfully parsed message");
             String interactionId = parsedMessage.getAction();
 
             if (interactionId == null) {
-                logger.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
+                log.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
@@ -69,14 +68,14 @@ public class JmsConsumer {
             MessageHandler matchingHandler = this.getHandlers().get(interactionId);
 
             if (matchingHandler == null) {
-                logger.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue), v("interactionId", interactionId));
+                log.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue), v("interactionId", interactionId));
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
 
             matchingHandler.handleMessage(parsedMessage);
         } catch (RuntimeException | IOException e) {
-            logger.error("Failed to process message from the queue", e);
+            log.error("Failed to process message from the queue", e);
             jmsProducer.sendMessageToQueue(unhandledQueue, rawMessage);
         }
     }

@@ -1,7 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
@@ -15,8 +14,8 @@ import java.net.URISyntaxException;
 import static net.logstash.logback.argument.StructuredArguments.v;
 
 @Service
+@Slf4j
 public class EhrRequestMessageHandler implements MessageHandler {
-    private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);
 
     private RepoToGPClient repoToGPClient;
     private String unhandledQueue;
@@ -37,10 +36,10 @@ public class EhrRequestMessageHandler implements MessageHandler {
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
             repoToGPClient.sendEhrRequest(parsedMessage);
-            logger.info("Successfully sent EHR request to repo-to-gp", v("conversationId", parsedMessage.getConversationId()));
+            log.info("Successfully sent EHR request to repo-to-gp", v("conversationId", parsedMessage.getConversationId()));
         } catch (HttpException | URISyntaxException | IOException | InterruptedException e) {
-            logger.error("Failed to send the registration request", e);
-            logger.info("Sending message to the unhandled queue", v("queue", unhandledQueue));
+            log.error("Failed to send the registration request", e);
+            log.info("Sending message to the unhandled queue", v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }

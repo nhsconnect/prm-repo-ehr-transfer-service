@@ -1,7 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.handlers;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.JmsProducer;
@@ -13,8 +12,8 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 import static net.logstash.logback.argument.StructuredArguments.v;
 
 @Service
+@Slf4j
 public class EhrExtractMessageHandler implements MessageHandler {
-    private static Logger logger = LogManager.getLogger(EhrExtractMessageHandler.class);
 
     private final JmsProducer jmsProducer;
     private String unhandledQueue;
@@ -38,17 +37,17 @@ public class EhrExtractMessageHandler implements MessageHandler {
         try {
             if (parsedMessage.isLargeMessage()) {
                 ehrRepoService.storeMessage(parsedMessage);
-                logger.info("Successfully stored large EHR extract message");
+                log.info("Successfully stored large EHR extract message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
-                logger.info("Successfully sent continue message");
+                log.info("Successfully sent continue message");
             } else {
                 ehrRepoService.storeMessage(parsedMessage);
-                logger.info("Successfully stored small EHR extract message");
+                log.info("Successfully stored small EHR extract message");
                 gpToRepoClient.notifySmallEhrExtractArrived(parsedMessage.getMessageId(), parsedMessage.getConversationId());
-                logger.info("Small ehr extract arrived notification sent");
+                log.info("Small ehr extract arrived notification sent");
             }
         } catch (HttpException | RuntimeException e) {
-            logger.warn("Sending EHR extract message to the unhandled queue", e, v("queue", unhandledQueue));
+            log.warn("Sending EHR extract message to the unhandled queue", e, v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }
     }

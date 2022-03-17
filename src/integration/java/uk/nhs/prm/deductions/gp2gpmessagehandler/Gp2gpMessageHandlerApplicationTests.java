@@ -3,13 +3,15 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -21,8 +23,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@Tag("integration") // perhaps we need other name for tests that interact with external systems
 @SpringBootTest
+@ActiveProfiles("test")
+@ExtendWith(SpringExtension.class)
 class Gp2gpMessageHandlerApplicationTests {
     @Autowired
     JmsTemplate jmsTemplate;
