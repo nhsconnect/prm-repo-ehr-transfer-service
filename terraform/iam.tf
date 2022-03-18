@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
   }
 }
 
-resource "aws_iam_role" "gp2gp" {
+resource "aws_iam_role" "component-ecs-role" {
   name               = "${var.environment}-${var.component_name}-EcsTaskRole"
   assume_role_policy = data.aws_iam_policy_document.ecs-assume-role-policy.json
   description        = "Role assumed by ${var.component_name} ECS task"
@@ -80,6 +80,51 @@ data "aws_iam_policy_document" "ssm_policy_doc" {
   }
 }
 
+resource "aws_iam_role_policy_attachment" "ehr_transfer_service_sqs" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.ehr_transfer_service_sqs.arn
+}
+
+resource "aws_iam_policy" "ehr_transfer_service_sqs" {
+  name   = "${var.environment}-${var.component_name}-sqs"
+  policy = data.aws_iam_policy_document.sqs_ehr_transfer_service_ecs_task.json
+}
+
+data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
+  statement {
+    actions = [
+      "sqs:GetQueue*",
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:ReceiveMessage"
+    ]
+
+    resources = [
+      aws_sqs_queue.repo_incoming.arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "ehr_transfer_service_kms" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.ehr_transfer_service_kms.arn
+}
+
+resource "aws_iam_policy" "ehr_transfer_service_kms" {
+  name   = "${var.environment}-${var.component_name}-kms"
+  policy = data.aws_iam_policy_document.kms_policy_doc.json
+}
+
+data "aws_iam_policy_document" "kms_policy_doc" {
+  statement {
+    actions = [
+      "kms:*"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}
 
 resource "aws_iam_policy" "gp2gp-ecr" {
   name   = "${var.environment}-ehr-transfer-service-ecr"
@@ -97,16 +142,16 @@ resource "aws_iam_policy" "gp2gp-ssm" {
 }
 
 resource "aws_iam_role_policy_attachment" "gp2gp-ecr-attach" {
-  role       = aws_iam_role.gp2gp.name
+  role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.gp2gp-ecr.arn
 }
 
 resource "aws_iam_role_policy_attachment" "gp2gp-ssm" {
-  role       = aws_iam_role.gp2gp.name
+  role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.gp2gp-ssm.arn
 }
 
 resource "aws_iam_role_policy_attachment" "gp2gp-logs" {
-  role       = aws_iam_role.gp2gp.name
+  role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.gp2gp-logs.arn
 }
