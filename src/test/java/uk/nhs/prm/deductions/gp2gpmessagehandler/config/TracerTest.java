@@ -16,6 +16,7 @@ class TracerTest {
 
     private static final String SOME_NEMS_ID = "someNemsId";
     private static final String SOME_TRACE_ID = "someTraceId";
+    private static final String SOME_CONVERSATION_ID = "someConversationId";
     private static Tracer tracer;
 
     @BeforeAll
@@ -28,16 +29,18 @@ class TracerTest {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
         message.setStringProperty(TRACE_ID, SOME_TRACE_ID);
 
-        tracer.setMDCContext(message);
+        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
+        String mdcConversationIdValue = MDC.get(CONVERSATION_ID);
         assertThat(mdcTraceIdValue).isEqualTo(SOME_TRACE_ID);
+        assertThat(mdcConversationIdValue).isEqualTo(SOME_CONVERSATION_ID);
     }
 
     @Test
     void shouldCreateAndAddHyphenatedUuidTraceIdToMDCWhenItIsNotPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
-        tracer.setMDCContext(message);
+        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         assertThat(mdcTraceIdValue).isNotNull();
         assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
@@ -48,20 +51,8 @@ class TracerTest {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
         message.setStringProperty(NEMS_MESSAGE_ID, SOME_NEMS_ID);
 
-        tracer.setMDCContext(message);
+        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
         String mdcValue = MDC.get(NEMS_MESSAGE_ID);
         assertThat(mdcValue).isEqualTo(SOME_NEMS_ID);
-    }
-
-    @Test
-    void shouldAddTraceIdToMDC() throws JMSException {
-        SQSTextMessage message = spy(new SQSTextMessage("payload"));
-        message.setStringProperty(NEMS_MESSAGE_ID, SOME_NEMS_ID);
-
-        String threadName = Thread.currentThread().getName();
-
-        tracer.setMDCContext(message);
-        String threadIdNameMdc = MDC.get(THREAD_NAME);
-        assertThat(threadIdNameMdc).isEqualTo(threadName);
     }
 }

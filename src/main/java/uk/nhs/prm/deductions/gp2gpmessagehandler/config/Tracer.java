@@ -4,6 +4,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.ConversationIdGenerator;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -16,13 +17,13 @@ public class Tracer {
 
     public static final String TRACE_ID = "traceId";
     public static final String NEMS_MESSAGE_ID = "nemsMessageId";
-    public static final String THREAD_NAME = "threadName";
+    public static final String CONVERSATION_ID = "conversationID";
 
-    public void setMDCContext(Message message) throws JMSException {
+    public void setMDCContext(Message message, String conversationId) throws JMSException {
         clearMDCContext();
         handleTraceId(message);
-        setThreadId();
         handleNemsMessageId(message);
+        setConversationId(conversationId);
     }
 
     private void handleTraceId(Message message) throws JMSException {
@@ -42,6 +43,10 @@ public class Tracer {
         MDC.put(TRACE_ID, traceId);
     }
 
+    private void setConversationId(String conversationId) {
+        MDC.put(CONVERSATION_ID, conversationId);
+    }
+
     public String getTraceId() {
         return MDC.get(TRACE_ID);
     }
@@ -53,11 +58,6 @@ public class Tracer {
             setNemsMessageId(message.getStringProperty(NEMS_MESSAGE_ID));
         }
     }
-
-    private void setThreadId() {
-        MDC.put(THREAD_NAME, Thread.currentThread().getName());
-    }
-
     private void setNemsMessageId(String nemsMessageId) {
         MDC.put(NEMS_MESSAGE_ID, nemsMessageId);
     }
@@ -69,6 +69,5 @@ public class Tracer {
     private void clearMDCContext() {
         MDC.remove(TRACE_ID);
         MDC.remove(NEMS_MESSAGE_ID);
-        MDC.remove(THREAD_NAME);
     }
 }

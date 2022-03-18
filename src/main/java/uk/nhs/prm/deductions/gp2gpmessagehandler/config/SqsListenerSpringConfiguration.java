@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.ConversationIdGenerator;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.EhrRequestListener;
 
 import javax.jms.JMSException;
@@ -26,6 +27,7 @@ public class SqsListenerSpringConfiguration {
     private String repoIncomingQueueName;
 
     private final Tracer tracer;
+    private final ConversationIdGenerator conversationIdGenerator;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -44,7 +46,7 @@ public class SqsListenerSpringConfiguration {
         log.info("repo incoming queue name : {}", repoIncomingQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
 
-        consumer.setMessageListener(new EhrRequestListener(tracer));
+        consumer.setMessageListener(new EhrRequestListener(tracer,conversationIdGenerator));
 
         connection.start();
 
