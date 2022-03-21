@@ -13,7 +13,6 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.ParsedMessag
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.EhrRepoService;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;

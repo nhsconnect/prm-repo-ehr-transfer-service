@@ -1,4 +1,5 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import org.junit.jupiter.api.AfterEach;
@@ -14,12 +15,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
+
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.assertNull;

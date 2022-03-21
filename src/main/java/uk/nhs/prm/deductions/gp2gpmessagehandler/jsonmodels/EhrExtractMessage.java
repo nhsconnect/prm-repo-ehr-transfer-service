@@ -1,6 +1,7 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.jsonmodels;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.util.UUID;
 
 public class EhrExtractMessage {

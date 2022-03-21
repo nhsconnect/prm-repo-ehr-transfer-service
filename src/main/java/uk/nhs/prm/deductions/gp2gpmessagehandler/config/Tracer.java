@@ -4,7 +4,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.ConversationIdGenerator;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

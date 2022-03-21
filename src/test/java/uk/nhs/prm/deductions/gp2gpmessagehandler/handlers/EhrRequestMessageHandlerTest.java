@@ -20,7 +20,6 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @Tag("unit")
 public class EhrRequestMessageHandlerTest {

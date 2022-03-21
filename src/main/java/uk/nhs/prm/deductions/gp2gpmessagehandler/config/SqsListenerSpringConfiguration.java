@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.ConversationIdGenerator;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.EhrRequestListener;
+import uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler.EhrRequestService;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -28,6 +29,7 @@ public class SqsListenerSpringConfiguration {
 
     private final Tracer tracer;
     private final ConversationIdGenerator conversationIdGenerator;
+    private final EhrRequestService ehrRequestService;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -46,7 +48,7 @@ public class SqsListenerSpringConfiguration {
         log.info("repo incoming queue name : {}", repoIncomingQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
 
-        consumer.setMessageListener(new EhrRequestListener(tracer,conversationIdGenerator));
+        consumer.setMessageListener(new EhrRequestListener(tracer,conversationIdGenerator,ehrRequestService));
 
         connection.start();
 

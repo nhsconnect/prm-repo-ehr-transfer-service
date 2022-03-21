@@ -2,7 +2,8 @@ package uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
 
-import javax.jms.*;
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;

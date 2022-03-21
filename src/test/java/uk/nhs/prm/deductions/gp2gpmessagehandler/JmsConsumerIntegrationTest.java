@@ -11,14 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
-
 import uk.nhs.prm.deductions.gp2gpmessagehandler.utils.TestDataLoader;
 
 import javax.jms.JMSException;
-
 import java.io.IOException;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /*
  Tests JMS Consumer together with queues

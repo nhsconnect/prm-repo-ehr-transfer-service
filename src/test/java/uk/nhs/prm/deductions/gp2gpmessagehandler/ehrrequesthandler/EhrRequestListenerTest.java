@@ -1,12 +1,10 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler.ehrrequesthandler;
 
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.config.Tracer;
 
@@ -19,6 +17,8 @@ class EhrRequestListenerTest {
 
     @Mock
     Tracer tracer;
+    @Mock
+    EhrRequestService ehrRequestService;
     @Mock
     ConversationIdGenerator conversationIdGenerator;
     @InjectMocks
@@ -49,5 +49,12 @@ class EhrRequestListenerTest {
         when(message.getText()).thenThrow(new RuntimeException());
         ehrRequestListener.onMessage(message);
         verify(message,never()).acknowledge();
+    }
+    @Test
+    void shouldCallEhrRequestServiceWithTheMessage() throws JMSException {
+        String payload = "payload";
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        ehrRequestListener.onMessage(message);
+        verify(ehrRequestService).processIncomingEvent(payload);
     }
 }

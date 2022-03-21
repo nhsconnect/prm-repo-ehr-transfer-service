@@ -1,7 +1,6 @@
 package uk.nhs.prm.deductions.gp2gpmessagehandler;
 
 import lombok.extern.slf4j.Slf4j;
-import static net.logstash.logback.argument.StructuredArguments.v;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -17,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+
+import static net.logstash.logback.argument.StructuredArguments.v;
 
 /*
  Responsible for:

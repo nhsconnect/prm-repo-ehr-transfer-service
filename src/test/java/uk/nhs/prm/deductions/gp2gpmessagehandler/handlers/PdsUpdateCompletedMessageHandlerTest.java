@@ -15,7 +15,6 @@ import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.SOAPEnvelope
 import uk.nhs.prm.deductions.gp2gpmessagehandler.gp2gpmessagemodels.SOAPHeader;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.GPToRepoClient;
 import uk.nhs.prm.deductions.gp2gpmessagehandler.services.HttpException;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -23,6 +22,7 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
