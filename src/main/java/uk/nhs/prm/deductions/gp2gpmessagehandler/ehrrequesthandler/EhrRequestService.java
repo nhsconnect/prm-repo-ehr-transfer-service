@@ -13,6 +13,10 @@ public class EhrRequestService {
     RepoIncomingEventParser incomingEventParser;
 
     public void processIncomingEvent(String incomingEvent) {
+        parseMessage(incomingEvent);
+    }
+
+    private void parseMessage(String incomingEvent) {
         try {
             incomingEventParser.parse(incomingEvent);
         } catch (JsonProcessingException e) {
