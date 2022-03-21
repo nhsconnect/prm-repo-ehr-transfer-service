@@ -12,6 +12,7 @@ locals {
       { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
       { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
       { name = "REPO_INCOMING_QUEUE_NAME", value = aws_sqs_queue.repo_incoming.name },
+      { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
       { name = "NHS_ENVIRONMENT", value = var.environment }
 
     ]

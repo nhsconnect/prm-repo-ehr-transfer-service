@@ -20,7 +20,8 @@ public class EhrRequestListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message,generateConversationId());
+            var conversationId = generateConversationId();
+            tracer.setMDCContext(message, conversationId);
             log.info("RECEIVED: Message from RepoIncoming");
             String payload = ((TextMessage) message).getText();
             ehrRequestService.processIncomingEvent(payload);

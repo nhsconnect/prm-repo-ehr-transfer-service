@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 public class ConversationIdGenerator {
     String conversationId;
 
-    public ConversationIdGenerator() {
-    }
     public String getConversationId() {
         return conversationId;
     }
