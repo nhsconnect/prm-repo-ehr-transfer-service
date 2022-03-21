@@ -19,5 +19,5 @@ public class AppConfig {
         return environment;
     }
 
-    public String suspensionDynamoDbTableName() { return transferTrackerDbTableName; }
+    public String transferTrackerDbTableName() { return transferTrackerDbTableName; }
 }
