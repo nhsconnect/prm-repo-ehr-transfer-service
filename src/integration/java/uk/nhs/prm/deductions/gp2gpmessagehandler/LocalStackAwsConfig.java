@@ -93,8 +93,8 @@ public class LocalStackAwsConfig {
         recreateIncomingNemsQueue();
         setupDbAndTable();
     }
-    private void setupDbAndTable() {
 
+    private void setupDbAndTable() {
         var waiter = dynamoDbClient.waiter();
         var tableRequest = DescribeTableRequest.builder()
                 .tableName(transferTrackerDbTableName)
@@ -102,24 +102,17 @@ public class LocalStackAwsConfig {
 
         if (dynamoDbClient.listTables().tableNames().contains(transferTrackerDbTableName)) {
             resetTableForLocalEnvironment(waiter, tableRequest);
-        };
+        }
 
         List<KeySchemaElement> keySchema = new ArrayList<>();
         keySchema.add(KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("conversation_Id")
+                .attributeName("conversation_id")
                 .build());
-        keySchema.add(KeySchemaElement.builder()
-                .attributeName("nhs_number")
-                .build());
-        List<AttributeDefinition> attributeDefinitions= new ArrayList<AttributeDefinition>();
+        List<AttributeDefinition> attributeDefinitions = new ArrayList<AttributeDefinition>();
         attributeDefinitions.add(AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
-                .attributeName("conversation_Id")
-                .build());
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.N)
-                .attributeName("nhs_number")
+                .attributeName("conversation_id")
                 .build());
 
         var createTableRequest = CreateTableRequest.builder()
@@ -135,6 +128,7 @@ public class LocalStackAwsConfig {
         dynamoDbClient.createTable(createTableRequest);
         waiter.waitUntilTableExists(tableRequest);
     }
+
     private void recreateIncomingNemsQueue() {
         ensureQueueDeleted(repoIncomingQueueName);
         createQueue(repoIncomingQueueName);
