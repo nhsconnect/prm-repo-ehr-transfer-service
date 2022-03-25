@@ -155,3 +155,25 @@ resource "aws_iam_role_policy_attachment" "gp2gp-logs" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.gp2gp-logs.arn
 }
+
+data "aws_iam_policy_document" "transfer-tracker-db-access" {
+  statement {
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "transfer-tracker-db-access" {
+  name   = "${var.environment}-${var.component_name}-dynamodb-table-access"
+  policy = data.aws_iam_policy_document.transfer-tracker-db-access.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_dynamo_attach" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.transfer-tracker-db-access.arn
+}
