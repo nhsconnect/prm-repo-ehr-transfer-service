@@ -7,14 +7,12 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.ConversationIdGenerator;
+import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.ConversationIdStore;
 import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.TransferTrackerDbEntry;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
@@ -26,7 +24,7 @@ class TransferTrackerServiceTest {
     @Mock
     TransferTrackerDb transferTrackerDb;
     @Mock
-    ConversationIdGenerator conversationIdGenerator;
+    ConversationIdStore conversationIdStore;
     @InjectMocks
     TransferTrackerService transferTrackerService;
     @Captor
@@ -34,7 +32,7 @@ class TransferTrackerServiceTest {
 
     @Test
     void shouldCallDbWithExpectedValues() {
-        when(conversationIdGenerator.getConversationId()).thenReturn("conversation-Id");
+        when(conversationIdStore.getConversationId()).thenReturn("conversation-Id");
         transferTrackerService.recordEventInDb(createIncomingEvent());
         verify(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
         TransferTrackerDbEntry value = trackerDbEntryArgumentCaptor.getValue();
@@ -47,11 +45,6 @@ class TransferTrackerServiceTest {
     }
 
     private RepoIncomingEvent createIncomingEvent() {
-        HashMap<String, Object> sqsMessage = new HashMap<>();
-        sqsMessage.put("nhsNumber", "123456765");
-        sqsMessage.put("sourceGP", "source-gp");
-        sqsMessage.put("nemsMessageId", "nems-message-id");
-        RepoIncomingEvent repoIncomingEvent = new RepoIncomingEvent(sqsMessage);
-        return repoIncomingEvent;
+        return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp");
     }
 }

@@ -1,28 +1,15 @@
 package uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler;
 
-import java.util.HashMap;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
 public class RepoIncomingEvent {
-    private HashMap<String, Object> fields;
-
-    public RepoIncomingEvent(HashMap<String, Object> fields) {
-        this.fields = fields;
-    }
-
-    public String nhsNumber() {
-        return fields.get("nhsNumber").toString();
-    }
-
-    public String sourceGP() {
-        return fields.get("sourceGP").toString();
-    }
-
-    public String nemsMessageId() {
-        return fields.get("nemsMessageId").toString();
-    }
-
-    public String destinationGP() {
-        return fields.get("destinationGP").toString();
-    }
-
+    private String nhsNumber;
+    private String sourceGP;
+    private String nemsMessageId;
+    private String destinationGP;
 }

@@ -16,7 +16,7 @@ public class Tracer {
 
     public static final String TRACE_ID = "traceId";
     public static final String NEMS_MESSAGE_ID = "nemsMessageId";
-    public static final String CONVERSATION_ID = "conversationID";
+    public static final String CONVERSATION_ID = "conversationId";
 
     public void setMDCContext(Message message, String conversationId) throws JMSException {
         clearMDCContext();

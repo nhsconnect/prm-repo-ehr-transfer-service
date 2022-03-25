@@ -1,0 +1,19 @@
+package uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class RepoIncomingService {
+
+    TransferTrackerService transferTrackerService;
+
+    public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) {
+        transferTrackerService.recordEventInDb(repoIncomingEvent);
+    }
+}

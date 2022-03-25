@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,19 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class RepoIncomingEventParserTest {
 
     @Test
-    void shouldParseRepoIncomingMessageCorrectlyWhenAMessageContainsExpectedValues() throws JsonProcessingException {
+    void shouldParseRepoIncomingMessageCorrectlyWhenAMessageContainsExpectedValues() {
         String incomingMessage = "{\"nhsNumber\":\"nhs-number\",\"sourceGP\":\"source-gp\",\"nemsMessageId\":\"nems-message-id\",\"destinationGP\":\"destination-GP\"}";
         var repoIncomingEventParser = new RepoIncomingEventParser();
         var parsedMessage = repoIncomingEventParser.parse(incomingMessage);
-        assertEquals("nhs-number", parsedMessage.nhsNumber());
+        assertEquals("nhs-number", parsedMessage.getNhsNumber());
     }
 
     @Test
     void shouldThrowAnExceptionWhenItTriesToParseAGarbageMessage() {
         String incomingMessage = "invalid";
         var repoIncomingEventParser = new RepoIncomingEventParser();
-        assertThrows(JsonProcessingException.class, () -> repoIncomingEventParser.parse(incomingMessage));
-
+        assertThrows(RuntimeException.class, () -> repoIncomingEventParser.parse(incomingMessage));
     }
 
 }

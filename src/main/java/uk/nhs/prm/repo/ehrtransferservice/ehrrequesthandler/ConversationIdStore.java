@@ -3,7 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ConversationIdGenerator {
+public class ConversationIdStore {
     String conversationId;
 
     public String getConversationId() {

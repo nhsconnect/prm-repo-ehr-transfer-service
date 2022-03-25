@@ -13,32 +13,43 @@ import javax.jms.JMSException;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EhrRequestListenerTest {
+class RepoIncomingEventListenerTest {
 
     @Mock
     Tracer tracer;
     @Mock
-    EhrRequestService ehrRequestService;
+    RepoIncomingService repoIncomingService;
     @Mock
-    ConversationIdGenerator conversationIdGenerator;
+    ConversationIdStore conversationIdStore;
+    @Mock
+    RepoIncomingEventParser incomingEventParser;
     @InjectMocks
-    EhrRequestListener ehrRequestListener;
+    RepoIncomingEventListener repoIncomingEventListener;
 
     @Test
     void shouldCallTracerWithMessageAndConversation() throws JMSException {
-        when(conversationIdGenerator.getConversationId()).thenReturn("unique-uuid");
+        when(conversationIdStore.getConversationId()).thenReturn("unique-uuid");
         String payload = "payload";
+        RepoIncomingEvent incomingEvent = getIncomingEvent();
+        when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
+
         SQSTextMessage message = spy(new SQSTextMessage(payload));
-        ehrRequestListener.onMessage(message);
+        repoIncomingEventListener.onMessage(message);
+        verify(incomingEventParser).parse(payload);
         verify(tracer).setMDCContext(message, "unique-uuid");
+        verify(repoIncomingService).processIncomingEvent(incomingEvent);
+    }
+
+    private RepoIncomingEvent getIncomingEvent() {
+        return new RepoIncomingEvent("111111111","source-gp","nem-message-id","destination-gp");
     }
 
     @Test
     void shouldAcknowledgeTheMessageWhenNoErrors() throws JMSException {
-        when(conversationIdGenerator.getConversationId()).thenReturn("unique-uuid");
+        when(conversationIdStore.getConversationId()).thenReturn("unique-uuid");
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
-        ehrRequestListener.onMessage(message);
+        repoIncomingEventListener.onMessage(message);
         verify(message).acknowledge();
     }
 
@@ -47,15 +58,7 @@ class EhrRequestListenerTest {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         when(message.getText()).thenThrow(new RuntimeException());
-        ehrRequestListener.onMessage(message);
+        repoIncomingEventListener.onMessage(message);
         verify(message, never()).acknowledge();
-    }
-
-    @Test
-    void shouldCallEhrRequestServiceWithTheMessage() throws JMSException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
-        ehrRequestListener.onMessage(message);
-        verify(ehrRequestService).processIncomingEvent(payload);
     }
 }
