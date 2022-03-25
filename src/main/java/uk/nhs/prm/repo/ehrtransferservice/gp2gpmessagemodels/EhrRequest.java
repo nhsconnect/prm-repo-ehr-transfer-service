@@ -14,13 +14,17 @@ public class EhrRequest {
     @JacksonXmlProperty(localName = "id")
     public Identifier id;
 
-    public Patient getPatient() { return this.recordTarget.patient; }
+    public Patient getPatient() {
+        return this.recordTarget.patient;
+    }
 
     public RequestingPractice getRequestingPractice() {
         return this.author.requestingPractice;
     }
 
-    public String getId() { return this.id.root; }
+    public String getId() {
+        return this.id.root;
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RecordTarget {

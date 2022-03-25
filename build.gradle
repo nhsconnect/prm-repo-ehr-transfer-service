@@ -1,10 +1,10 @@
 plugins {
-	id 'org.springframework.boot' version '2.6.2'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-	id 'java'
-	id 'jacoco'
-	id 'com.github.spotbugs' version '4.6.0'
-	id 'org.owasp.dependencycheck' version '6.2.0'
+    id 'org.springframework.boot' version '2.6.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'java'
+    id 'jacoco'
+    id 'com.github.spotbugs' version '4.6.0'
+    id 'org.owasp.dependencycheck' version '6.2.0'
 }
 
 group = 'uk.nhs.prm.repo'
@@ -12,127 +12,127 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	compile.exclude module: 'activemq-broker'
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    compile.exclude module: 'activemq-broker'
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 //Without this task two jars are built, the additional "-plain.jar" is not needed
 // for more details refer to: https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
 jar {
-	enabled = false
+    enabled = false
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-activemq'
-	implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
-	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2'
-	implementation 'com.fasterxml.woodstox:woodstox-core:6.2.8'
-	implementation 'org.apache.activemq:activemq-broker:5.16.4'
-	implementation 'org.apache.activemq:activemq-client:5.16.4'
-	implementation 'com.sun.mail:javax.mail:1.6.2'
-	implementation 'com.google.code.gson:gson:2.9.0'
-	implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
-	implementation 'junit:junit:4.13.2'
-	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-activemq'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.2'
+    implementation 'com.fasterxml.woodstox:woodstox-core:6.2.8'
+    implementation 'org.apache.activemq:activemq-broker:5.16.4'
+    implementation 'org.apache.activemq:activemq-client:5.16.4'
+    implementation 'com.sun.mail:javax.mail:1.6.2'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
+    implementation 'junit:junit:4.13.2'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
 
-	implementation 'software.amazon.awssdk:cloudwatch:2.17.73'
-	implementation 'software.amazon.awssdk:sns:2.17.73'
-	implementation 'software.amazon.awssdk:sqs:2.17.73'
-	implementation 'software.amazon.awssdk:dynamodb:2.17.130'
-	implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8'
+    implementation 'software.amazon.awssdk:cloudwatch:2.17.73'
+    implementation 'software.amazon.awssdk:sns:2.17.73'
+    implementation 'software.amazon.awssdk:sqs:2.17.73'
+    implementation 'software.amazon.awssdk:dynamodb:2.17.130'
+    implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.0.8'
 
-	// force log4j related jars beyond log4shell vulnerability to ensure no false positives
-        implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
-        implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
-	compileOnly 'org.projectlombok:lombok:1.18.20'
-	annotationProcessor 'org.projectlombok:lombok'
+    // force log4j related jars beyond log4shell vulnerability to ensure no false positives
+    implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
+    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.17.2'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok'
 
-	testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
-	testImplementation 'org.hamcrest:hamcrest:2.2'
-	testImplementation(platform('org.junit:junit-bom:5.7.2'))
-	testImplementation('org.junit.jupiter:junit-jupiter')
-	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
-	testImplementation "com.github.tomakehurst:wiremock-jre8:2.32.0"
+    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
+    testImplementation 'org.hamcrest:hamcrest:2.2'
+    testImplementation(platform('org.junit:junit-bom:5.7.2'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+    testImplementation "com.github.tomakehurst:wiremock-jre8:2.32.0"
 }
 
 test {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
-test.outputs.upToDateWhen {false}
+test.outputs.upToDateWhen { false }
 
 sourceSets {
-	integration {
-		compileClasspath += sourceSets.main.output
-		runtimeClasspath += sourceSets.main.output
-	}
+    integration {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
 }
 
 configurations {
-	integrationImplementation.extendsFrom testImplementation
-	integrationRuntime.extendsFrom testRuntime
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntime.extendsFrom testRuntime
 }
 
 tasks.withType(Test) {
-	useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 task integration(type: Test) {
-	testClassesDirs = sourceSets.integration.output.classesDirs
-	classpath = sourceSets.integration.runtimeClasspath
-	mustRunAfter tasks.test
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
+    mustRunAfter tasks.test
 }
 
-integration.outputs.upToDateWhen {false}
+integration.outputs.upToDateWhen { false }
 
 jacocoTestReport {
-	dependsOn test // tests are required to run before generating the report
-	shouldRunAfter integration
+    dependsOn test // tests are required to run before generating the report
+    shouldRunAfter integration
 }
 
 jacocoTestCoverageVerification {
-	dependsOn jacocoTestReport
+    dependsOn jacocoTestReport
 }
 
 spotbugsMain {
-	reports {
-		html {
-			enabled = true
-			destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
-			stylesheet = 'fancy-hist.xsl'
-		}
-	}
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
 
 spotbugsTest {
-	reports {
-		html {
-			enabled = true
-			destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
-			stylesheet = 'fancy-hist.xsl'
-		}
-	}
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
 
 spotbugsIntegration {
-	reports {
-		html {
-			enabled = true
-			destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
-			stylesheet = 'fancy-hist.xsl'
-		}
-	}
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/integration/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
 
 dependencyCheck {
-	failBuildOnCVSS = 7
-	suppressionFile = './dependency-checks-suppression.xml'
+    failBuildOnCVSS = 7
+    suppressionFile = './dependency-checks-suppression.xml'
 }
 
 check.dependsOn integration

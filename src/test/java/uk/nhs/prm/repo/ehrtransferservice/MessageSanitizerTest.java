@@ -15,9 +15,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Tag("unit")
 class MessageSanitizerTest {
 
-    private TestDataLoader loader = new TestDataLoader();
-
     MessageSanitizer messageSanitizer = new MessageSanitizer();
+    private TestDataLoader loader = new TestDataLoader();
 
     @ParameterizedTest
     @CsvSource({

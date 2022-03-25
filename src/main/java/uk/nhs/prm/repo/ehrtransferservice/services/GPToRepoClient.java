@@ -19,7 +19,7 @@ public class GPToRepoClient {
     private final URL gpToRepoUrl;
     private final String gpToRepoAuthKey;
 
-    public GPToRepoClient (@Value("${gpToRepoUrl}") String gpToRepoUrl, @Value("${gpToRepoAuthKey}") String gpToRepoAuthKey) throws MalformedURLException {
+    public GPToRepoClient(@Value("${gpToRepoUrl}") String gpToRepoUrl, @Value("${gpToRepoAuthKey}") String gpToRepoAuthKey) throws MalformedURLException {
         this.gpToRepoUrl = new URL(gpToRepoUrl);
         this.gpToRepoAuthKey = gpToRepoAuthKey;
     }
@@ -27,14 +27,14 @@ public class GPToRepoClient {
     public void sendContinueMessage(UUID messageId, UUID conversationId) throws HttpException {
         try {
             String jsonPayloadString = new Gson().toJson(new EhrExtractMessage(messageId));
-            String endpoint = "/deduction-requests/"+ conversationId + "/large-ehr-started";
+            String endpoint = "/deduction-requests/" + conversationId + "/large-ehr-started";
             HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(gpToRepoUrl, endpoint).toURI())
-                .method("PATCH", jsonPayload)
-                .header("Authorization", gpToRepoAuthKey)
-                .header("Content-Type", "application/json")
-                .build();
+                    .uri(new URL(gpToRepoUrl, endpoint).toURI())
+                    .method("PATCH", jsonPayload)
+                    .header("Authorization", gpToRepoAuthKey)
+                    .header("Content-Type", "application/json")
+                    .build();
             HttpResponse<String> response = HttpClient.newBuilder()
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
@@ -47,7 +47,7 @@ public class GPToRepoClient {
     }
 
     public void sendPdsUpdatedMessage(UUID conversationId) throws MalformedURLException, URISyntaxException, HttpException {
-        String endpoint = "/deduction-requests/"+ conversationId + "/pds-updated";
+        String endpoint = "/deduction-requests/" + conversationId + "/pds-updated";
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString("{}");
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(gpToRepoUrl, endpoint).toURI())

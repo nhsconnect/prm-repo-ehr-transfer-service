@@ -18,7 +18,7 @@ public class ApplicationAcknowledgementMessageHandler implements MessageHandler 
     private final JmsProducer jmsProducer;
     private String unhandledQueue;
 
-    public ApplicationAcknowledgementMessageHandler(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue){
+    public ApplicationAcknowledgementMessageHandler(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
     }
@@ -31,7 +31,7 @@ public class ApplicationAcknowledgementMessageHandler implements MessageHandler 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
         List<String> errorReasons = parsedMessage.getReasons();
-        if(errorReasons != null && errorReasons.size() > 0){
+        if (errorReasons != null && errorReasons.size() > 0) {
             String errors = Strings.join(errorReasons, ';');
             log.error("Found error reasons in acknowledgement message: " + errors, v("conversationId", parsedMessage.getConversationId()));
         }

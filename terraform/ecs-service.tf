@@ -1,5 +1,5 @@
 locals {
-  private_subnets   = split(",", data.aws_ssm_parameter.deductions_private_private_subnets.value)
+  private_subnets = split(",", data.aws_ssm_parameter.deductions_private_private_subnets.value)
 }
 
 resource "aws_ecs_service" "ecs-service" {
@@ -20,11 +20,11 @@ data "aws_ssm_parameter" "service-to-ehr-repo-sg-id" {
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-ehr-repo" {
-  type = "ingress"
-  protocol = "TCP"
-  from_port = 443
-  to_port = 443
-  security_group_id = data.aws_ssm_parameter.service-to-ehr-repo-sg-id.value
+  type                     = "ingress"
+  protocol                 = "TCP"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = data.aws_ssm_parameter.service-to-ehr-repo-sg-id.value
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
@@ -33,11 +33,11 @@ data "aws_ssm_parameter" "service-to-gp-to-repo-sg-id" {
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-gp-to-repo" {
-  type = "ingress"
-  protocol = "TCP"
-  from_port = 443
-  to_port = 443
-  security_group_id = data.aws_ssm_parameter.service-to-gp-to-repo-sg-id.value
+  type                     = "ingress"
+  protocol                 = "TCP"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = data.aws_ssm_parameter.service-to-gp-to-repo-sg-id.value
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
@@ -46,26 +46,26 @@ data "aws_ssm_parameter" "service-to-mq-sg-id" {
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-mq" {
-  type = "ingress"
-  protocol            = "tcp"
-  from_port           = "61617"
-  to_port             = "61617"
-  security_group_id = data.aws_ssm_parameter.service-to-mq-sg-id.value
+  type                     = "ingress"
+  protocol                 = "tcp"
+  from_port                = "61617"
+  to_port                  = "61617"
+  security_group_id        = data.aws_ssm_parameter.service-to-mq-sg-id.value
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
 data "aws_ssm_parameter" "service-to-repo-to-gp-sg-id" {
   count = var.environment == "prod" ? 0 : 1
-  name = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
+  name  = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-repo-to-gp" {
-  count = var.environment == "prod" ? 0 : 1
-  type = "ingress"
-  protocol = "TCP"
-  from_port = 443
-  to_port = 443
-  security_group_id = data.aws_ssm_parameter.service-to-repo-to-gp-sg-id[count.index].value
+  count                    = var.environment == "prod" ? 0 : 1
+  type                     = "ingress"
+  protocol                 = "TCP"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = data.aws_ssm_parameter.service-to-repo-to-gp-sg-id[count.index].value
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
@@ -73,15 +73,15 @@ resource "aws_ecs_cluster" "ehr_transfer_service_ecs_cluster" {
   name = "${var.environment}-${var.component_name}-ecs-cluster"
 
   tags = {
-    Name = "${var.environment}-${var.component_name}"
+    Name        = "${var.environment}-${var.component_name}"
     Environment = var.environment
-    CreatedBy = var.repo_name
+    CreatedBy   = var.repo_name
   }
 }
 
 resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
-  name        = "${var.environment}-${var.component_name}-ecs-task-sg"
-  vpc_id      = data.aws_ssm_parameter.deductions_private_vpc_id.value
+  name   = "${var.environment}-${var.component_name}-ecs-task-sg"
+  vpc_id = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
     description = "Allow outbound to deductions private and deductions core"
@@ -92,10 +92,10 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   }
 
   egress {
-    description = "Allow outbound to VPC Endpoints"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    description     = "Allow outbound to VPC Endpoints"
+    protocol        = "-1"
+    from_port       = 0
+    to_port         = 0
     security_groups = concat(tolist(data.aws_vpc_endpoint.ecr-dkr.security_group_ids), tolist(data.aws_vpc_endpoint.ecr-api.security_group_ids),
     tolist(data.aws_vpc_endpoint.logs.security_group_ids), tolist(data.aws_vpc_endpoint.ssm.security_group_ids))
   }
@@ -109,7 +109,7 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   }
 
   tags = {
-    Name = "${var.environment}-ehr-transfer-service-ecs-task-sg"
+    Name        = "${var.environment}-ehr-transfer-service-ecs-task-sg"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

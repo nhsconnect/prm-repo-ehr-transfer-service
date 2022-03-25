@@ -1,4 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.springframework.jms.core.JmsTemplate;
@@ -29,7 +30,7 @@ public class JmsProducer {
         try {
             ActiveMQBytesMessage bytesMessage = generateBytesMessage(message);
             jmsTemplate.convertAndSend(queueName, bytesMessage);
-        } catch(JMSException e) {
+        } catch (JMSException e) {
             log.error(String.format("Failed to send message to the %s queue", queueName), e);
         }
     }

@@ -145,8 +145,7 @@ public class LocalStackAwsConfig {
     private void ensureQueueDeleted(String queueName) {
         try {
             deleteQueue(queueName);
-        }
-        catch (QueueDoesNotExistException e) {
+        } catch (QueueDoesNotExistException e) {
             // no biggie
         }
     }

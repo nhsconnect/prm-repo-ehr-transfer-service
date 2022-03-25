@@ -1,6 +1,7 @@
 ### prm-repo-ehr-transfer-service
 
-This is an implementation of a component to handle the receiving of the GP2GP message set used to transfer a patient's Electronic Health Record between GP Practices.
+This is an implementation of a component to handle the receiving of the GP2GP message set used to transfer a patient's
+Electronic Health Record between GP Practices.
 
 ## Prerequisites
 
@@ -9,26 +10,26 @@ This is an implementation of a component to handle the receiving of the GP2GP me
 
 ### AWS helpers
 
-This repository imports shared AWS helpers from [prm-deductions-support-infra](https://github.com/nhsconnect/prm-deductions-support-infra/).
-They can be found `utils` directory after running any task from `tasks` file.
-
+This repository imports shared AWS helpers
+from [prm-deductions-support-infra](https://github.com/nhsconnect/prm-deductions-support-infra/). They can be
+found `utils` directory after running any task from `tasks` file.
 
 ## Set up
 
 ### Running the application
 
-In IntelliJ editor, use the green `play` button next to the main class `Gp2gpmessagehandlerApplication` to run the application
+In IntelliJ editor, use the green `play` button next to the main class `Gp2gpmessagehandlerApplication` to run the
+application
 
 In your terminal with `./gradlew bootRun`.
 
-
-This application relies on the queues to send/receive messages.
-They are spun up with `docker-compose-itest.yml` when running the tests in `dojo`.
-You can access the queues using the Active MQ console on: `http://localhost:8161/`
+This application relies on the queues to send/receive messages. They are spun up with `docker-compose-itest.yml` when
+running the tests in `dojo`. You can access the queues using the Active MQ console on: `http://localhost:8161/`
 
 ### Running the tests
 
 Run the unit tests with dojo
+
 1. Enter ` dojo `
 2. `./tasks _test_unit`
 
@@ -36,6 +37,7 @@ In your terminal with
 `./gradlew test`
 
 Run the integration tests with dojo
+
 1. Enter ` dojo `
 2. `./tasks _test_integration`
 
@@ -52,13 +54,15 @@ Run the dependency check tests with a Dojo container
 2. `./tasks _dep`
 
 To run all the checks before committing with one command
+
 1. Enter `dojo `
 2. `./tasks _test_all`
 
 ### Config
 
-If you need to add any new configuration items, update the `src/main/resources/application.properties` file per environment as well as add the environment variables in `./tasks` `configure_local_envariables`. 
-Note that `test` directory has its own `application.properties` file used in the test suite.
+If you need to add any new configuration items, update the `src/main/resources/application.properties` file per
+environment as well as add the environment variables in `./tasks` `configure_local_envariables`. Note that `test`
+directory has its own `application.properties` file used in the test suite.
 
 | Parameters          | SSM Parameter                                                             |
 |---------------------|---------------------------------------------------------------------------|
@@ -88,6 +92,7 @@ $ NHS_ENVIRONMENT=test
 In order to get sufficient access to work with terraform or AWS CLI:
 
 Make sure to unset the AWS variables:
+
 ```
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
@@ -111,6 +116,7 @@ source_profile = default
 ```
 
 The `source_profile` needs to match your profile in `~/.aws/credentials`.
+
 ```
 [default]
 aws_access_key_id = <your-aws-access-key-id>
@@ -120,6 +126,7 @@ aws_secret_access_key = <your-aws-secret-access-key>
 ## Assume role with elevated permissions
 
 ### Install `assume-role` locally:
+
 `brew install remind101/formulae/assume-role`
 
 Run the following command with the profile configured in your `~/.aws/config`:
@@ -127,6 +134,7 @@ Run the following command with the profile configured in your `~/.aws/config`:
 `assume-role admin`
 
 ### Run `assume-role` with dojo:
+
 Run the following command with the profile configured in your `~/.aws/config`:
 
 `eval $(dojo "echo <mfa-code> | assume-role admin"`
@@ -144,6 +152,7 @@ When creating the new ssm keys, please follow the agreed convention as per the d
 * `env` is optional
 
 ### Design:
+
 Please follow this design to ensure the ssm keys are easy to maintain and navigate through:
 
 | Type               | Design                                  | Example                                               |

@@ -31,8 +31,10 @@ public class JmsConsumerIntegrationTest {
     String unhandledQueue;
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
-
+    @InjectMocks
+    JmsConsumer jmsConsumer;
     private AutoCloseable closeable;
+    private TestDataLoader dataLoader = new TestDataLoader();
 
     @BeforeEach
     void setUp() {
@@ -43,11 +45,6 @@ public class JmsConsumerIntegrationTest {
     void tearDown() throws Exception {
         closeable.close();
     }
-
-    @InjectMocks
-    JmsConsumer jmsConsumer;
-
-    private TestDataLoader dataLoader = new TestDataLoader();
 
     private ActiveMQBytesMessage getActiveMQBytesMessage(byte[] bytes) throws JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();

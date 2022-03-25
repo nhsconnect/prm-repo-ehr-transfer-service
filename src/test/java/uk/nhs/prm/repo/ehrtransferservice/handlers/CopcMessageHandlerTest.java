@@ -26,11 +26,9 @@ public class CopcMessageHandlerTest {
 
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
-
-    private AutoCloseable closeable;
-
     @InjectMocks
     CopcMessageHandler copcMessageHandler;
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {

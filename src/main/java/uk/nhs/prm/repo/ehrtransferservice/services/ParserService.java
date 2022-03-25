@@ -12,7 +12,8 @@ import java.io.IOException;
  */
 @Component
 public class ParserService {
-    public ParserService() {}
+    public ParserService() {
+    }
 
     public ParsedMessage parse(String contentAsString) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -14,7 +14,7 @@ public class AcknowledgementMessageWrapper extends MessageContent {
     public ControlActEvent controlActEvent;
 
     public List<String> getReasons() {
-        if(controlActEvent.reason != null) {
+        if (controlActEvent.reason != null) {
             return controlActEvent.reason.stream().map(ControlActEvent.Reason::getErrorDisplayName)
                     .collect(Collectors.toList());
         }
@@ -34,7 +34,7 @@ public class AcknowledgementMessageWrapper extends MessageContent {
             public JustifyingDetectedIssueEvent justifyingDetectedIssueEvent;
 
             public String getErrorDisplayName() {
-                if(justifyingDetectedIssueEvent != null && justifyingDetectedIssueEvent.code != null) {
+                if (justifyingDetectedIssueEvent != null && justifyingDetectedIssueEvent.code != null) {
                     return justifyingDetectedIssueEvent.code.displayName;
                 }
                 return null;

@@ -68,7 +68,7 @@ public class ParsedMessageTest {
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget = new EhrExtract.RecordTarget();
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient = new Patient();
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
-        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= "1234567890";
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension = "1234567890";
 
         ParsedMessage message = new ParsedMessage(null, ehrExtractMessageWrapper, null);
         assertThat(message.getNhsNumber(), equalTo("1234567890"));
@@ -96,7 +96,7 @@ public class ParsedMessageTest {
         ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget = new EhrRequest.RecordTarget();
         ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient = new Patient();
         ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient.id = new Identifier();
-        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient.id.extension= "1234567890";
+        ehrRequestMessageWrapper.controlActEvent.subject.ehrRequest.recordTarget.patient.id.extension = "1234567890";
 
         ParsedMessage message = new ParsedMessage(null, ehrRequestMessageWrapper, null);
         assertThat(message.getNhsNumber(), equalTo("1234567890"));

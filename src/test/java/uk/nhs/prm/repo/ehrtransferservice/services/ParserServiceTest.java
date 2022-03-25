@@ -81,7 +81,7 @@ public class ParserServiceTest {
     }
 
     @Test
-    public void shouldExtractNhsNumberFromEhrExtract() throws IOException  {
+    public void shouldExtractNhsNumberFromEhrExtract() throws IOException {
         String fileName = "RCMR_IN030000UK06Sanitized";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
@@ -90,7 +90,7 @@ public class ParserServiceTest {
     }
 
     @Test
-    public void shouldExtractErrorMessageFromAcknowledgement() throws IOException  {
+    public void shouldExtractErrorMessageFromAcknowledgement() throws IOException {
         String fileName = "MCCI_IN010000UK13FailureSanitized";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
@@ -100,7 +100,7 @@ public class ParserServiceTest {
     }
 
     @Test
-    public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException  {
+    public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException {
         String fileName = "MCCI_IN010000UK13Empty";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);

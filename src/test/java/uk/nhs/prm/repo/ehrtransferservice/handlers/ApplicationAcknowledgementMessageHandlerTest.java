@@ -28,11 +28,9 @@ public class ApplicationAcknowledgementMessageHandlerTest {
 
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
-
-    private AutoCloseable closeable;
-
     @InjectMocks
     ApplicationAcknowledgementMessageHandler applicationAcknowledgementMessageHandler;
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +56,7 @@ public class ApplicationAcknowledgementMessageHandlerTest {
     }
 
     @Test
-    public void shouldSendToUnhandledQueue()  {
+    public void shouldSendToUnhandledQueue() {
         ParsedMessage parsedMessage = createParsedMessage();
         applicationAcknowledgementMessageHandler.handleMessage(parsedMessage);
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());

@@ -28,7 +28,9 @@ public class ParsedMessage {
         return bytesMessage;
     }
 
-    public String getRawMessage() { return rawMessage; }
+    public String getRawMessage() {
+        return rawMessage;
+    }
 
     public MessageContent getMessageContent() {
         return messageContent;
@@ -91,7 +93,7 @@ public class ParsedMessage {
     public boolean isLargeMessage() {
         SOAPEnvelope soapEnvelope = getSoapEnvelope();
 
-        for (Reference reference: soapEnvelope.body.manifest) {
+        for (Reference reference : soapEnvelope.body.manifest) {
             if (reference.href.contains("mid")) {
                 return true;
             }
@@ -99,7 +101,7 @@ public class ParsedMessage {
         return false;
     }
 
-    public List<UUID> getAttachmentMessageIds(){
+    public List<UUID> getAttachmentMessageIds() {
         List<UUID> attachmentMessageIds = new ArrayList<>();
         SOAPEnvelope soapEnvelope = getSoapEnvelope();
 

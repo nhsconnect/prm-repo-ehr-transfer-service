@@ -24,12 +24,11 @@ public class RepoToGPClientTest {
 
     @Mock
     ParsedMessage parsedMessage;
-
-    private AutoCloseable closeable;
     UUID conversationId = UUID.randomUUID();
     String ehrRequestId = UUID.randomUUID().toString();
     String nhsNumber = "1234567890";
     String odsCode = "A12345";
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {

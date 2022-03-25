@@ -25,16 +25,16 @@ public class GPToRepoClientTest {
     public void shouldCallApiContinueMessageWithValidEhrExtractId() throws MalformedURLException, HttpException {
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
         String messageId = "ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/large-ehr-started"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/large-ehr-started"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(204)
                         .withHeader("Content-Type", "application/json")));
         GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
 
-        gpToRepoClient.sendContinueMessage(UUID.fromString(messageId),UUID.fromString(conversationId));
+        gpToRepoClient.sendContinueMessage(UUID.fromString(messageId), UUID.fromString(conversationId));
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/large-ehr-started"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/large-ehr-started"))
                 .withRequestBody(equalToJson("{ \"messageId\": \"ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717\"}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
@@ -44,18 +44,18 @@ public class GPToRepoClientTest {
     public void shouldThrowErrorWhenUnexpectedResponseForContinueMessage() throws MalformedURLException {
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
         String messageId = "ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/large-ehr-started"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/large-ehr-started"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
                         .withHeader("Content-Type", "application/json")));
         GPToRepoClient gpToRepoClient = new GPToRepoClient(wireMock.baseUrl(), "secret");
         Exception expected = assertThrows(HttpException.class, () ->
-            gpToRepoClient.sendContinueMessage(UUID.fromString(messageId), UUID.fromString(conversationId))
+                gpToRepoClient.sendContinueMessage(UUID.fromString(messageId), UUID.fromString(conversationId))
         );
         assertThat(expected, notNullValue());
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/large-ehr-started"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/large-ehr-started"))
                 .withRequestBody(equalToJson("{ \"messageId\": \"ef90e1ec-5948-4ed6-b4d2-a3fbaebc5717\"}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
@@ -64,7 +64,7 @@ public class GPToRepoClientTest {
     @Test
     public void shouldCallPdsUpdatedEndpointSuccessfully() throws MalformedURLException, URISyntaxException, HttpException {
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/pds-updated"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/pds-updated"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(204)
@@ -73,7 +73,7 @@ public class GPToRepoClientTest {
 
         gpToRepoClient.sendPdsUpdatedMessage(UUID.fromString(conversationId));
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/pds-updated"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/pds-updated"))
                 .withRequestBody(equalToJson("{}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
@@ -82,7 +82,7 @@ public class GPToRepoClientTest {
     @Test
     public void shouldThrowErrorWhenUnexpectedResponseForPdsUpdated() throws MalformedURLException {
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/pds-updated"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/pds-updated"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
@@ -93,7 +93,7 @@ public class GPToRepoClientTest {
         );
         assertThat(expected, notNullValue());
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/pds-updated"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/pds-updated"))
                 .withRequestBody(equalToJson("{}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
@@ -103,7 +103,7 @@ public class GPToRepoClientTest {
     public void shouldCallGpToRepoToSendSmallEhrExtractReceivedNotificationWithValidEhrExtractMessageId() throws IOException, HttpException {
         String conversationId = "491b821f-3839-431d-abc8-246a8b0db886";
         String messageId = "5b974231-2848-49fc-97ab-c13a87eaf416";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/ehr-message-received"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/ehr-message-received"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(204)
@@ -112,7 +112,7 @@ public class GPToRepoClientTest {
 
         gpToRepoClient.notifySmallEhrExtractArrived(UUID.fromString(messageId), UUID.fromString(conversationId));
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/ehr-message-received"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/ehr-message-received"))
                 .withRequestBody(equalToJson("{ \"messageId\": \"5b974231-2848-49fc-97ab-c13a87eaf416\"}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
@@ -122,7 +122,7 @@ public class GPToRepoClientTest {
     public void shouldThrowErrorWhenUnexpectedResponseFromGpToGpClientOnSmallEhrExtractReceivedNotification() throws MalformedURLException {
         String conversationId = "08bf1791-4c56-4667-ad7c-64cf9e64ab1e";
         String messageId = "5b974231-2848-49fc-97ab-c13a87eaf416";
-        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/"+ conversationId +"/ehr-message-received"))
+        wireMock.stubFor(patch(urlEqualTo("/deduction-requests/" + conversationId + "/ehr-message-received"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
@@ -133,7 +133,7 @@ public class GPToRepoClientTest {
         );
         assertThat(expected, notNullValue());
 
-        verify(patchRequestedFor(urlMatching("/deduction-requests/"+ conversationId +"/ehr-message-received"))
+        verify(patchRequestedFor(urlMatching("/deduction-requests/" + conversationId + "/ehr-message-received"))
                 .withRequestBody(equalToJson("{ \"messageId\": \"5b974231-2848-49fc-97ab-c13a87eaf416\"}"))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));

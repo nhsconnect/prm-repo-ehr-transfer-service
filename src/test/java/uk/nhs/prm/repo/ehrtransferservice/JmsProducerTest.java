@@ -19,10 +19,11 @@ import static org.mockito.Mockito.verify;
 public class JmsProducerTest {
     @Mock
     JmsTemplate jmsTemplate;
-    private AutoCloseable closeable;
-
     @InjectMocks
     JmsProducer jmsProducer;
+    @Captor
+    ArgumentCaptor<ActiveMQBytesMessage> bytesMessageArgumentCaptor;
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
@@ -33,9 +34,6 @@ public class JmsProducerTest {
     void tearDown() throws Exception {
         closeable.close();
     }
-
-    @Captor
-    ArgumentCaptor<ActiveMQBytesMessage> bytesMessageArgumentCaptor;
 
     @Test
     void shouldSendMessageToQueue() throws JMSException {

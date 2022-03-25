@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RepoIncomingEventParser {
 
-   private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public RepoIncomingEvent parse(String repoIncomingMessage) throws JsonProcessingException {
         return new RepoIncomingEvent(mapper.readValue(repoIncomingMessage, new TypeReference<>() {

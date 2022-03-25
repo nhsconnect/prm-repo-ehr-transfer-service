@@ -26,7 +26,7 @@ public class EhrRepoClient {
     }
 
     public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException, HttpException {
-        String endpoint = "/messages/"+ conversationId + "/" + messageId;
+        String endpoint = "/messages/" + conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
                 .header("Authorization", ehrRepoAuthKey)
@@ -76,7 +76,7 @@ public class EhrRepoClient {
             }
 
         } catch (Exception e) {
-            throw new HttpException("Failed to store message in EHR repo",e);
+            throw new HttpException("Failed to store message in EHR repo", e);
         }
     }
 }

@@ -7,7 +7,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = [
         "ecs-tasks.amazonaws.com"
       ]
@@ -22,7 +22,7 @@ resource "aws_iam_role" "component-ecs-role" {
 
   tags = {
     Environment = var.environment
-    CreatedBy = var.repo_name
+    CreatedBy   = var.repo_name
   }
 }
 
@@ -117,7 +117,7 @@ resource "aws_iam_policy" "ehr_transfer_service_kms" {
 
 data "aws_iam_policy_document" "kms_policy_doc" {
   statement {
-    actions = [
+    actions   = [
       "kms:*"
     ]
     resources = [

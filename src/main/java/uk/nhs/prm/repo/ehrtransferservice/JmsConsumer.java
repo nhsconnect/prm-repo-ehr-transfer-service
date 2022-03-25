@@ -28,12 +28,12 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 @Slf4j
 public class JmsConsumer {
     final JmsProducer jmsProducer;
-    private String inboundQueue;
-    private String unhandledQueue;
     final MessageSanitizer messageSanitizer;
     final ParserService parserService;
     // can't initialize the dictionary in the constructor because it makes mocking harder
     private final List<MessageHandler> handlersList;
+    private String inboundQueue;
+    private String unhandledQueue;
     private Dictionary<String, MessageHandler> handlers;
 
     public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
@@ -42,7 +42,7 @@ public class JmsConsumer {
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
         this.parserService = parserService;
-        this.handlersList  = handlers;
+        this.handlersList = handlers;
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
@@ -82,9 +82,9 @@ public class JmsConsumer {
     }
 
     private Dictionary<String, MessageHandler> getHandlers() {
-        if(handlers == null) {
+        if (handlers == null) {
             this.handlers = new Hashtable<>();
-            for(MessageHandler h : this.handlersList) {
+            for (MessageHandler h : this.handlersList) {
                 this.handlers.put(h.getInteractionId(), h);
             }
         }

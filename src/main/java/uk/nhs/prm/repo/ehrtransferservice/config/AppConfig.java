@@ -19,5 +19,7 @@ public class AppConfig {
         return environment;
     }
 
-    public String transferTrackerDbTableName() { return transferTrackerDbTableName; }
+    public String transferTrackerDbTableName() {
+        return transferTrackerDbTableName;
+    }
 }

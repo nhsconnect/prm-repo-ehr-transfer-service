@@ -13,20 +13,20 @@ public class EhrRequestMessageWrapperTest {
     @Test
     public void shouldRetrieveNHSNumberFromEhrRequest() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                        "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
-                            "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
-                                "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
-                                    "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
-                                        "<id root=\"041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC\"/>\n" +
-                                        "<recordTarget type=\"Participation\" typeCode=\"RCT\">\n" +
-                                            "<patient type=\"Patient\" classCode=\"PAT\">\n" +
-                                                "<id root=\"2.16.840.1.113883.2.1.4.1\" extension=\"9692294935\"/>\n" +
-                                            "</patient>\n" +
-                                        "</recordTarget>\n" +
-                                    "</EhrRequest>\n" +
-                                "</subject>\n" +
-                            "</ControlActEvent>\n" +
-                        "</RCMR_IN010000UK05>";
+                "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
+                "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
+                "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
+                "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
+                "<id root=\"041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC\"/>\n" +
+                "<recordTarget type=\"Participation\" typeCode=\"RCT\">\n" +
+                "<patient type=\"Patient\" classCode=\"PAT\">\n" +
+                "<id root=\"2.16.840.1.113883.2.1.4.1\" extension=\"9692294935\"/>\n" +
+                "</patient>\n" +
+                "</recordTarget>\n" +
+                "</EhrRequest>\n" +
+                "</subject>\n" +
+                "</ControlActEvent>\n" +
+                "</RCMR_IN010000UK05>";
         XmlMapper xmlMapper = new XmlMapper();
         EhrRequestMessageWrapper ehrRequestMessageWrapper = xmlMapper.readValue(extract, EhrRequestMessageWrapper.class);
         EhrRequest ehrRequest = ehrRequestMessageWrapper.getEhrRequest();
@@ -38,19 +38,19 @@ public class EhrRequestMessageWrapperTest {
     public void shouldRetrieveOdsCodeFromEhrRequest() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
-                    "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
-                        "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
-                            "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
-                                "<author type=\"Participation\" typeCode=\"AUT\">\n" +
-                                    "<AgentOrgSDS type=\"RoleHeir\" classCode=\"AGNT\">\n" +
-                                        "<agentOrganizationSDS type=\"Organization\" classCode=\"ORG\" determinerCode=\"INSTANCE\">\n" +
-                                            "<id root=\"1.2.826.0.1285.0.1.10\" extension=\"N82668\"/>\n" +
-                                        "</agentOrganizationSDS>\n" +
-                                    "</AgentOrgSDS>\n" +
-                                "</author>\n" +
-                            "</EhrRequest>\n" +
-                        "</subject>\n" +
-                    "</ControlActEvent>\n" +
+                "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
+                "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
+                "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
+                "<author type=\"Participation\" typeCode=\"AUT\">\n" +
+                "<AgentOrgSDS type=\"RoleHeir\" classCode=\"AGNT\">\n" +
+                "<agentOrganizationSDS type=\"Organization\" classCode=\"ORG\" determinerCode=\"INSTANCE\">\n" +
+                "<id root=\"1.2.826.0.1285.0.1.10\" extension=\"N82668\"/>\n" +
+                "</agentOrganizationSDS>\n" +
+                "</AgentOrgSDS>\n" +
+                "</author>\n" +
+                "</EhrRequest>\n" +
+                "</subject>\n" +
+                "</ControlActEvent>\n" +
                 "</RCMR_IN010000UK05>";
         XmlMapper xmlMapper = new XmlMapper();
         EhrRequestMessageWrapper ehrRequestMessageWrapper = xmlMapper.readValue(extract, EhrRequestMessageWrapper.class);
@@ -63,13 +63,13 @@ public class EhrRequestMessageWrapperTest {
     public void shouldRetrieveEhrRequestId() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
-                    "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
-                        "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
-                            "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
-                                "<id root=\"041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC\"/>\n" +
-                            "</EhrRequest>\n" +
-                        "</subject>\n" +
-                    "</ControlActEvent>\n" +
+                "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
+                "<subject type=\"ActRelationship\" typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
+                "<EhrRequest type=\"ActHeir\" classCode=\"EXTRACT\" moodCode=\"RQO\">\n" +
+                "<id root=\"041CA2AE-3EC6-4AC9-942F-0F6621CC0BFC\"/>\n" +
+                "</EhrRequest>\n" +
+                "</subject>\n" +
+                "</ControlActEvent>\n" +
                 "</RCMR_IN010000UK05>";
         XmlMapper xmlMapper = new XmlMapper();
         EhrRequestMessageWrapper ehrRequestMessageWrapper = xmlMapper.readValue(extract, EhrRequestMessageWrapper.class);

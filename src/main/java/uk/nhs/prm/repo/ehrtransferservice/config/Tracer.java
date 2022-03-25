@@ -38,16 +38,16 @@ public class Tracer {
         return UUID.randomUUID().toString();
     }
 
-    private void setTraceId(String traceId) {
-        MDC.put(TRACE_ID, traceId);
-    }
-
     private void setConversationId(String conversationId) {
         MDC.put(CONVERSATION_ID, conversationId);
     }
 
     public String getTraceId() {
         return MDC.get(TRACE_ID);
+    }
+
+    private void setTraceId(String traceId) {
+        MDC.put(TRACE_ID, traceId);
     }
 
     private void handleNemsMessageId(Message message) throws JMSException {
@@ -57,12 +57,13 @@ public class Tracer {
             setNemsMessageId(message.getStringProperty(NEMS_MESSAGE_ID));
         }
     }
-    private void setNemsMessageId(String nemsMessageId) {
-        MDC.put(NEMS_MESSAGE_ID, nemsMessageId);
-    }
 
     public String getNemsMessageId() {
         return MDC.get(NEMS_MESSAGE_ID);
+    }
+
+    private void setNemsMessageId(String nemsMessageId) {
+        MDC.put(NEMS_MESSAGE_ID, nemsMessageId);
     }
 
     private void clearMDCContext() {

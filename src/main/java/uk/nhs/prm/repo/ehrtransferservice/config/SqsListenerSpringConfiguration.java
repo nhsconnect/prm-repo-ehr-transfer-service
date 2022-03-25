@@ -24,12 +24,11 @@ import javax.jms.Session;
 @Slf4j
 public class SqsListenerSpringConfiguration {
 
-    @Value("${aws.repoIncomingQueueName}")
-    private String repoIncomingQueueName;
-
     private final Tracer tracer;
     private final ConversationIdGenerator conversationIdGenerator;
     private final EhrRequestService ehrRequestService;
+    @Value("${aws.repoIncomingQueueName}")
+    private String repoIncomingQueueName;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -48,7 +47,7 @@ public class SqsListenerSpringConfiguration {
         log.info("repo incoming queue name : {}", repoIncomingQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
 
-        consumer.setMessageListener(new EhrRequestListener(tracer,conversationIdGenerator,ehrRequestService));
+        consumer.setMessageListener(new EhrRequestListener(tracer, conversationIdGenerator, ehrRequestService));
 
         connection.start();
 

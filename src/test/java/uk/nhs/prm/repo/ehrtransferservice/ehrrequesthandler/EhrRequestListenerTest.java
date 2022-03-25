@@ -48,8 +48,9 @@ class EhrRequestListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         when(message.getText()).thenThrow(new RuntimeException());
         ehrRequestListener.onMessage(message);
-        verify(message,never()).acknowledge();
+        verify(message, never()).acknowledge();
     }
+
     @Test
     void shouldCallEhrRequestServiceWithTheMessage() throws JMSException {
         String payload = "payload";

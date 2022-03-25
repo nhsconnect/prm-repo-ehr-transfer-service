@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 public class PresignedUrl {
     public URL presignedUrl;
 
-    public PresignedUrl (URL presignedUrl) {
+    public PresignedUrl(URL presignedUrl) {
         this.presignedUrl = presignedUrl;
     }
 
@@ -33,7 +33,7 @@ public class PresignedUrl {
                 throw new RuntimeException("Unexpected response from S3");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to store EHR in S3",e);
+            throw new RuntimeException("Failed to store EHR in S3", e);
         }
     }
 }

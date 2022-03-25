@@ -22,7 +22,7 @@ public class ConfirmMessageStoredTest {
 
     @Test
     public void shouldSerializeToJson() {
-        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[]}}}";
+        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[]}}}";
         String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
         assertThat(jsonText, equalTo(expectedJson));
     }
@@ -32,7 +32,7 @@ public class ConfirmMessageStoredTest {
         attachmentMessageIds.add(attachmentMessageID);
         attachmentMessageIds.add(secondAttachmentMessageID);
 
-        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[\""+ attachmentMessageID + "\",\""+ secondAttachmentMessageID +"\"]}}}";
+        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[\"" + attachmentMessageID + "\",\"" + secondAttachmentMessageID + "\"]}}}";
         String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
         assertThat(jsonText, equalTo(expectedJson));
     }

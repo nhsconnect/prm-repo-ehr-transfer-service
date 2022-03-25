@@ -30,13 +30,18 @@ public class EhrExtractMessageHandlerTest {
     EhrRepoService ehrRepoService;
     @Mock
     ParsedMessage parsedMessage;
-    private AutoCloseable closeable;
-
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
-
     @InjectMocks
     EhrExtractMessageHandler ehrExtractMessageHandler;
+    private AutoCloseable closeable;
+    private UUID conversationId;
+    private UUID messageId;
+
+    public EhrExtractMessageHandlerTest() {
+        conversationId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
+    }
 
     @BeforeEach
     void setUp() {
@@ -46,14 +51,6 @@ public class EhrExtractMessageHandlerTest {
     @AfterEach
     void tearDown() throws Exception {
         closeable.close();
-    }
-
-    private UUID conversationId;
-    private UUID messageId;
-
-    public EhrExtractMessageHandlerTest() {
-        conversationId = UUID.randomUUID();
-        messageId = UUID.randomUUID();
     }
 
     @Test

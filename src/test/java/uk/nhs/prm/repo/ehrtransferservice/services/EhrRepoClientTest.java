@@ -32,7 +32,7 @@ public class EhrRepoClientTest {
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
-        wireMock.stubFor(get(urlEqualTo("/messages/"+ conversationId + "/" + messageId))
+        wireMock.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -42,7 +42,7 @@ public class EhrRepoClientTest {
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
         PresignedUrl response = ehrRepoClient.fetchStorageUrl(conversationId, messageId);
 
-        verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
+        verify(getRequestedFor(urlMatching("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
 
@@ -54,7 +54,7 @@ public class EhrRepoClientTest {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
-        wireMock.stubFor(get(urlEqualTo("/messages/"+ conversationId + "/" + messageId))
+        wireMock.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
@@ -66,7 +66,7 @@ public class EhrRepoClientTest {
         );
         assertThat(expected, notNullValue());
 
-        verify(getRequestedFor(urlMatching("/messages/"+ conversationId + "/" + messageId))
+        verify(getRequestedFor(urlMatching("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
     }
@@ -105,7 +105,7 @@ public class EhrRepoClientTest {
         String nhsNumber = "1234567890";
         String messageType = "ehrExtract";
         String interactionId = "RCMR_IN030000UK06";
-        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\""+ conversationId +"\",\"messageType\":\""+ messageType +"\",\"nhsNumber\":\""+ nhsNumber +"\",\"attachmentMessageIds\":[\""+attachmentId+"\"]}}}";
+        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[\"" + attachmentId + "\"]}}}";
 
         // Mock request
         wireMock.stubFor(post(urlEqualTo("/messages"))
@@ -138,14 +138,14 @@ public class EhrRepoClientTest {
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget = new EhrExtract.RecordTarget();
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient = new Patient();
         ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id = new Identifier();
-        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension= nhsNumber;
+        ehrExtractMessageWrapper.controlActEvent.subject.ehrExtract.recordTarget.patient.id.extension = nhsNumber;
         return ehrExtractMessageWrapper;
     }
 
     private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, UUID attachmentId, String interactionId) {
         SOAPEnvelope envelope = new SOAPEnvelope();
         Reference reference = new Reference();
-        reference.href = "mid:"+attachmentId;
+        reference.href = "mid:" + attachmentId;
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(reference);

@@ -1,4 +1,4 @@
-environment    = "test"
+environment = "test"
 
 task_cpu    = 256
 task_memory = 512

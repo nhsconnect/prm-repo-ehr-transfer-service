@@ -34,15 +34,13 @@ public class EhrRequestMessageHandlerTest {
 
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
-
+    @InjectMocks
+    EhrRequestMessageHandler ehrRequestMessageHandler;
     private AutoCloseable closeable;
     private UUID conversationId;
     private String ehrRequestMessageId;
     private String nhsNumber = "1234567890";
     private String odsCode = "A12345";
-
-    @InjectMocks
-    EhrRequestMessageHandler ehrRequestMessageHandler;
 
     @BeforeEach
     void setUp() {

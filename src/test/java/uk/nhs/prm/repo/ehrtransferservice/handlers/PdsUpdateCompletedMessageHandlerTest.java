@@ -35,11 +35,9 @@ public class PdsUpdateCompletedMessageHandlerTest {
 
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
-
-    private AutoCloseable closeable;
-
     @InjectMocks
     PdsUpdateCompletedMessageHandler pdsUpdateCompletedMessageHandler;
+    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {

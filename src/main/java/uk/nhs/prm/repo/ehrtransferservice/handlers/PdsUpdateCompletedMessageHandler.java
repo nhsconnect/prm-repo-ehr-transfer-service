@@ -17,7 +17,7 @@ public class PdsUpdateCompletedMessageHandler implements MessageHandler {
     private String unhandledQueue;
     private GPToRepoClient gpToRepoClient;
 
-    public PdsUpdateCompletedMessageHandler(JmsProducer jmsProducer, GPToRepoClient gpToRepoClient, @Value("${activemq.unhandledQueue}") String unhandledQueue){
+    public PdsUpdateCompletedMessageHandler(JmsProducer jmsProducer, GPToRepoClient gpToRepoClient, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
         this.gpToRepoClient = gpToRepoClient;
