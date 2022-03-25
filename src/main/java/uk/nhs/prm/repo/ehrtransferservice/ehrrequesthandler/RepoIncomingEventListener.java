@@ -28,12 +28,13 @@ public class RepoIncomingEventListener implements MessageListener {
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from RepoIncoming");
         } catch (Exception e) {
-            log.error("Error while processing message: {}", e.getMessage());
+            log.error("Error while processing message: {}", e);
         }
     }
 
     private void processMessage(Message message) throws JMSException {
         String payload = ((TextMessage)message).getText();
+        log.info("Trying to process repo incoming event");
         repoIncomingService.processIncomingEvent(parser.parse(payload));
     }
 

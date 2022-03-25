@@ -13,6 +13,7 @@ public class RepoIncomingEventParser {
 
     public RepoIncomingEvent parse(String repoIncomingMessage) {
         try {
+            log.info("Trying to process repo incoming event");
             return mapper.readValue(repoIncomingMessage, RepoIncomingEvent.class);
         } catch (JsonProcessingException e) {
             log.error("Encountered Exception while trying to parse incoming event message");
