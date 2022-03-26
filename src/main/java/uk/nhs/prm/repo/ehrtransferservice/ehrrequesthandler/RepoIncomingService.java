@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 @Slf4j
 public class RepoIncomingService {
 
-    TransferTrackerService transferTrackerService;
+    private final TransferTrackerService transferTrackerService;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) {
         transferTrackerService.recordEventInDb(repoIncomingEvent);

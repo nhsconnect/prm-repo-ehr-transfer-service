@@ -34,7 +34,6 @@ public class RepoIncomingEventListener implements MessageListener {
 
     private void processMessage(Message message) throws JMSException {
         String payload = ((TextMessage)message).getText();
-        log.info("Trying to process repo incoming event");
         repoIncomingService.processIncomingEvent(parser.parse(payload));
     }
 
