@@ -69,5 +69,6 @@ public class Tracer {
     private void clearMDCContext() {
         MDC.remove(TRACE_ID);
         MDC.remove(NEMS_MESSAGE_ID);
+        MDC.remove(CONVERSATION_ID);
     }
 }
