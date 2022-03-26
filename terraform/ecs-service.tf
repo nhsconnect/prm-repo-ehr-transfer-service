@@ -108,6 +108,14 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
     cidr_blocks = data.aws_vpc_endpoint.s3.cidr_blocks
   }
 
+  egress {
+    description     = "Allow outbound HTTPS traffic to dynamodb"
+    protocol        = "tcp"
+    from_port       = 443
+    to_port         = 443
+    prefix_list_ids = [data.aws_ssm_parameter.dynamodb_prefix_list_id.value]
+  }
+
   tags = {
     Name        = "${var.environment}-ehr-transfer-service-ecs-task-sg"
     CreatedBy   = var.repo_name
@@ -147,4 +155,8 @@ data "aws_vpc_endpoint" "ssm" {
 data "aws_vpc_endpoint" "s3" {
   vpc_id       = data.aws_ssm_parameter.deductions_private_vpc_id.value
   service_name = "com.amazonaws.${var.region}.s3"
+}
+
+data "aws_ssm_parameter" "dynamodb_prefix_list_id" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/dynamodb_prefix_list_id"
 }

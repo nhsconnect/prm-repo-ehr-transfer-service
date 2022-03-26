@@ -169,7 +169,7 @@ data "aws_iam_policy_document" "transfer-tracker-db-access" {
 }
 
 resource "aws_iam_policy" "transfer-tracker-db-access" {
-  name   = "${var.environment}-${var.component_name}-dynamodb-table-access"
+  name   = "${var.environment}-${var.component_name}-transfer-tracker-db-access"
   policy = data.aws_iam_policy_document.transfer-tracker-db-access.json
 }
 
