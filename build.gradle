@@ -59,6 +59,21 @@ dependencies {
     testImplementation('org.junit.jupiter:junit-jupiter')
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.32.0"
+
+    // CVE-2020-36518...
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
+    // including workaround for bom mismatch which should be retired with full jackson-databind release
+    components {
+        withModule("com.fasterxml.jackson.core:jackson-databind") {
+            allVariants {
+                withDependencies {
+                    removeAll {
+                        it.name == "jackson-bom"
+                    }
+                }
+            }
+        }
+    }
 }
 
 test {
