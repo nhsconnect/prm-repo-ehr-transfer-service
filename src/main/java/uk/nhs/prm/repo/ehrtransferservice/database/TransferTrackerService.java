@@ -23,7 +23,7 @@ public class TransferTrackerService {
         try {
             log.info("Recording an event in transfer tracker db with status : " + "ACTION:TRANSFER_TO_REPO_STARTED");
             TransferTrackerDbEntry transferTrackerDbEntry =
-                    new TransferTrackerDbEntry(conversationId, incomingEvent.getNhsNumber(), incomingEvent.getSourceGP(), incomingEvent.getNemsMessageId(), "ACTION:TRANSFER_TO_REPO_STARTED", getTimeNow());
+                    new TransferTrackerDbEntry(conversationId, incomingEvent.getNhsNumber(), incomingEvent.getSourceGp(), incomingEvent.getNemsMessageId(), "ACTION:TRANSFER_TO_REPO_STARTED", getTimeNow());
             transferTrackerDb.save(transferTrackerDbEntry);
         }catch(Exception e) {
             log.error("Error encountered while recording event in transfer tracker db" + e.getMessage());

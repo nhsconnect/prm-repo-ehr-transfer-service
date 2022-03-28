@@ -10,7 +10,7 @@ class RepoIncomingEventParserTest {
 
     @Test
     void shouldParseRepoIncomingMessageCorrectlyWhenAMessageContainsExpectedValues() {
-        String incomingMessage = "{\"nhsNumber\":\"nhs-number\",\"sourceGP\":\"source-gp\",\"nemsMessageId\":\"nems-message-id\",\"destinationGP\":\"destination-GP\"}";
+        String incomingMessage = "{\"nhsNumber\":\"nhs-number\",\"sourceGp\":\"source-gp\",\"nemsMessageId\":\"nems-message-id\",\"destinationGp\":\"destination-GP\"}";
         var repoIncomingEventParser = new RepoIncomingEventParser();
         var parsedMessage = repoIncomingEventParser.parse(incomingMessage);
         assertEquals("nhs-number", parsedMessage.getNhsNumber());
@@ -22,5 +22,4 @@ class RepoIncomingEventParserTest {
         var repoIncomingEventParser = new RepoIncomingEventParser();
         assertThrows(RuntimeException.class, () -> repoIncomingEventParser.parse(incomingMessage));
     }
-
 }

@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class RepoIncomingEvent {
     private String nhsNumber;
-    private String sourceGP;
+    private String sourceGp;
     private String nemsMessageId;
-    private String destinationGP;
+    private String destinationGp;
 }
