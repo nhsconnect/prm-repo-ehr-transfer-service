@@ -43,6 +43,13 @@ class EhrRequestTest {
 
     private String conversationId;
 
+    @AfterEach
+    void tearDown() {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
+        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
+    }
+
     @Test
     void shouldProcessAndStoreInitialInformationInDb()  {
         var nhsNumber = Long.toString(System.currentTimeMillis());
