@@ -11,10 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.ConversationIdStore;
-import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.RepoIncomingEventListener;
-import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.RepoIncomingService;
-import uk.nhs.prm.repo.ehrtransferservice.ehrrequesthandler.RepoIncomingEventParser;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.ConversationIdStore;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;

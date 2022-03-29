@@ -2,7 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 @Service
 @Slf4j

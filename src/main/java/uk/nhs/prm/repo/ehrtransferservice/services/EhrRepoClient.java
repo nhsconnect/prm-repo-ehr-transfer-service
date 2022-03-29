@@ -3,8 +3,8 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.jsonmodels.confirmmessagestored.StoreMessageRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored.StoreMessageRequestBody;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

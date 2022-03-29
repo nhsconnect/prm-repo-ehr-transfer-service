@@ -5,7 +5,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.JmsProducer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.services;
 
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 import java.net.URISyntaxException;
 import java.net.URL;

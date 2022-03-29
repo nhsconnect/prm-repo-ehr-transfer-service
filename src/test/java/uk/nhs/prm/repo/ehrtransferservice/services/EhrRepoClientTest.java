@@ -5,7 +5,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.*;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

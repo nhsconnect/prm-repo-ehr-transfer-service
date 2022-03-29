@@ -9,10 +9,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.repo.ehrtransferservice.JmsProducer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.MessageHeader;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.SOAPHeader;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
 import uk.nhs.prm.repo.ehrtransferservice.services.GPToRepoClient;
 import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
 

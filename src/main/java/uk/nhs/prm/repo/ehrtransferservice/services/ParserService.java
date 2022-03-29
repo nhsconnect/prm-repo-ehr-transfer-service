@@ -3,7 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gpmessagemodels.*;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
 
 import java.io.IOException;
 
