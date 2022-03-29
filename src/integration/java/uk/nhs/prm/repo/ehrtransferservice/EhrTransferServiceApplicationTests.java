@@ -41,7 +41,7 @@ class EhrTransferServiceApplicationTests {
     @Value("${activemq.unhandledQueue}")
     private String unhandledQueue;
 
-    private TestDataLoader dataLoader = new TestDataLoader();
+    private final TestDataLoader dataLoader = new TestDataLoader();
     private WireMockServer wireMock;
 
     @BeforeEach
