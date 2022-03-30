@@ -31,9 +31,11 @@ class TransferTrackerServiceTest {
     ArgumentCaptor<TransferTrackerDbEntry> trackerDbEntryArgumentCaptor;
 
     @Test
-    void shouldCallDbWithExpectedValues() {
+    void shouldCallDbWithExpectedValuesForInitialUpdate() {
         when(conversationIdStore.getConversationId()).thenReturn("conversation-Id");
-        transferTrackerService.recordEventInDb(createIncomingEvent());
+
+        transferTrackerService.recordEventInDb(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED");
+
         verify(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
         TransferTrackerDbEntry value = trackerDbEntryArgumentCaptor.getValue();
         assertThat(value.getConversationId()).isEqualTo("conversation-Id");
@@ -41,7 +43,6 @@ class TransferTrackerServiceTest {
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
         assertThat(Instant.parse(value.getDateTime())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
-
     }
 
     private RepoIncomingEvent createIncomingEvent() {

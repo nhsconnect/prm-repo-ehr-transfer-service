@@ -42,6 +42,9 @@ class EhrRequestTest {
     private String transferTrackerDbTableName;
 
     private String conversationId;
+    private static final String NHS_NUMBER = "2222222222";
+    private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
+    private static final String SOURCE_GP = "odscode";
 
     @AfterEach
     void tearDown() {
@@ -52,9 +55,8 @@ class EhrRequestTest {
 
     @Test
     void shouldProcessAndStoreInitialInformationInDb()  {
-        var nhsNumber = Long.toString(System.currentTimeMillis());
         var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
-        sqs.sendMessage(queueUrl, getRepoIncomingData(nhsNumber));
+        sqs.sendMessage(queueUrl, getRepoIncomingData());
 
         await().atMost(10,TimeUnit.SECONDS).untilAsserted(() -> {
             var scanResponse = dbClient.scan(ScanRequest.builder()
@@ -62,14 +64,15 @@ class EhrRequestTest {
                     .build());
             var items = scanResponse.items();
 
-            assertThat(items.get(0).get("nhs_number").n()).isEqualTo(nhsNumber);
-            assertThat(items.get(0).get("nems_message_id").s()).isEqualTo("NEMS-MESSAGE-ID");
+            assertThat(items.get(0).get("nhs_number").n()).isEqualTo(NHS_NUMBER);
+            assertThat(items.get(0).get("nems_message_id").s()).isEqualTo(NEMS_MESSAGE_ID);
+            assertThat(items.get(0).get("source_gp").s()).isEqualTo(SOURCE_GP);
             conversationId = items.get(0).get("conversation_id").s();
             assertThat(conversationId.length()).isEqualTo(UUID.randomUUID().toString().length());
         });
     }
 
-    private String getRepoIncomingData(String nhsNumber) {
-        return "{ \"nhsNumber\" : \"" + nhsNumber + "\",\n \"nemsMessageId\" :\"NEMS-MESSAGE-ID\", \"sourceGp\": \"S0URC3\", \"destinationGp\": \"D3ST1NAT10N\" }";
+    private String getRepoIncomingData() {
+        return "{ \"nhsNumber\" : \"" + NHS_NUMBER + "\",\n \"nemsMessageId\" : \"" + NEMS_MESSAGE_ID + "\",\n \"sourceGp\": \"" + SOURCE_GP + "\",\n \"destinationGp\": \"D3ST1NAT10N\" }";
     }
 }

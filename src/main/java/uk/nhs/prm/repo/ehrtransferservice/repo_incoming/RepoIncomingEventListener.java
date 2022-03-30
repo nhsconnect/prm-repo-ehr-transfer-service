@@ -28,7 +28,7 @@ public class RepoIncomingEventListener implements MessageListener {
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from RepoIncoming");
         } catch (Exception e) {
-            log.error("Error while processing message: {}", e);
+            log.error("Error while processing message", e);
         }
     }
 

@@ -23,7 +23,7 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).recordEventInDb(incomingEvent);
+        verify(transferTrackerService).recordEventInDb(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
 
     }
 
