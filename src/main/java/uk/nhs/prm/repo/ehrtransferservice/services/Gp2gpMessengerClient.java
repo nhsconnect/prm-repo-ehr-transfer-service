@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.services;
 
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
@@ -14,6 +15,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 @Component
+@Slf4j
 public class Gp2gpMessengerClient {
 
     private final URL gp2gpMessengerUrl;
@@ -25,22 +27,46 @@ public class Gp2gpMessengerClient {
         this.gp2gpMessengerAuthKey = gp2gpMessengerAuthKey;
     }
 
-    public void sendGp2gpMessengerEhrRequest(String nhsNumber, Gp2gpMessengerEhrRequestBody body) throws IOException, URISyntaxException, InterruptedException, HttpException {
+    public void sendGp2gpMessengerEhrRequest(String nhsNumber, Gp2gpMessengerEhrRequestBody body) throws URISyntaxException, IOException, HttpException, InterruptedException {
         String jsonPayloadString = new Gson().toJson(body);
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
         String endpoint = "/health-record-requests/" + nhsNumber;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URL(gp2gpMessengerUrl, endpoint).toURI())
-                .header("Authorization", gp2gpMessengerAuthKey)
-                .header("Content-Type", "application/json")
-                .POST(jsonPayload).build();
 
-        HttpResponse<String> response = HttpClient.newBuilder()
-                .build()
-                .send(request, HttpResponse.BodyHandlers.ofString());
+        HttpRequest request = buildEhrRequest(jsonPayload, endpoint);
+        HttpResponse<String> response = makeEhrRequest(request);
 
         if (response.statusCode() != 204) {
             throw new HttpException(String.format("Unexpected response from Gp2Gp messenger while posting a registration request: %d", response.statusCode()));
+        }
+    }
+
+    private HttpRequest buildEhrRequest(HttpRequest.BodyPublisher jsonPayload, String endpoint) throws URISyntaxException, MalformedURLException {
+        try {
+            return HttpRequest.newBuilder()
+                    .uri(new URL(gp2gpMessengerUrl, endpoint).toURI())
+                    .header("Authorization", gp2gpMessengerAuthKey)
+                    .header("Content-Type", "application/json")
+                    .POST(jsonPayload).build();
+        } catch (URISyntaxException e) {
+            log.error("Error caught during building ehr-request");
+            throw e;
+        } catch (MalformedURLException e) {
+            log.error("Error caught during building ehr-request");
+            throw e;
+        }
+    }
+
+    private HttpResponse<String> makeEhrRequest(HttpRequest request) throws IOException, InterruptedException {
+        try {
+            return HttpClient.newBuilder()
+                    .build()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            log.error("Error caught during ehr-request");
+            throw e;
+        } catch (InterruptedException e) {
+            log.error("Error caught during ehr-request");
+            throw e;
         }
     }
 

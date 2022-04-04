@@ -7,10 +7,6 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.Gp2gpMessengerClient;
-import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,15 +23,19 @@ public class RepoIncomingService {
     @Value("${repositoryAsid}")
     private String repositoryAsid;
 
-    public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws HttpException, IOException, URISyntaxException, InterruptedException {
+    public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         transferTrackerService.recordEventInDb(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
         callGp2gpMessenger(repoIncomingEvent);
     }
 
-    private void callGp2gpMessenger(RepoIncomingEvent repoIncomingEvent) throws HttpException, IOException, URISyntaxException, InterruptedException {
+    private void callGp2gpMessenger(RepoIncomingEvent repoIncomingEvent) throws Exception {
         Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(repoIncomingEvent.getDestinationGp(),
                 repositoryAsid, repoIncomingEvent.getSourceGp(), conversationIdStore.getConversationId());
-        gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-
+        try {
+            gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
+        } catch (Exception e) {
+            log.error("Caught error during ehr-request");
+            throw new Exception("Got client error", e);
+        }
     }
 }
