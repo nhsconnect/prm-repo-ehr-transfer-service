@@ -34,7 +34,7 @@ public class Gp2gpMessengerClientTest {
     }
 
     @Test
-    public void shouldCallGP2GpMessengerEHRRequest() throws IOException, URISyntaxException, InterruptedException {
+    public void shouldCallGP2GpMessengerEHRRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
 
         Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody("","","","");
 

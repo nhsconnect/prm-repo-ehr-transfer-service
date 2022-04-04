@@ -22,7 +22,8 @@ locals {
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
     { name = "REPO_INCOMING_QUEUE_NAME", value = aws_sqs_queue.repo_incoming.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
-    { name = "NHS_ENVIRONMENT", value = var.environment }
+    { name = "NHS_ENVIRONMENT", value = var.environment },
+    { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value }
 
   ]
   secret_environment_variables = [
@@ -36,6 +37,9 @@ locals {
     },
     { name      = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_EHR_REPO",
       valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_ehr_repo.arn
+    },
+    { name      = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_GP2GP_MESSENGER",
+      valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_gp2gp_messenger.arn
     },
   ]
 }

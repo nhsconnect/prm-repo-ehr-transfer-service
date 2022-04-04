@@ -25,7 +25,7 @@ public class Gp2gpMessengerClient {
         this.gp2gpMessengerAuthKey = gp2gpMessengerAuthKey;
     }
 
-    public void sendGp2gpMessengerEhrRequest(String nhsNumber, Gp2gpMessengerEhrRequestBody body) throws IOException, URISyntaxException, InterruptedException {
+    public void sendGp2gpMessengerEhrRequest(String nhsNumber, Gp2gpMessengerEhrRequestBody body) throws IOException, URISyntaxException, InterruptedException, HttpException {
         String jsonPayloadString = new Gson().toJson(body);
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
         String endpoint = "/health-record-requests/" + nhsNumber;
@@ -38,6 +38,10 @@ public class Gp2gpMessengerClient {
         HttpResponse<String> response = HttpClient.newBuilder()
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 204) {
+            throw new HttpException(String.format("Unexpected response from Gp2Gp messenger while posting a registration request: %d", response.statusCode()));
+        }
     }
 
 }

@@ -39,3 +39,11 @@ data "aws_ssm_parameter" "ehr_transfer_service_authorization_keys_for_repo_to_gp
 data "aws_ssm_parameter" "ehr_transfer_service_authorization_keys_for_ehr_repo" {
   name = "/repo/${var.environment}/user-input/api-keys/ehr-repo/ehr-transfer-service"
 }
+
+data "aws_ssm_parameter" "gp2gp_messenger_url" {
+  name = "/repo/${var.environment}/output/prm-deductions-gp2gp-messenger/service-url"
+}
+
+data "aws_ssm_parameter" "ehr_transfer_service_authorization_keys_for_gp2gp_messenger" {
+  name = "/repo/${var.environment}/user-input/api-keys/gp2gp-messenger/ehr-transfer-service"
+}
