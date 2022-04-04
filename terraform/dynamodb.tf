@@ -16,4 +16,16 @@ resource "aws_dynamodb_table" "transfer_tracker" {
     name = "conversation_id"
     type = "S"
   }
+
+  attribute {
+    name = "nhs_number"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name               = "NhsNumberIndex"
+    hash_key           = "nhs_number"
+    projection_type    = "KEYS_ONLY"
+  }
+
 }
