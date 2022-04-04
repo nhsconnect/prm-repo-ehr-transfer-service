@@ -64,7 +64,7 @@ public class TransferTrackerDbTest {
     }
 
     @Test
-    void shouldUpdateRecord() {
+    void shouldDoInitialUpdateOfRecord() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
         transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, state, newTimestamp));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
@@ -78,5 +78,16 @@ public class TransferTrackerDbTest {
         var notExistingConversationId = "non-existing conversation Id";
         var lastUpdatePatientData = transferTrackerDb.getByConversationId(notExistingConversationId);
         assertThat(lastUpdatePatientData).isEqualTo(null);
+    }
+
+    @Test
+    void shouldUpdateOnlyStateAndDateTime() {
+        var newTimestamp = "2222-11-01T15:00:33+00:00";
+        transferTrackerDb.update(conversationId, "ACTION:EHR_REQUEST_SENT", newTimestamp);
+
+        var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
+        assertThat(transferTrackerDbData.getState()).isEqualTo("ACTION:EHR_REQUEST_SENT");
+        assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
+        assertThat(transferTrackerDbData.getDateTime()).isEqualTo(newTimestamp);
     }
 }

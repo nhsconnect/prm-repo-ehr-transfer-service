@@ -3,10 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -42,6 +39,25 @@ public class TransferTrackerDb {
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
+                .build());
+    }
+
+    public void update(String conversationId, String state, String dateTime) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
+
+        Map<String, AttributeValueUpdate> updates = new HashMap<>();
+        updates.put("state", AttributeValueUpdate.builder()
+                .value(AttributeValue.builder().s(state).build())
+                .build());
+        updates.put("date_time", AttributeValueUpdate.builder()
+                .value(AttributeValue.builder().s(dateTime).build())
+                .build());
+
+        dynamoDbClient.updateItem(UpdateItemRequest.builder()
+                .tableName(config.transferTrackerDbTableName())
+                .key(key)
+                .attributeUpdates(updates)
                 .build());
     }
 
