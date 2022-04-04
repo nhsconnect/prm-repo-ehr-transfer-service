@@ -43,7 +43,7 @@ public class Gp2gpMessengerClientTest {
         wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890"))
                 .withHeader("Authorization", matching("secret"))
                 .willReturn(aResponse()
-                        .withStatus(200)
+                        .withStatus(204)
                         .withBody(jsonPayloadString)
                         .withHeader("Content-Type", "application/json")));
 

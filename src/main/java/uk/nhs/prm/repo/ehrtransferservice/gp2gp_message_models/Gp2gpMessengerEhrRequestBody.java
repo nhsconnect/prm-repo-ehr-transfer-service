@@ -1,7 +1,9 @@
 package uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
+@Data
 public class Gp2gpMessengerEhrRequestBody {
     private final String repositoryOdsCode;
     private final String repositoryAsid;

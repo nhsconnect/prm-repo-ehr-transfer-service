@@ -7,8 +7,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
 
 import javax.jms.JMSException;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.*;
 
@@ -27,7 +31,7 @@ class RepoIncomingEventListenerTest {
     RepoIncomingEventListener repoIncomingEventListener;
 
     @Test
-    void shouldCallTracerWithMessageAndConversation() throws JMSException {
+    void shouldCallTracerWithMessageAndConversation() throws JMSException, HttpException, IOException, URISyntaxException, InterruptedException {
         when(conversationIdStore.getConversationId()).thenReturn("unique-uuid");
         String payload = "payload";
         RepoIncomingEvent incomingEvent = getIncomingEvent();
