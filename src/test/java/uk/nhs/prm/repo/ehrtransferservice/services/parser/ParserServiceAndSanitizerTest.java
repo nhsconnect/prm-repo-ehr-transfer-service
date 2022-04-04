@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.parser;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;

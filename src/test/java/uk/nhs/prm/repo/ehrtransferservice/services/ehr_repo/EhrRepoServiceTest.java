@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

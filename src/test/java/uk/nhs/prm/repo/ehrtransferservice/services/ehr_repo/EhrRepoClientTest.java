@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.hamcrest.Matchers;
@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

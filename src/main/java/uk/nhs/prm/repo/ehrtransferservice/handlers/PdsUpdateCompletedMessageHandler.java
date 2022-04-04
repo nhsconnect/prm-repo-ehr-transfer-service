@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.JmsProducer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.services.GPToRepoClient;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp_to_repo.GPToRepoClient;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
 

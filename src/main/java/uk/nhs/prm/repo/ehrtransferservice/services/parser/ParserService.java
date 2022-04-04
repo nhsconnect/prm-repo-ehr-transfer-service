@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -12,9 +12,6 @@ import java.io.IOException;
  */
 @Component
 public class ParserService {
-    public ParserService() {
-    }
-
     public ParsedMessage parse(String contentAsString) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         MhsJsonMessage mhsJsonMessage = objectMapper.readValue(contentAsString, MhsJsonMessage.class);

@@ -6,7 +6,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.services.ParserService;
+import uk.nhs.prm.repo.ehrtransferservice.services.parser.ParserService;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;

@@ -1,9 +1,10 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.gp_to_repo;
 
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.parser;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import org.junit.jupiter.api.Tag;

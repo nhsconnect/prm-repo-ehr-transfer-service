@@ -13,7 +13,7 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.CopcMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.services.ParserService;
+import uk.nhs.prm.repo.ehrtransferservice.services.parser.ParserService;
 
 import javax.jms.JMSException;
 import java.io.IOException;

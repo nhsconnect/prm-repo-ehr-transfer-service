@@ -1,10 +1,12 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored.StoreMessageRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

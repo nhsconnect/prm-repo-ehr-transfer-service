@@ -1,10 +1,11 @@
-package uk.nhs.prm.repo.ehrtransferservice.services;
+package uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger;
 
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,10 +48,7 @@ public class Gp2gpMessengerClient {
                     .header("Authorization", gp2gpMessengerAuthKey)
                     .header("Content-Type", "application/json")
                     .POST(jsonPayload).build();
-        } catch (URISyntaxException e) {
-            log.error("Error caught during building ehr-request");
-            throw e;
-        } catch (MalformedURLException e) {
+        } catch (URISyntaxException | MalformedURLException e) {
             log.error("Error caught during building ehr-request");
             throw e;
         }
@@ -61,10 +59,7 @@ public class Gp2gpMessengerClient {
             return HttpClient.newBuilder()
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            log.error("Error caught during ehr-request");
-            throw e;
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             log.error("Error caught during ehr-request");
             throw e;
         }
