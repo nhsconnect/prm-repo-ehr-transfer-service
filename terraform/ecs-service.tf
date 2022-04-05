@@ -79,6 +79,15 @@ resource "aws_ecs_cluster" "ehr_transfer_service_ecs_cluster" {
   }
 }
 
+resource "aws_security_group_rule" "ehr-transfer-service-to-gp2gp-messenger" {
+  type = "ingress"
+  protocol = "TCP"
+  from_port = 443
+  to_port = 443
+  security_group_id = data.aws_ssm_parameter.service-to-gp2gp-messenger-sg-id.value
+  source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
+}
+
 resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   name   = "${var.environment}-${var.component_name}-ecs-task-sg"
   vpc_id = data.aws_ssm_parameter.deductions_private_vpc_id.value
@@ -159,4 +168,8 @@ data "aws_vpc_endpoint" "s3" {
 
 data "aws_ssm_parameter" "dynamodb_prefix_list_id" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/dynamodb_prefix_list_id"
+}
+
+data "aws_ssm_parameter" "service-to-gp2gp-messenger-sg-id" {
+  name = "/repo/${var.environment}/output/prm-deductions-gp2gp-messenger/service-to-gp2gp-messenger-sg-id"
 }
