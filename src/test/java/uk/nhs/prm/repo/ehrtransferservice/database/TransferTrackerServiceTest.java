@@ -16,6 +16,8 @@ import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.BDDAssertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +45,15 @@ class TransferTrackerServiceTest {
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
         assertThat(Instant.parse(value.getDateTime())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
+    }
+
+    @Test
+    void shouldCallDbWithExpectedValuesToUpdateWithNewStateAndDateTime() {
+        when(conversationIdStore.getConversationId()).thenReturn("conversation-id");
+
+        transferTrackerService.updateStateOfTransfer("ACTION:TRANSFER_TO_REPO_STARTED");
+
+        verify(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
     }
 
     private RepoIncomingEvent createIncomingEvent() {

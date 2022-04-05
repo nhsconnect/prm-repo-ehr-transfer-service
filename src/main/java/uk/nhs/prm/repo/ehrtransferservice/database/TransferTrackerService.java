@@ -20,15 +20,26 @@ public class TransferTrackerService {
 
     public void recordEventInDb(RepoIncomingEvent incomingEvent, String status) {
         try {
-            log.info("Recording an event in transfer tracker db with status : " + status);
             TransferTrackerDbEntry transferTrackerDbEntry =
                     new TransferTrackerDbEntry(conversationIdStore.getConversationId(), incomingEvent.getNhsNumber(), incomingEvent.getSourceGp(), incomingEvent.getNemsMessageId(), status, getTimeNow());
             transferTrackerDb.save(transferTrackerDbEntry);
+            log.info("Recorded initial Repo Incoming event in Transfer tracker db with status: " + status);
         } catch (Exception e) {
-            log.error("Error encountered while recording event in transfer tracker db" + e.getMessage());
+            log.error("Error encountered while recording Repo Incoming event in Transfer tracker db" + e.getMessage());
             throw new RuntimeException(e);
         }
     }
+
+    public void updateStateOfTransfer(String status) {
+        try {
+            transferTrackerDb.update(conversationIdStore.getConversationId(), status, getTimeNow());
+            log.info("Updated state of transfer to: " + status);
+        } catch (Exception e) {
+            log.error("Failed to update status of EHR Transfer: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
     private String getTimeNow() {
         return ZonedDateTime.now(ZoneOffset.ofHours(0)).toString();
     }
