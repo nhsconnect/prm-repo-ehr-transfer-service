@@ -6,9 +6,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class RepoIncomingServiceTest {
@@ -22,7 +24,7 @@ class RepoIncomingServiceTest {
     RepoIncomingService repoIncomingService;
 
     @Test
-    void shouldMakeInitialDbUpdateWhenRecieveRepoIncomingEvent() throws Exception {
+    void shouldMakeInitialDbUpdateWhenRepoIncomingEventReceived() throws Exception {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
@@ -35,6 +37,32 @@ class RepoIncomingServiceTest {
         repoIncomingService.processIncomingEvent(incomingEvent);
 
         verify(gp2gpMessengerService).sendEhrRequest(incomingEvent);
+    }
+
+    @Test
+    void shouldUpdateDbWithEhrRequestSendStatusWhenEhrRequestSentSuccessfully() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        repoIncomingService.processIncomingEvent(incomingEvent);
+
+        verify(transferTrackerService).updateStateOfTransfer("ACTION:EHR_REQUEST_SENT");
+    }
+
+    @Test
+    void shouldThrowErrorAndNotCallGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        doThrow(TransferTrackerDbException.class).when(transferTrackerService).recordEventInDb(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+
+        assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
+        verify(gp2gpMessengerService, never()).sendEhrRequest(incomingEvent);
+    }
+
+    @Test
+    void shouldThrowErrorAndNotUpdateDbWhenFailsToSendEhrRequest() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
+
+        assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
+        verify(transferTrackerService, never()).updateStateOfTransfer("ACTION:EHR_REQUEST_SENT");
     }
 
 

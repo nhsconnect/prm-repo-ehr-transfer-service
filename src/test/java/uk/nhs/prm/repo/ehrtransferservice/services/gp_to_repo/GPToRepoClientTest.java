@@ -4,7 +4,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import uk.nhs.prm.repo.ehrtransferservice.services.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

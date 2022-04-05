@@ -26,7 +26,7 @@ public class Gp2gpMessengerService {
             log.info("Successfully sent EHR Request");
         } catch (Exception e) {
             log.error("Caught error during ehr-request");
-            throw new Exception("Got client error", e);
+            throw new Exception("Error while sending ehr-request", e);
         }
     }
 }

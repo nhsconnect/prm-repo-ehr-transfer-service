@@ -20,5 +20,6 @@ public class RepoIncomingService {
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         transferTrackerService.recordEventInDb(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
+        transferTrackerService.updateStateOfTransfer(EHR_REQUEST_SENT);
     }
 }
