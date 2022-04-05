@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 
@@ -23,9 +24,12 @@ public class Gp2gpMessengerClient {
 
     private final String gp2gpMessengerAuthKey;
 
-    public Gp2gpMessengerClient(@Value("${gp2gpMessengerUrl}") String gp2gpMessengerUrl, @Value("${gp2gpMessengerAuthKey}") String gp2gpMessengerAuthKey) throws MalformedURLException {
+    private final Tracer tracer;
+
+    public Gp2gpMessengerClient(@Value("${gp2gpMessengerUrl}") String gp2gpMessengerUrl, @Value("${gp2gpMessengerAuthKey}") String gp2gpMessengerAuthKey, Tracer tracer) throws MalformedURLException {
         this.gp2gpMessengerUrl = new URL(gp2gpMessengerUrl);
         this.gp2gpMessengerAuthKey = gp2gpMessengerAuthKey;
+        this.tracer = tracer;
     }
 
     public void sendGp2gpMessengerEhrRequest(String nhsNumber, Gp2gpMessengerEhrRequestBody body) throws URISyntaxException, IOException, HttpException, InterruptedException {
@@ -47,6 +51,7 @@ public class Gp2gpMessengerClient {
                     .uri(new URL(gp2gpMessengerUrl, endpoint).toURI())
                     .header("Authorization", gp2gpMessengerAuthKey)
                     .header("Content-Type", "application/json")
+                    .header("traceId", tracer.getTraceId())
                     .POST(jsonPayload).build();
         } catch (URISyntaxException | MalformedURLException e) {
             log.error("Error caught during building ehr-request");
