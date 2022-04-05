@@ -46,7 +46,7 @@ public class Tracer {
         return MDC.get(TRACE_ID);
     }
 
-    private void setTraceId(String traceId) {
+    public void setTraceId(String traceId) {
         MDC.put(TRACE_ID, traceId);
     }
 

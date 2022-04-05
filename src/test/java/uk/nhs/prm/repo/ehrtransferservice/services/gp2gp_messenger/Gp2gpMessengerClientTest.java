@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.MockitoAnnotations;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 
@@ -23,6 +24,8 @@ public class Gp2gpMessengerClientTest {
     WireMockExtension wireMock = new WireMockExtension();
 
     private AutoCloseable closeable;
+
+    Tracer tracer = new Tracer();
 
     @BeforeEach
     void setUp() {
@@ -48,7 +51,9 @@ public class Gp2gpMessengerClientTest {
                         .withBody(jsonPayloadString)
                         .withHeader("Content-Type", "application/json")));
 
-        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret");
+        tracer.setTraceId("some-trace-id");
+
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendGp2gpMessengerEhrRequest("1234567890", requestBody);
 
         verify(postRequestedFor(urlMatching("/health-record-requests/1234567890"))
