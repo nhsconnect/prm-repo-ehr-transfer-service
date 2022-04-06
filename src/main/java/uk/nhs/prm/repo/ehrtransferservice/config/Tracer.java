@@ -18,28 +18,20 @@ public class Tracer {
     public static final String NEMS_MESSAGE_ID = "nemsMessageId";
     public static final String CONVERSATION_ID = "conversationId";
 
-    public void setMDCContext(Message message, String conversationId) throws JMSException {
+    public void setMDCContext(Message message) throws JMSException {
         clearMDCContext();
         handleTraceId(message);
         handleNemsMessageId(message);
-        setConversationId(conversationId);
+        handleConversationId(message);
     }
 
     private void handleTraceId(Message message) throws JMSException {
         if (message.getStringProperty(TRACE_ID) == null) {
             log.info("The message has no trace ID attribute, we'll create and assign one.");
-            setTraceId(createTraceId());
+            setTraceId(createRandomUUID());
         } else {
             setTraceId(message.getStringProperty(TRACE_ID));
         }
-    }
-
-    private String createTraceId() {
-        return UUID.randomUUID().toString();
-    }
-
-    private void setConversationId(String conversationId) {
-        MDC.put(CONVERSATION_ID, conversationId);
     }
 
     public String getTraceId() {
@@ -48,6 +40,27 @@ public class Tracer {
 
     public void setTraceId(String traceId) {
         MDC.put(TRACE_ID, traceId);
+    }
+
+    private String createRandomUUID() {
+        return UUID.randomUUID().toString();
+    }
+
+    private void handleConversationId(Message message) throws JMSException {
+        if (message.getStringProperty(CONVERSATION_ID) == null) {
+            log.warn("The message has no conversation ID attribute, we'll create and assign one.");
+            setConversationId(createRandomUUID());
+        } else {
+            setConversationId(message.getStringProperty(CONVERSATION_ID));
+        }
+    }
+
+    public String getConversationIdId() {
+        return MDC.get(CONVERSATION_ID);
+    }
+
+    private void setConversationId(String conversationId) {
+        MDC.put(CONVERSATION_ID, conversationId);
     }
 
     private void handleNemsMessageId(Message message) throws JMSException {

@@ -28,7 +28,7 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).recordEventInDb(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        verify(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
     }
 
     @Test
@@ -44,13 +44,13 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).updateStateOfTransfer("ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService).updateStateOfEhrTransfer("conversation-id","ACTION:EHR_REQUEST_SENT");
     }
 
     @Test
     void shouldThrowErrorAndNotCallGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
         var incomingEvent = createIncomingEvent();
-        doThrow(TransferTrackerDbException.class).when(transferTrackerService).recordEventInDb(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        doThrow(TransferTrackerDbException.class).when(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
 
         assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
         verify(gp2gpMessengerService, never()).sendEhrRequest(incomingEvent);
@@ -62,11 +62,11 @@ class RepoIncomingServiceTest {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
 
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(transferTrackerService, never()).updateStateOfTransfer("ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService, never()).updateStateOfEhrTransfer("conversation-id","ACTION:EHR_REQUEST_SENT");
     }
 
 
     private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp");
+        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "conversation-id");
     }
 }

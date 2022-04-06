@@ -9,22 +9,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.ConversationIdStore;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 public class Gp2gpMessengerServiceTest {
     @Mock
     Gp2gpMessengerClient gp2gpMessengerClient;
-    @Mock
-    ConversationIdStore conversationIdStore;
     @InjectMocks
     Gp2gpMessengerService gp2gpMessengerService;
 
@@ -36,7 +34,6 @@ public class Gp2gpMessengerServiceTest {
     @Test
     void shouldCallGp2gpMessengerForEhrRequest() throws Exception {
         var incomingEvent = createIncomingEvent();
-        when(conversationIdStore.getConversationId()).thenReturn("randomUUID");
 
         gp2gpMessengerService.sendEhrRequest(incomingEvent);
 
@@ -48,18 +45,14 @@ public class Gp2gpMessengerServiceTest {
     @Test
     void shouldThrowHttpExceptionWhenWeGotAnyStatusCodeButNot204() throws HttpException, URISyntaxException, IOException, InterruptedException {
         var incomingEvent = createIncomingEvent();
-        when(conversationIdStore.getConversationId()).thenReturn("randomUUID");
 
         doThrow(new HttpException()).when(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest(any(), any());
 
-        Assertions.assertThrows(Exception.class, () -> {
-            gp2gpMessengerService.sendEhrRequest(incomingEvent);
-        });
-
+        Assertions.assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrRequest(incomingEvent));
     }
 
     private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp");
+        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "randomUUID");
     }
 
 }

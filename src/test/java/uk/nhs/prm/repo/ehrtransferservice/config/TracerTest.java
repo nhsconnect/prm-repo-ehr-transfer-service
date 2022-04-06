@@ -28,8 +28,9 @@ class TracerTest {
     void shouldAddTraceIdToMDCWhenItIsPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
         message.setStringProperty(TRACE_ID, SOME_TRACE_ID);
+        message.setStringProperty(CONVERSATION_ID, SOME_CONVERSATION_ID);
 
-        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
+        tracer.setMDCContext(message);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         String mdcConversationIdValue = MDC.get(CONVERSATION_ID);
         assertThat(mdcTraceIdValue).isEqualTo(SOME_TRACE_ID);
@@ -40,7 +41,7 @@ class TracerTest {
     void shouldCreateAndAddHyphenatedUuidTraceIdToMDCWhenItIsNotPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
-        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
+        tracer.setMDCContext(message);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         assertThat(mdcTraceIdValue).isNotNull();
         assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
@@ -51,7 +52,7 @@ class TracerTest {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
         message.setStringProperty(NEMS_MESSAGE_ID, SOME_NEMS_ID);
 
-        tracer.setMDCContext(message, SOME_CONVERSATION_ID);
+        tracer.setMDCContext(message);
         String mdcValue = MDC.get(NEMS_MESSAGE_ID);
         assertThat(mdcValue).isEqualTo(SOME_NEMS_ID);
     }

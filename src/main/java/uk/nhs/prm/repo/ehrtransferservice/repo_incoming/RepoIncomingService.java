@@ -18,8 +18,8 @@ public class RepoIncomingService {
     private final Gp2gpMessengerService gp2gpMessengerService;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
-        transferTrackerService.recordEventInDb(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
+        transferTrackerService.createEhrTransfer(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferTrackerService.updateStateOfTransfer(EHR_REQUEST_SENT);
+        transferTrackerService.updateStateOfEhrTransfer(repoIncomingEvent.getConversationId(), EHR_REQUEST_SENT);
     }
 }

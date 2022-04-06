@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.ConversationIdStore;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 @Service
@@ -13,14 +12,13 @@ import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 @Slf4j
 public class Gp2gpMessengerService {
     private final Gp2gpMessengerClient gp2gpMessengerClient;
-    private final ConversationIdStore conversationIdStore;
 
     @Value("${repositoryAsid}")
     private String repositoryAsid;
 
     public void sendEhrRequest(RepoIncomingEvent repoIncomingEvent) throws Exception {
         Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(repoIncomingEvent.getDestinationGp(),
-                repositoryAsid, repoIncomingEvent.getSourceGp(), conversationIdStore.getConversationId());
+                repositoryAsid, repoIncomingEvent.getSourceGp(), repoIncomingEvent.getConversationId());
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
             log.info("Successfully sent EHR Request");

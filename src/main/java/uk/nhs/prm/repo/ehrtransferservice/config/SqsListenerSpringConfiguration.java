@@ -11,10 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.ConversationIdStore;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
 
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -26,7 +25,6 @@ import javax.jms.Session;
 public class SqsListenerSpringConfiguration {
 
     private final Tracer tracer;
-    private final ConversationIdStore conversationIdStore;
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser parser;
     @Value("${aws.repoIncomingQueueName}")
@@ -49,7 +47,7 @@ public class SqsListenerSpringConfiguration {
         log.info("repo incoming queue name : {}", repoIncomingQueueName);
         MessageConsumer consumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
 
-        consumer.setMessageListener(new RepoIncomingEventListener(tracer, conversationIdStore, repoIncomingService, parser));
+        consumer.setMessageListener(new RepoIncomingEventListener(tracer, repoIncomingService, parser));
 
         connection.start();
 

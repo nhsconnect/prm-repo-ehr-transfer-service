@@ -41,7 +41,7 @@ public class Gp2gpMessengerClient {
         HttpResponse<String> response = makeEhrRequest(request);
 
         if (response.statusCode() != 204) {
-            throw new HttpException(String.format("Unexpected response from Gp2Gp messenger while posting a registration request: %d", response.statusCode()));
+            throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting an EHR request: %d", response.statusCode()));
         }
     }
 

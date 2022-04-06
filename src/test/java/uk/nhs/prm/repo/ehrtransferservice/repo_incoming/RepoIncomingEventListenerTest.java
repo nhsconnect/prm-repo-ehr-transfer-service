@@ -20,15 +20,12 @@ class RepoIncomingEventListenerTest {
     @Mock
     RepoIncomingService repoIncomingService;
     @Mock
-    ConversationIdStore conversationIdStore;
-    @Mock
     RepoIncomingEventParser incomingEventParser;
     @InjectMocks
     RepoIncomingEventListener repoIncomingEventListener;
 
     @Test
     void shouldCallTracerWithMessageAndConversation() throws Exception {
-        when(conversationIdStore.getConversationId()).thenReturn("unique-uuid");
         String payload = "payload";
         RepoIncomingEvent incomingEvent = getIncomingEvent();
         when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
@@ -36,17 +33,16 @@ class RepoIncomingEventListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         repoIncomingEventListener.onMessage(message);
         verify(incomingEventParser).parse(payload);
-        verify(tracer).setMDCContext(message, "unique-uuid");
+        verify(tracer).setMDCContext(message);
         verify(repoIncomingService).processIncomingEvent(incomingEvent);
     }
 
     private RepoIncomingEvent getIncomingEvent() {
-        return new RepoIncomingEvent("111111111", "source-gp", "nem-message-id", "destination-gp");
+        return new RepoIncomingEvent("111111111", "source-gp", "nem-message-id", "destination-gp", "unique-uuid");
     }
 
     @Test
     void shouldAcknowledgeTheMessageWhenNoErrors() throws JMSException {
-        when(conversationIdStore.getConversationId()).thenReturn("unique-uuid");
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         repoIncomingEventListener.onMessage(message);

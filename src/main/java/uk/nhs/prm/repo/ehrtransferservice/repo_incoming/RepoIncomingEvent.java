@@ -12,4 +12,5 @@ public class RepoIncomingEvent {
     private String sourceGp;
     private String nemsMessageId;
     private String destinationGp;
+    private String conversationId;
 }

@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.ConversationIdStore;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -20,14 +19,13 @@ import static org.assertj.core.api.BDDAssertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class TransferTrackerServiceTest {
     @Mock
     TransferTrackerDb transferTrackerDb;
-    @Mock
-    ConversationIdStore conversationIdStore;
     @InjectMocks
     TransferTrackerService transferTrackerService;
     @Captor
@@ -35,13 +33,11 @@ class TransferTrackerServiceTest {
 
     @Test
     void shouldCallDbWithExpectedValuesForInitialSaveInDb() {
-        when(conversationIdStore.getConversationId()).thenReturn("conversation-Id");
-
-        transferTrackerService.recordEventInDb(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED");
+        transferTrackerService.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED");
 
         verify(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
         TransferTrackerDbEntry value = trackerDbEntryArgumentCaptor.getValue();
-        assertThat(value.getConversationId()).isEqualTo("conversation-Id");
+        assertThat(value.getConversationId()).isEqualTo("conversation-id");
         assertThat(value.getNemsMessageId()).isEqualTo("nems-message-id");
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
@@ -50,30 +46,26 @@ class TransferTrackerServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFailsToMakeInitialSaveInDb() {
-        when(conversationIdStore.getConversationId()).thenReturn("conversation-id");
         doThrow(RuntimeException.class).when(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.recordEventInDb(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED"));
+        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
     @Test
     void shouldCallDbWithExpectedValuesToUpdateWithNewStateAndDateTime() {
-        when(conversationIdStore.getConversationId()).thenReturn("conversation-id");
-
-        transferTrackerService.updateStateOfTransfer("ACTION:TRANSFER_TO_REPO_STARTED");
+        transferTrackerService.updateStateOfEhrTransfer("conversation-id","ACTION:TRANSFER_TO_REPO_STARTED");
 
         verify(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
     }
 
     @Test
     void shouldThrowExceptionWhenFailsToUpdateWithNewStateAndDateTime() {
-        when(conversationIdStore.getConversationId()).thenReturn("conversation-id");
         doThrow(RuntimeException.class).when(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.updateStateOfTransfer("ACTION:TRANSFER_TO_REPO_STARTED"));
+        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.updateStateOfEhrTransfer("conversation-id","ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
     private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp");
+        return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "conversation-id");
     }
 }

@@ -7,23 +7,20 @@ import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
 public class RepoIncomingEventListener implements MessageListener {
-
     private final Tracer tracer;
-    private final ConversationIdStore conversationIdStore;
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser parser;
 
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message,  generateAndSetConversationId());
+            tracer.setMDCContext(message);
             log.info("RECEIVED: Message from RepoIncoming");
-            processMessage(message);
+            parseAndProcessMessage(message);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from RepoIncoming");
         } catch (Exception e) {
@@ -31,14 +28,9 @@ public class RepoIncomingEventListener implements MessageListener {
         }
     }
 
-    private void processMessage(Message message) throws Exception {
-        String payload = ((TextMessage)message).getText();
+    private void parseAndProcessMessage(Message message) throws Exception {
+        String payload = ((TextMessage) message).getText();
         var parsedMessage = parser.parse(payload);
         repoIncomingService.processIncomingEvent(parsedMessage);
-    }
-
-    private String generateAndSetConversationId() {
-        conversationIdStore.setConversationId(UUID.randomUUID().toString());
-        return conversationIdStore.getConversationId();
     }
 }
