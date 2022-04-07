@@ -23,7 +23,7 @@ resource "aws_dynamodb_table" "transfer_tracker" {
   }
 
   global_secondary_index {
-    name               = "NhsNumberIndex"
+    name               = "NhsNumberSecondaryIndex"
     hash_key           = "nhs_number"
     projection_type    = "ALL"
   }
