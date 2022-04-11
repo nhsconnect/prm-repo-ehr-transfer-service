@@ -66,7 +66,7 @@ class EhrRequestTest {
                     .key(key)
                     .build()).item();
 
-            assertThat(dbClientItem.get("nhs_number").n()).isEqualTo(NHS_NUMBER);
+            assertThat(dbClientItem.get("nhs_number").s()).isEqualTo(NHS_NUMBER);
             assertThat(dbClientItem.get("nems_message_id").s()).isEqualTo(NEMS_MESSAGE_ID);
             assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
