@@ -4,6 +4,8 @@ locals {
   negative_acks_observability_queue_name = "${var.environment}-${var.component_name}-negative-acknowledgments-observability"
   small_ehr_queue_name = "${var.environment}-${var.component_name}-small-ehr"
   small_ehr_observability_queue_name = "${var.environment}-${var.component_name}-small-ehr-observability"
+  large_ehr_queue_name = "${var.environment}-${var.component_name}-large-ehr"
+  large_ehr_observability_queue_name = "${var.environment}-${var.component_name}-large-ehr-observability"
 }
 
 resource "aws_sqs_queue" "repo_incoming" {
@@ -71,6 +73,34 @@ resource "aws_sqs_queue" "small_ehr_observability" {
 
   tags = {
     Name        = local.small_ehr_observability_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "large_ehr" {
+  name                       = local.large_ehr_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id          = aws_kms_key.large_ehr.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.large_ehr_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "large_ehr_observability" {
+  name                       = local.large_ehr_observability_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id          = aws_kms_key.large_ehr.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.large_ehr_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
