@@ -181,3 +181,27 @@ resource "aws_iam_role_policy_attachment" "ecs_dynamo_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.transfer-tracker-db-access.arn
 }
+
+resource "aws_iam_role" "sns_failure_feedback_role" {
+  name               = "${var.environment}-${var.component_name}-sns-failure-feedback-role"
+  assume_role_policy = data.aws_iam_policy_document.sns_service_assume_role_policy.json
+  description        = "Allows logging of SNS delivery failures in ${var.component_name}"
+
+  tags = {
+    Environment = var.environment
+    CreatedBy   = var.repo_name
+  }
+}
+
+data "aws_iam_policy_document" "sns_service_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type = "Service"
+      identifiers = [
+        "sns.amazonaws.com"
+      ]
+    }
+  }
+}
