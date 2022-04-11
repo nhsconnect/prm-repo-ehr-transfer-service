@@ -24,8 +24,8 @@ locals {
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
-    { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value }
-
+    { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value },
+    { name = "SMALL_EHR_QUEUE_S3", value = aws_s3_bucket.small-ehr-queue-bucket.bucket }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },

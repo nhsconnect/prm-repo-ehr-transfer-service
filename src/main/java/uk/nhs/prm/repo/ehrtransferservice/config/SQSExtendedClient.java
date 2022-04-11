@@ -8,10 +8,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class SQSExtendedClient {
+
     private final S3ClientSpringConfiguration s3;
 
-    @Value("${aws.sqsMessageBucketName}")
-    private final String bucketName;
+    @Value("${aws.smallEhrQueueS3}")
+    private String bucketName;
 
     public void sqsExtendedClient () {
         var extendedClientConfiguration = new ExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName,true);
