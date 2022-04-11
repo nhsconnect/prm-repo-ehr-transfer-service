@@ -66,7 +66,7 @@ public class TransferTrackerDb {
             return null;
         }
         var conversationId = itemResponse.item().get("conversation_id").s();
-        var nhsNumber = itemResponse.item().get("nhs_number").n();
+        var nhsNumber = itemResponse.item().get("nhs_number").s();
         var sourceGp = itemResponse.item().get("source_gp").s();
         var nemsMessageId = itemResponse.item().get("nems_message_id").s();
         var dateTime = itemResponse.item().get("date_time").s();
