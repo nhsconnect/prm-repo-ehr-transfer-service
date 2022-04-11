@@ -30,7 +30,7 @@ public class TransferTrackerDb {
     // Tested at integration level
     public void save(TransferTrackerDbEntry transferTrackerDbEntry) {
         Map<String, AttributeValue> item = new HashMap<>();
-        item.put("nhs_number", AttributeValue.builder().n(transferTrackerDbEntry.getNhsNumber()).build());
+        item.put("nhs_number", AttributeValue.builder().s(transferTrackerDbEntry.getNhsNumber()).build());
         item.put("conversation_id", AttributeValue.builder().s(transferTrackerDbEntry.getConversationId()).build());
         item.put("source_gp", AttributeValue.builder().s(transferTrackerDbEntry.getSourceGP()).build());
         item.put("nems_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getNemsMessageId()).build());
