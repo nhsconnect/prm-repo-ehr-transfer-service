@@ -57,3 +57,15 @@ resource "aws_sns_topic" "positive_acks" {
     Environment = var.environment
   }
 }
+
+resource "aws_sns_topic" "parsing_dlq" {
+  name = "${var.environment}-${var.component_name}-parsing-dlq-sns-topic"
+  kms_master_key_id = aws_kms_key.parsing_dlq.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-parsing-dlq-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}

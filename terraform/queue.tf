@@ -9,6 +9,7 @@ locals {
   attachments_queue_name = "${var.environment}-${var.component_name}-attachments"
   attachments_observability_queue_name = "${var.environment}-${var.component_name}-attachments-observability"
   positive_acks_observability_queue_name = "${var.environment}-${var.component_name}-positive-acknowledgements-observability"
+  parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
 }
 
 resource "aws_sqs_queue" "repo_incoming" {
@@ -146,6 +147,20 @@ resource "aws_sqs_queue" "positive_acks_observability" {
 
   tags = {
     Name        = local.positive_acks_observability_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "parsing_dlq" {
+  name                       = local.parsing_dlq_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id          = aws_kms_key.parsing_dlq.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.parsing_dlq_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
