@@ -33,3 +33,15 @@ resource "aws_sns_topic" "large_ehr" {
     Environment = var.environment
   }
 }
+
+resource "aws_sns_topic" "attachments" {
+  name = "${var.environment}-${var.component_name}-attachments-sns-topic"
+  kms_master_key_id = aws_kms_key.attachments.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-attachments-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}

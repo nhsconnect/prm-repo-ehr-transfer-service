@@ -6,6 +6,8 @@ locals {
   small_ehr_observability_queue_name = "${var.environment}-${var.component_name}-small-ehr-observability"
   large_ehr_queue_name = "${var.environment}-${var.component_name}-large-ehr"
   large_ehr_observability_queue_name = "${var.environment}-${var.component_name}-large-ehr-observability"
+  attachments_queue_name = "${var.environment}-${var.component_name}-attachments"
+  attachments_observability_queue_name = "${var.environment}-${var.component_name}-attachments-observability"
 }
 
 resource "aws_sqs_queue" "repo_incoming" {
@@ -101,6 +103,34 @@ resource "aws_sqs_queue" "large_ehr_observability" {
 
   tags = {
     Name        = local.large_ehr_observability_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "attachments" {
+  name                       = local.attachments_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id          = aws_kms_key.attachments.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.attachments_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "attachments_observability" {
+  name                       = local.attachments_observability_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id          = aws_kms_key.attachments.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.attachments_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

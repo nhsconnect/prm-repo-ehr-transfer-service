@@ -62,6 +62,22 @@ resource "aws_kms_alias" "large_ehr_encryption" {
   target_key_id = aws_kms_key.large_ehr.id
 }
 
+resource "aws_kms_key" "attachments" {
+  description = "Custom KMS Key to enable server side encryption for attachments SQS queue"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-${var.component_name}-attachments-encryption-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "attachments_encryption" {
+  name          = "alias/attachments-queue-encryption-kms-key"
+  target_key_id = aws_kms_key.attachments.id
+}
+
 resource "aws_kms_key" "transfer_tracker_dynamodb_kms_key" {
   description = "Custom KMS Key to enable server side encryption for Transfer Tracker DB"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json

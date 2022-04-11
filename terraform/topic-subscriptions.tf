@@ -39,3 +39,17 @@ resource "aws_sns_topic_subscription" "large_ehr_observability_topic" {
   topic_arn            = aws_sns_topic.large_ehr.arn
   endpoint             = aws_sqs_queue.large_ehr_observability.arn
 }
+
+resource "aws_sns_topic_subscription" "attachments_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.attachments.arn
+  endpoint             = aws_sqs_queue.attachments.arn
+}
+
+resource "aws_sns_topic_subscription" "attachments_observability_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.attachments.arn
+  endpoint             = aws_sqs_queue.attachments_observability.arn
+}
