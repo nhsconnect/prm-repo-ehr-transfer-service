@@ -192,6 +192,30 @@ resource "aws_iam_role" "sns_failure_feedback_role" {
     CreatedBy   = var.repo_name
   }
 }
+resource "aws_iam_policy" "sns_failure_feedback_policy" {
+  name   = "${var.environment}-${var.component_name}-sns-failure-feedback"
+  policy = data.aws_iam_policy_document.sns_failure_feedback_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "sns_failure_feedback_policy_attachment" {
+  role       = aws_iam_role.sns_failure_feedback_role.name
+  policy_arn = aws_iam_policy.sns_failure_feedback_policy.arn
+}
+
+data "aws_iam_policy_document" "sns_failure_feedback_policy" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:PutMetricFilter",
+      "logs:PutRetentionPolicy"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}
 
 data "aws_iam_policy_document" "sns_service_assume_role_policy" {
   statement {
@@ -203,5 +227,32 @@ data "aws_iam_policy_document" "sns_service_assume_role_policy" {
         "sns.amazonaws.com"
       ]
     }
+  }
+}
+
+resource "aws_iam_policy" "sns" {
+  name   = "${var.environment}-${var.component_name}-sns"
+  policy = data.aws_iam_policy_document.sns_policy_doc.json
+}
+
+resource "aws_iam_role_policy_attachment" "ehr_transfer_service_sns" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.sns.arn
+}
+
+data "aws_iam_policy_document" "sns_policy_doc" {
+  statement {
+    actions = [
+      "sns:Publish",
+      "sns:GetTopicAttributes"
+    ]
+    resources = [
+      aws_sns_topic.parsing_dlq.arn,
+      aws_sns_topic.positive_acks.arn,
+      aws_sns_topic.attachments.arn,
+      aws_sns_topic.large_ehr.arn,
+      aws_sns_topic.small_ehr.arn,
+      aws_sns_topic.negative_acks.arn
+    ]
   }
 }
