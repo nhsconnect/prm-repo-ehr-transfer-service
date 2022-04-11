@@ -18,13 +18,13 @@ resource "aws_dynamodb_table" "transfer_tracker" {
   }
 
   attribute {
-    name = "nhs_number"
-    type = "N"
+    name = "nhs_number_key"
+    type = "S"
   }
 
   global_secondary_index {
     name               = "NhsNumberSecondaryIndex"
-    hash_key           = "nhs_number"
+    hash_key           = "nhs_number_key"
     projection_type    = "ALL"
   }
 
