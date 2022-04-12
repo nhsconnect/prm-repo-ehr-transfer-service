@@ -1,8 +1,8 @@
 locals {
-  small_ehr_queue_s3 = "${var.environment}-${var.component_name}-small-ehr-queue-s3"
+  sqs_large_message_bucket_name = "${var.environment}-${var.component_name}-sqs-large-messages"
 }
-resource "aws_s3_bucket" "small-ehr-queue-bucket" {
-  bucket        = local.small_ehr_queue_s3
+resource "aws_s3_bucket" "sqs_large_message_bucket" {
+  bucket        = local.sqs_large_message_bucket_name
   acl           = "private"
   force_destroy = true
 
@@ -24,16 +24,15 @@ resource "aws_s3_bucket" "small-ehr-queue-bucket" {
   }
 }
 
-resource "aws_s3_bucket_policy" "small_ehr_queue_bucket_policy" {
-
-  bucket = aws_s3_bucket.small-ehr-queue-bucket.id
+resource "aws_s3_bucket_policy" "sqs_large_message_bucket_policy" {
+  bucket = aws_s3_bucket.sqs_large_message_bucket.id
   policy = jsonencode({
     "Statement": [
       {
         Effect: "Deny",
         Principal: "*",
         Action: "s3:*",
-        Resource: "${aws_s3_bucket.small-ehr-queue-bucket.arn}/*",
+        Resource: "${aws_s3_bucket.sqs_large_message_bucket.arn}/*",
         Condition: {
           Bool: {
             "aws:SecureTransport": "false"

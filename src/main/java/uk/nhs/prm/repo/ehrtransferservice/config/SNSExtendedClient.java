@@ -15,7 +15,7 @@ public class SNSExtendedClient {
 
     private final S3ClientSpringConfiguration s3;
 
-    @Value("${aws.smallEhrQueueS3}")
+    @Value("${aws.sqsLargeMessageBucketName}")
     private String bucketName;
 
     @Value("${aws.smallEhrTopicArn}")
