@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services.parser;
+package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import org.junit.jupiter.api.Tag;
@@ -19,13 +19,13 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-public class ParserServiceTest {
+public class ParserTest {
 
-    private final ParserService parser;
+    private final Parser parser;
     private final TestDataLoader loader;
 
-    public ParserServiceTest() {
-        parser = new ParserService();
+    public ParserTest() {
+        parser = new Parser();
         loader = new TestDataLoader();
     }
 

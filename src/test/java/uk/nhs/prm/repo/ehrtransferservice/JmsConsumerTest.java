@@ -13,7 +13,7 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.CopcMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.services.parser.ParserService;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.JMSException;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class JmsConsumerTest {
     JmsProducer jmsProducer = mock(JmsProducer.class);
     MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
-    ParserService parserService = mock(ParserService.class);
+    Parser parser = mock(Parser.class);
     EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
     CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
     EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
@@ -40,7 +40,7 @@ public class JmsConsumerTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parserService, handlerList);
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, handlerList);
 
     private void jmsConsumerTestFactory(String expectedQueue) throws JMSException {
         String message = messageContent;
@@ -62,7 +62,7 @@ public class JmsConsumerTest {
         when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getAction()).thenReturn("RCMR_IN030000UK06");
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
         verify(ehrExtractMessageHandler).handleMessage(parsedMessage);
@@ -78,7 +78,7 @@ public class JmsConsumerTest {
         when(copcMessageHandler.getInteractionId()).thenReturn("COPC_IN000001UK01");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getAction()).thenReturn("COPC_IN000001UK01");
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
         verify(copcMessageHandler).handleMessage(parsedMessage);
@@ -93,7 +93,7 @@ public class JmsConsumerTest {
         when(ehrRequestMessageHandler.getInteractionId()).thenReturn("RCMR_IN010000UK05");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getAction()).thenReturn("RCMR_IN010000UK05");
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
         verify(ehrRequestMessageHandler).handleMessage(parsedMessage);
@@ -107,7 +107,7 @@ public class JmsConsumerTest {
     })
     void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
         when(parsedMessage.getAction()).thenReturn(interactionId);
         when(parsedMessage.getRawMessage()).thenReturn(messageContent);
 
@@ -120,14 +120,14 @@ public class JmsConsumerTest {
         when(parsedMessage.getSoapEnvelope()).thenReturn(new SOAPEnvelope());
         when(parsedMessage.getRawMessage()).thenReturn(messageContent);
 
-        when(parserService.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
         jmsConsumerTestFactory(unhandledQueue);
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws JMSException, IOException {
         IOException expectedError = new IOException("failed to parse message");
-        when(parserService.parse(Mockito.any())).thenThrow(expectedError);
+        when(parser.parse(Mockito.any())).thenThrow(expectedError);
         jmsConsumerTestFactory(unhandledQueue);
     }
 

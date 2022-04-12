@@ -6,7 +6,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.services.parser.ParserService;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
@@ -29,19 +29,19 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 public class JmsConsumer {
     final JmsProducer jmsProducer;
     final MessageSanitizer messageSanitizer;
-    final ParserService parserService;
+    final Parser parser;
     // can't initialize the dictionary in the constructor because it makes mocking harder
     private final List<MessageHandler> handlersList;
     private String inboundQueue;
     private String unhandledQueue;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, ParserService parserService, List<MessageHandler> handlers) {
+    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, List<MessageHandler> handlers) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
-        this.parserService = parserService;
+        this.parser = parser;
         this.handlersList = handlers;
     }
 
@@ -56,9 +56,10 @@ public class JmsConsumer {
 
         try {
             String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
-            ParsedMessage parsedMessage = parserService.parse(sanitizedMessage);
+            ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
             log.info("Successfully parsed message");
             String interactionId = parsedMessage.getAction();
+
 
             if (interactionId == null) {
                 log.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));

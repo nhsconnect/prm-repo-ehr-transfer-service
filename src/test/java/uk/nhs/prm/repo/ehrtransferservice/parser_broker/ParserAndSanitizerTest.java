@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services.parser;
+package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,14 +13,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @Tag("unit")
-public class ParserServiceAndSanitizerTest {
-    private final ParserService parser;
+public class ParserAndSanitizerTest {
+    private final Parser parser;
     private final TestDataLoader loader;
     private final MessageSanitizer sanitizer;
 
-    public ParserServiceAndSanitizerTest() {
+    public ParserAndSanitizerTest() {
         sanitizer = new MessageSanitizer();
-        parser = new ParserService();
+        parser = new Parser();
         loader = new TestDataLoader();
     }
 

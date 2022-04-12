@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.services.parser;
+package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -11,7 +11,7 @@ import java.io.IOException;
  Can parse raw binary sanitised messages
  */
 @Component
-public class ParserService {
+public class Parser {
     public ParsedMessage parse(String contentAsString) throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         MhsJsonMessage mhsJsonMessage = objectMapper.readValue(contentAsString, MhsJsonMessage.class);
