@@ -8,7 +8,7 @@ services:
     ports:
       - "127.0.0.1:4587:4587"
     environment:
-      - SERVICES=sqs,sns,dynamodb
+      - SERVICES=sqs,sns,dynamodb,s3
       - DEFAULT_REGION=eu-west-2
       - AWS_REGION=eu-west-2
       - HOSTNAME_EXTERNAL=localhost

@@ -21,7 +21,9 @@ import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
 
@@ -120,6 +122,10 @@ public class LocalStackAwsConfig {
                 .bucket(sqsLargeMessageBucketName)
                 .createBucketConfiguration(CreateBucketConfiguration.builder().build())
                 .build();
+        if (s3Client.listBuckets().hasBuckets()) {
+            resetS3ForLocalEnvironment(waiter);
+        }
+
         s3Client.createBucket(createBucketRequest);
         waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
@@ -139,7 +145,7 @@ public class LocalStackAwsConfig {
                 .keyType(KeyType.HASH)
                 .attributeName("conversation_id")
                 .build());
-        List<AttributeDefinition> attributeDefinitions = new ArrayList<AttributeDefinition>();
+        List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
         attributeDefinitions.add(AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
                 .attributeName("conversation_id")
@@ -188,6 +194,11 @@ public class LocalStackAwsConfig {
         var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
         dynamoDbClient.deleteTable(deleteRequest);
         waiter.waitUntilTableNotExists(tableRequest);
+    }
+
+    private void resetS3ForLocalEnvironment(S3Waiter waiter) {
+        s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
+        waiter.waitUntilBucketNotExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 }
 

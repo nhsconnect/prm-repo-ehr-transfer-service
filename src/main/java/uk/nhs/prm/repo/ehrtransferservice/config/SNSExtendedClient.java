@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.payloadoffloading.PayloadStorageConfiguration;
 import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
@@ -13,8 +14,7 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 @Configuration
 @RequiredArgsConstructor
 public class SNSExtendedClient {
-
-    private final S3ClientSpringConfiguration s3;
+    private final S3Client s3;
 
     @Value("${aws.sqsLargeMessageBucketName}")
     private String bucketName;
@@ -24,13 +24,13 @@ public class SNSExtendedClient {
 
     @Bean
     public AmazonSNSExtendedClient snsExtendedClient () {
-        PayloadStorageConfiguration payloadStorageConfiguration = new SNSExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName);
+        PayloadStorageConfiguration payloadStorageConfiguration = new SNSExtendedClientConfiguration().withPayloadSupportEnabled(s3, bucketName);
         return new AmazonSNSExtendedClient(getSNSClient(), (SNSExtendedClientConfiguration) payloadStorageConfiguration);
     }
 
     //TODO: changed the region hardcoded to parameterised env value
     @Bean
-    public AmazonSNS getSNSClient(){
-     return AmazonSNSClientBuilder.standard().withRegion("eu-west-2").build();
+    public AmazonSNS getSNSClient() {
+        return AmazonSNSClientBuilder.standard().withRegion("eu-west-2").build();
     }
 }

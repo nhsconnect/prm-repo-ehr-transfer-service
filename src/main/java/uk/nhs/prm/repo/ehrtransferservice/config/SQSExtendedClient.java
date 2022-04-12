@@ -11,7 +11,7 @@ public class SQSExtendedClient {
 
     private final S3ClientSpringConfiguration s3;
 
-    @Value("${aws.smallEhrQueueS3}")
+    @Value("${aws.sqsLargeMessageBucketName}")
     private String bucketName;
 
     public void sqsExtendedClient () {
