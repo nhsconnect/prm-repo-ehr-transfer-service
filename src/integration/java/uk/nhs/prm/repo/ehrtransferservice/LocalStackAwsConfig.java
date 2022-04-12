@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
@@ -18,9 +19,11 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.sns.AmazonSNSExtendedClient;
+import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
@@ -57,22 +60,12 @@ public class LocalStackAwsConfig {
     }
 
     @Bean
-    public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
-        return SnsClient.builder()
-                .endpointOverride(URI.create(localstackUrl))
-                .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return "FAKE";
-                    }
-
-                    @Override
-                    public String secretAccessKey() {
-                        return "FAKE";
-                    }
-                }))
+    public static AmazonSNSExtendedClient snsClient(@Value("${localstack.url}") String localstackUrl) {
+        var amazonSNS = AmazonSNSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
                 .build();
+        return new AmazonSNSExtendedClient(amazonSNS, new SNSExtendedClientConfiguration());
     }
 
     @Bean
@@ -124,7 +117,9 @@ public class LocalStackAwsConfig {
     private void setupS3Bucket() {
         var waiter = s3Client.waiter();
         var createBucketRequest = CreateBucketRequest.builder()
-                .bucket(sqsLargeMessageBucketName).build();
+                .bucket(sqsLargeMessageBucketName)
+                .createBucketConfiguration(CreateBucketConfiguration.builder().build())
+                .build();
         s3Client.createBucket(createBucketRequest);
         waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }

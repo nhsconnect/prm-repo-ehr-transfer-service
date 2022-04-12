@@ -24,11 +24,12 @@ public class SNSExtendedClient {
 
     @Bean
     public AmazonSNSExtendedClient snsExtendedClient () {
-        PayloadStorageConfiguration payloadStorageConfiguration = new SNSExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName).withPayloadSizeThreshold(32);
+        PayloadStorageConfiguration payloadStorageConfiguration = new SNSExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName);
         return new AmazonSNSExtendedClient(getSNSClient(), (SNSExtendedClientConfiguration) payloadStorageConfiguration);
-//        snsExtendedClient.publish(topicArn, message);
     }
+
     //TODO: changed the region hardcoded to parameterised env value
+    @Bean
     public AmazonSNS getSNSClient(){
      return AmazonSNSClientBuilder.standard().withRegion("eu-west-2").build();
     }
