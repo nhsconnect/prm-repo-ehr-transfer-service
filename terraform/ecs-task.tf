@@ -25,7 +25,8 @@ locals {
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
     { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value },
-    { name = "SMALL_EHR_QUEUE_S3", value = aws_s3_bucket.small-ehr-queue-bucket.bucket }
+    { name = "SMALL_EHR_QUEUE_S3", value = aws_s3_bucket.small-ehr-queue-bucket.bucket },
+    { name = "SMALL_EHR_TOPIC_ARN", value = aws_sns_topic.small_ehr.arn }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
@@ -41,7 +42,7 @@ locals {
     },
     { name      = "EHR_TRANSFER_SERVICE_AUTHORIZATION_KEYS_FOR_GP2GP_MESSENGER",
       valueFrom = data.aws_ssm_parameter.ehr_transfer_service_authorization_keys_for_gp2gp_messenger.arn
-    },
+    }
   ]
 }
 
