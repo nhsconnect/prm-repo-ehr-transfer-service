@@ -17,6 +17,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.sns.SnsClient;
 
 import javax.annotation.PostConstruct;
@@ -33,12 +36,17 @@ public class LocalStackAwsConfig {
     private AmazonSQSAsync amazonSQSAsync;
     @Autowired
     private DynamoDbClient dynamoDbClient;
+    @Autowired
+    private S3Client s3Client;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
 
     @Value("${aws.transferTrackerDbTableName}")
     private String transferTrackerDbTableName;
+
+    @Value("${aws.sqsLargeMessageBucketName}")
+    private String sqsLargeMessageBucketName;
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -51,6 +59,25 @@ public class LocalStackAwsConfig {
     @Bean
     public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
         return SnsClient.builder()
+                .endpointOverride(URI.create(localstackUrl))
+                .region(Region.EU_WEST_2)
+                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                    @Override
+                    public String accessKeyId() {
+                        return "FAKE";
+                    }
+
+                    @Override
+                    public String secretAccessKey() {
+                        return "FAKE";
+                    }
+                }))
+                .build();
+    }
+
+    @Bean
+    public static S3Client s3Client(@Value("${localstack.url}") String localstackUrl) {
+        return S3Client.builder()
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
@@ -87,11 +114,19 @@ public class LocalStackAwsConfig {
                 .build();
     }
 
-
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        recreateIncomingNemsQueue();
+        recreateIncomingQueue();
         setupDbAndTable();
+        setupS3Bucket();
+    }
+
+    private void setupS3Bucket() {
+        var waiter = s3Client.waiter();
+        var createBucketRequest = CreateBucketRequest.builder()
+                .bucket(sqsLargeMessageBucketName).build();
+        s3Client.createBucket(createBucketRequest);
+        waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
     private void setupDbAndTable() {
@@ -129,7 +164,7 @@ public class LocalStackAwsConfig {
         waiter.waitUntilTableExists(tableRequest);
     }
 
-    private void recreateIncomingNemsQueue() {
+    private void recreateIncomingQueue() {
         ensureQueueDeleted(repoIncomingQueueName);
         createQueue(repoIncomingQueueName);
     }
