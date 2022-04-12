@@ -15,6 +15,6 @@ public class SQSExtendedClient {
     private String bucketName;
 
     public void sqsExtendedClient () {
-        var extendedClientConfiguration = new ExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName,true);
+        new ExtendedClientConfiguration().withPayloadSupportEnabled(s3.s3Client(), bucketName,true);
     }
 }
