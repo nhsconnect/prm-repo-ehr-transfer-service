@@ -19,7 +19,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
@@ -120,7 +119,7 @@ public class LocalStackAwsConfig {
         var waiter = s3Client.waiter();
         var createBucketRequest = CreateBucketRequest.builder()
                 .bucket(sqsLargeMessageBucketName)
-                .createBucketConfiguration(CreateBucketConfiguration.builder().build())
+                .grantFullControl("GrantFullControl")
                 .build();
         if (s3Client.listBuckets().hasBuckets()) {
             resetS3ForLocalEnvironment(waiter);
