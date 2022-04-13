@@ -16,6 +16,9 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 public class SNSExtendedClient {
     private final S3Client s3;
 
+    @Value("${aws.region}")
+    private String awsRegion;
+
     @Value("${aws.sqsLargeMessageBucketName}")
     private String bucketName;
 
@@ -28,9 +31,8 @@ public class SNSExtendedClient {
         return new AmazonSNSExtendedClient(getSNSClient(), (SNSExtendedClientConfiguration) payloadStorageConfiguration);
     }
 
-    //TODO: changed the region hardcoded to parameterised env value
     @Bean
     public AmazonSNS getSNSClient() {
-        return AmazonSNSClientBuilder.standard().withRegion("eu-west-2").build();
+        return AmazonSNSClientBuilder.standard().withRegion(awsRegion).build();
     }
 }

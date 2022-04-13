@@ -1,12 +1,15 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.SubscribeRequest;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
 
@@ -31,6 +35,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @TestConfiguration
@@ -42,6 +47,10 @@ public class LocalStackAwsConfig {
     private DynamoDbClient dynamoDbClient;
     @Autowired
     private S3Client s3Client;
+    @Autowired
+    private AmazonSNSExtendedClient snsExtendedClient;
+    @Autowired
+    private AmazonSQSExtendedClient sqsExtendedClient;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -51,6 +60,9 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.sqsLargeMessageBucketName}")
     private String sqsLargeMessageBucketName;
+
+    @Value("${aws.smallEhrQueueName}")
+    private String smallEhrQueueName;
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -110,9 +122,26 @@ public class LocalStackAwsConfig {
 
     @PostConstruct
     public void setupTestQueuesAndTopics() {
-        recreateIncomingQueue();
+        setUpQueueAndTopics();
         setupDbAndTable();
         setupS3Bucket();
+    }
+
+    private void setUpQueueAndTopics() {
+        ensureQueueDeleted(repoIncomingQueueName);
+        amazonSQSAsync.createQueue(repoIncomingQueueName);
+
+        var smallEhrQueue = sqsExtendedClient.createQueue(CreateQueueRequest.builder().queueName(smallEhrQueueName).build());
+        var topic = snsExtendedClient.createTopic("test_small_ehr_topic");
+        createSnsTestReceiverSubscription(topic, getQueueArn(smallEhrQueue.queueUrl()));
+    }
+
+    private void ensureQueueDeleted(String queueName) {
+        try {
+            amazonSQSAsync.deleteQueue(amazonSQSAsync.getQueueUrl(queueName).getQueueUrl());
+        } catch (QueueDoesNotExistException e) {
+            // no biggie
+        }
     }
 
     private void setupS3Bucket() {
@@ -121,6 +150,7 @@ public class LocalStackAwsConfig {
                 .bucket(sqsLargeMessageBucketName)
                 .grantFullControl("GrantFullControl")
                 .build();
+
         if (s3Client.listBuckets().hasBuckets()) {
             resetS3ForLocalEnvironment(waiter);
         }
@@ -164,31 +194,6 @@ public class LocalStackAwsConfig {
         waiter.waitUntilTableExists(tableRequest);
     }
 
-    private void recreateIncomingQueue() {
-        ensureQueueDeleted(repoIncomingQueueName);
-        createQueue(repoIncomingQueueName);
-    }
-
-    private void createQueue(String queueName) {
-        CreateQueueRequest createQueueRequest = new CreateQueueRequest();
-        createQueueRequest.setQueueName(queueName);
-        HashMap<String, String> attributes = new HashMap<>();
-        createQueueRequest.withAttributes(attributes);
-        amazonSQSAsync.createQueue(queueName);
-    }
-
-    private void ensureQueueDeleted(String queueName) {
-        try {
-            deleteQueue(queueName);
-        } catch (QueueDoesNotExistException e) {
-            // no biggie
-        }
-    }
-
-    private void deleteQueue(String queueName) {
-        amazonSQSAsync.deleteQueue(amazonSQSAsync.getQueueUrl(queueName).getQueueUrl());
-    }
-
     private void resetTableForLocalEnvironment(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
         var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
         dynamoDbClient.deleteTable(deleteRequest);
@@ -198,6 +203,23 @@ public class LocalStackAwsConfig {
     private void resetS3ForLocalEnvironment(S3Waiter waiter) {
         s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
         waiter.waitUntilBucketNotExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
+    }
+
+    private void createSnsTestReceiverSubscription(CreateTopicResult topic, String queueArn) {
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("RawMessageDelivery", "True");
+        var subscribeRequest = new SubscribeRequest()
+                .withTopicArn(topic.getTopicArn())
+                .withProtocol("sqs")
+                .withEndpoint(queueArn)
+                .withAttributes(attributes);
+
+        snsExtendedClient.subscribe(subscribeRequest);
+    }
+
+    private String getQueueArn(String queueUrl) {
+        GetQueueAttributesResult queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
+        return queueAttributes.getAttributes().get("QueueArn");
     }
 }
 
