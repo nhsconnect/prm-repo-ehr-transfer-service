@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.payloadoffloading.PayloadStorageConfiguration;
+import software.amazon.payloadoffloading.S3BackedPayloadStore;
+import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
 
@@ -22,13 +24,11 @@ public class SNSExtendedClient {
     @Value("${aws.sqsLargeMessageBucketName}")
     private String bucketName;
 
-    @Value("${aws.smallEhrTopicArn}")
-    private String topicArn;
-
     @Bean
     public AmazonSNSExtendedClient snsExtendedClient () {
+        var s3BackedPayloadStore = new S3BackedPayloadStore(new S3Dao(s3), bucketName);
         PayloadStorageConfiguration payloadStorageConfiguration = new SNSExtendedClientConfiguration().withPayloadSupportEnabled(s3, bucketName);
-        return new AmazonSNSExtendedClient(getSNSClient(), (SNSExtendedClientConfiguration) payloadStorageConfiguration);
+        return new AmazonSNSExtendedClient(getSNSClient(), (SNSExtendedClientConfiguration) payloadStorageConfiguration, s3BackedPayloadStore);
     }
 
     @Bean
