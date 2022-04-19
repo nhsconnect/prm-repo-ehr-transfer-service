@@ -94,7 +94,7 @@ public class LocalStackAwsConfig {
     }
 
     @Bean
-    public static AmazonSNSExtendedClient snsExtendedClient(AmazonSNS amazonSNS, S3Client s3) {
+    public static AmazonSNSExtendedClient s3SupportedSnsClient(AmazonSNS amazonSNS, S3Client s3) {
         return new AmazonSNSExtendedClient(amazonSNS, new SNSExtendedClientConfiguration(), new S3BackedPayloadStore(new S3Dao(s3), "test-s3-bucket-name-cant-have-underscores"));
     }
 
