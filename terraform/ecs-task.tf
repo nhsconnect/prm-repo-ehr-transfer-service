@@ -27,7 +27,12 @@ locals {
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
     { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value },
     { name = "SQS_LARGE_MESSAGE_BUCKET_NAME", value = aws_s3_bucket.sqs_large_message_bucket.bucket },
-    { name = "SMALL_EHR_TOPIC_ARN", value = aws_sns_topic.small_ehr.arn }
+    { name = "SMALL_EHR_TOPIC_ARN", value = aws_sns_topic.small_ehr.arn },
+    { name = "LARGE_EHR_TOPIC_ARN", value = aws_sns_topic.large_ehr.arn },
+    { name = "ATTACHMENTS_TOPIC_ARN", value = aws_sns_topic.attachments.arn },
+    { name = "PARSING_DLQ_TOPIC_ARN", value = aws_sns_topic.parsing_dlq.arn },
+    { name = "POSITIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.positive_acks.arn },
+    { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
