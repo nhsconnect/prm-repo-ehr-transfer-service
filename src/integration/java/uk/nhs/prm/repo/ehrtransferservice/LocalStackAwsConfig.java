@@ -1,12 +1,17 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
+import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.SubscribeRequest;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +30,7 @@ import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
@@ -32,9 +38,7 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @TestConfiguration
@@ -44,6 +48,10 @@ public class LocalStackAwsConfig {
     private AmazonSQSAsync amazonSQSAsync;
     @Autowired
     private DynamoDbClient dynamoDbClient;
+    @Autowired
+    private AmazonSQSExtendedClient s3SupportedSqsClient;
+    @Autowired
+    private AmazonSNSExtendedClient s3SupportedSnsClient;
     @Autowired
     private S3Client s3Client;
 
@@ -56,8 +64,8 @@ public class LocalStackAwsConfig {
     @Value("${aws.sqsLargeMessageBucketName}")
     private String sqsLargeMessageBucketName;
 
-    @Value("${aws.smallEhrQueueName}")
-    private String smallEhrQueueName;
+    @Value("${aws.attachmentsQueueName}")
+    private String attachmentsQueueName;
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -83,6 +91,11 @@ public class LocalStackAwsConfig {
                         return "FAKE";
                     }
                 })).build();
+    }
+
+    @Bean
+    public static AmazonSQSExtendedClient s3SupportedSqsClient(SqsClient sqsClient, S3Client s3) {
+        return new AmazonSQSExtendedClient(sqsClient, new ExtendedClientConfiguration().withPayloadSupportEnabled(s3, "test-s3-bucket-name-cant-have-underscores", true));
     }
 
     @Bean
@@ -148,9 +161,9 @@ public class LocalStackAwsConfig {
         ensureQueueDeleted(repoIncomingQueueName);
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
-//        var smallEhrQueue = sqsExtendedClient.createQueue(CreateQueueRequest.builder().queueName(smallEhrQueueName).build());
-//        var topic = snsExtendedClient.createTopic("test_small_ehr_topic");
-//        createSnsTestReceiverSubscription(topic, getQueueArn(smallEhrQueue.queueUrl()));
+        var attachmentQueue = s3SupportedSqsClient.createQueue(CreateQueueRequest.builder().queueName(attachmentsQueueName).build());
+        var topic = s3SupportedSnsClient.createTopic("test_attachments_topic");
+        createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.queueUrl()));
     }
 
     private void ensureQueueDeleted(String queueName) {
@@ -224,21 +237,21 @@ public class LocalStackAwsConfig {
         waiter.waitUntilBucketNotExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
-//    private void createSnsTestReceiverSubscription(CreateTopicResult topic, String queueArn) {
-//        final Map<String, String> attributes = new HashMap<>();
-//        attributes.put("RawMessageDelivery", "True");
-//        var subscribeRequest = new SubscribeRequest()
-//                .withTopicArn(topic.getTopicArn())
-//                .withProtocol("sqs")
-//                .withEndpoint(queueArn)
-//                .withAttributes(attributes);
-//
-//        snsExtendedClient.subscribe(subscribeRequest);
-//    }
-//
-//    private String getQueueArn(String queueUrl) {
-//        GetQueueAttributesResult queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
-//        return queueAttributes.getAttributes().get("QueueArn");
-//    }
+    private void createSnsTestReceiverSubscription(CreateTopicResult topic, String queueArn) {
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("RawMessageDelivery", "True");
+        var subscribeRequest = new SubscribeRequest()
+                .withTopicArn(topic.getTopicArn())
+                .withProtocol("sqs")
+                .withEndpoint(queueArn)
+                .withAttributes(attributes);
+
+        s3SupportedSnsClient.subscribe(subscribeRequest);
+    }
+
+    private String getQueueArn(String queueUrl) {
+        GetQueueAttributesResult queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
+        return queueAttributes.getAttributes().get("QueueArn");
+    }
 }
 

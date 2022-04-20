@@ -22,6 +22,7 @@ locals {
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
     { name = "REPO_INCOMING_QUEUE_NAME", value = aws_sqs_queue.repo_incoming.name },
     { name = "SMALL_EHR_QUEUE_NAME", value = aws_sqs_queue.small_ehr.name },
+    { name = "ATTACHMENTS_QUEUE_NAME", value = aws_sqs_queue.attachments.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
