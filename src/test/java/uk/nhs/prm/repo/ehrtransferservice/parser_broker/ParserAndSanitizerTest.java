@@ -33,6 +33,6 @@ public class ParserAndSanitizerTest {
         String sanitizedMessage = sanitizer.sanitize(message);
 
         ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
-        assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
+        assertThat(parsedMessage.getInteractionId(), equalTo(expectedInteractionId));
     }
 }

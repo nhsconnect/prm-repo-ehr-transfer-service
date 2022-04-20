@@ -61,7 +61,7 @@ public class JmsConsumerTest {
 
         when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getAction()).thenReturn("RCMR_IN030000UK06");
+        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -77,7 +77,7 @@ public class JmsConsumerTest {
 
         when(copcMessageHandler.getInteractionId()).thenReturn("COPC_IN000001UK01");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getAction()).thenReturn("COPC_IN000001UK01");
+        when(parsedMessage.getInteractionId()).thenReturn("COPC_IN000001UK01");
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -92,7 +92,7 @@ public class JmsConsumerTest {
 
         when(ehrRequestMessageHandler.getInteractionId()).thenReturn("RCMR_IN010000UK05");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getAction()).thenReturn("RCMR_IN010000UK05");
+        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN010000UK05");
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -108,7 +108,7 @@ public class JmsConsumerTest {
     void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-        when(parsedMessage.getAction()).thenReturn(interactionId);
+        when(parsedMessage.getInteractionId()).thenReturn(interactionId);
         when(parsedMessage.getRawMessage()).thenReturn(messageContent);
 
         jmsConsumerTestFactory(unhandledQueue);

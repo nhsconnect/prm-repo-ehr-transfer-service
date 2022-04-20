@@ -48,7 +48,7 @@ public class ParsedMessageTest {
         envelope.header.messageHeader.action = action;
 
         ParsedMessage message = new ParsedMessage(envelope, null, null);
-        assertThat(message.getAction(), equalTo(action));
+        assertThat(message.getInteractionId(), equalTo(action));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class ParsedMessageTest {
         SOAPEnvelope envelope = new SOAPEnvelope();
 
         ParsedMessage message = new ParsedMessage(envelope, null, null);
-        assertThat(message.getAction(), equalTo(null));
+        assertThat(message.getInteractionId(), equalTo(null));
     }
 
     @Test

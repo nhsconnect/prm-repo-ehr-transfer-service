@@ -88,7 +88,7 @@ public class EhrRepoClientTest {
         when(mockParsedMessage.getNhsNumber()).thenReturn("0123456789");
         when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
         when(mockParsedMessage.getMessageId()).thenReturn(messageId);
-        when(mockParsedMessage.getAction()).thenReturn("RCMR_IN030000UK06");
+        when(mockParsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         when(mockParsedMessage.getAttachmentMessageIds()).thenReturn(Collections.emptyList());
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");

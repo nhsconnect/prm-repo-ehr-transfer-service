@@ -51,8 +51,7 @@ public class ParsedMessage {
         return null;
     }
 
-    // FIXME: Refactor to getInteractionId
-    public String getAction() {
+    public String getInteractionId() {
         SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;

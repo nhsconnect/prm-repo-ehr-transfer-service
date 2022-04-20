@@ -55,7 +55,7 @@ public class EhrRepoClient {
         String endpoint = "/messages";
         UUID conversationId = parsedMessage.getConversationId();
         UUID messageId = parsedMessage.getMessageId();
-        String messageType = parsedMessage.getAction().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
+        String messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
         String nhsNumber = parsedMessage.getNhsNumber();
         List<UUID> attachmentMessageIds = parsedMessage.getAttachmentMessageIds();
 

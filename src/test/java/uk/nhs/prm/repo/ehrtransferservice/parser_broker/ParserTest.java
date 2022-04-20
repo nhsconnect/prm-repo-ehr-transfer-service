@@ -39,7 +39,7 @@ public class ParserTest {
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getAction(), equalTo(expectedInteractionId));
+        assertThat(parsedMessage.getInteractionId(), equalTo(expectedInteractionId));
     }
 
     @ParameterizedTest
