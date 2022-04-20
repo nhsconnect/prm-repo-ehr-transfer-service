@@ -1,7 +1,9 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -44,17 +47,32 @@ class EhrRequestTest {
     private static final String CONVERSATION_ID = "000-111-222-333-444";
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
     private static final String SOURCE_GP = "odscode";
+    private WireMockServer wireMock;
+
+    @BeforeEach
+    public void setUp() {
+        wireMock = initializeWebServer();
+    }
+
+    private WireMockServer initializeWebServer() {
+        final WireMockServer wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+        return wireMockServer;
+    }
 
     @AfterEach
     void tearDown() {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
+        wireMock.stop();
     }
 
     @Test
-    void shouldProcessAndStoreInitialInformationInDb()  {
+    void shouldProcessAndStoreInitialInformationInDbAndSendEhrRequest()  {
         var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
+        wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(204)));
+
         sqs.sendMessage(queueUrl, getRepoIncomingData());
 
         await().atMost(10,TimeUnit.SECONDS).untilAsserted(() -> {
@@ -71,6 +89,9 @@ class EhrRequestTest {
             assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
         });
+
+        verify(postRequestedFor(urlMatching("/health-record-requests/" + NHS_NUMBER)));
+
     }
 
     private String getRepoIncomingData() {
