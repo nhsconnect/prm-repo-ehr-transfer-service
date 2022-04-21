@@ -25,7 +25,7 @@ class SmallEhrMessagePublisherTest {
     }
 
     @Test
-    void shouldPublishMessageToTheUnhandledTopic() {
+    void shouldPublishMessageToTheSmallEhrTopic() {
         var conversationId = UUID.randomUUID();
         smallEhrMessagePublisher.sendMessage("message", conversationId);
         verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());

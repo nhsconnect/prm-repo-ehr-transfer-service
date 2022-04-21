@@ -25,7 +25,7 @@ class ParsingDlqPublisherTest {
     }
 
     @Test
-    void shouldPublishMessageToTheUnhandledTopic() {
+    void shouldPublishMessageToTheParsingDlqTopic() {
         var conversationId = UUID.randomUUID();
         parsingDlqPublisher.sendMessage("message", conversationId);
         verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());

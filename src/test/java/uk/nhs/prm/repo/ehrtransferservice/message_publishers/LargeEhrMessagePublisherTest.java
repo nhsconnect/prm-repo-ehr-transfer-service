@@ -11,23 +11,24 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class AttachmentMessagePublisherTest {
+class LargeEhrMessagePublisherTest {
     @Mock
     private MessagePublisher messagePublisher;
 
     private final static String topicArn = "topicArn";
 
-    private AttachmentMessagePublisher attachmentMessagePublisher;
+    private LargeEhrMessagePublisher largeEhrMessagePublisher;
 
     @BeforeEach
     void setUp() {
-        attachmentMessagePublisher = new AttachmentMessagePublisher(messagePublisher, topicArn);
+        largeEhrMessagePublisher = new LargeEhrMessagePublisher(messagePublisher, topicArn);
     }
 
     @Test
-    void shouldPublishMessageToTheAttachmentTopic() {
+    void shouldPublishMessageToTheLargeEhrTopic() {
         var conversationId = UUID.randomUUID();
-        attachmentMessagePublisher.sendMessage("message", conversationId);
+        largeEhrMessagePublisher.sendMessage("message", conversationId);
         verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());
     }
+
 }
