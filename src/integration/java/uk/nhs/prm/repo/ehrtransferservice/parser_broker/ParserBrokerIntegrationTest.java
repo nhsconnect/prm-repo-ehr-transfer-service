@@ -1,8 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +12,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -40,9 +33,9 @@ public class ParserBrokerIntegrationTest {
     private final TestDataLoader dataLoader = new TestDataLoader();
 
     @Test
-    void shouldPublishAttachmentToAttachmentTopic() throws IOException, InterruptedException {
-        String attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
-        String attachmentSanitized = dataLoader.getDataAsString("COPC_IN000001UK01Sanitized");
+    void shouldPublishAttachmentToAttachmentTopic() {
+//        String attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
+//        String attachmentSanitized = dataLoader.getDataAsString("COPC_IN000001UK01Sanitized");
 
 //        jmsTemplate.send(inboundQueue, new MessageCreator() {
 //            @Override
@@ -64,14 +57,14 @@ public class ParserBrokerIntegrationTest {
 //        });
     }
 
-    private List<Message> checkMessageInRelatedQueue(String queueUrl) {
-        System.out.println("checking sqs queue: " + queueUrl);
-
-        var requestForMessagesWithAttributes
-                = new ReceiveMessageRequest().withQueueUrl(queueUrl)
-                .withMessageAttributeNames("traceId");
-        var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
-        assertThat(messages).hasSize(1);
-        return messages;
-    }
+//    private List<Message> checkMessageInRelatedQueue(String queueUrl) {
+//        System.out.println("checking sqs queue: " + queueUrl);
+//
+//        var requestForMessagesWithAttributes
+//                = new ReceiveMessageRequest().withQueueUrl(queueUrl)
+//                .withMessageAttributeNames("traceId");
+//        var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
+//        assertThat(messages).hasSize(1);
+//        return messages;
+//    }
 }
