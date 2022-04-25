@@ -262,6 +262,52 @@ resource "aws_sqs_queue_policy" "attachments" {
   policy    = data.aws_iam_policy_document.attachments_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "attachments_observability" {
+  queue_url = aws_sqs_queue.attachments_observability.id
+  policy    = data.aws_iam_policy_document.attachments_policy_doc.json
+}
+
+
+resource "aws_sqs_queue_policy" "parsing_dlq" {
+  queue_url = aws_sqs_queue.parsing_dlq.id
+  policy    = data.aws_iam_policy_document.parsing_dlq_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "positive_acks" {
+  queue_url = aws_sqs_queue.positive_acks_observability.id
+  policy    = data.aws_iam_policy_document.parsing_dlq_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "large_ehr" {
+  queue_url = aws_sqs_queue.large_ehr.id
+  policy    = data.aws_iam_policy_document.large_ehr_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "large_ehr_observability" {
+  queue_url = aws_sqs_queue.large_ehr_observability.id
+  policy    = data.aws_iam_policy_document.large_ehr_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "small_ehr" {
+  queue_url = aws_sqs_queue.small_ehr.id
+  policy    = data.aws_iam_policy_document.small_ehr_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "small_ehr_observability" {
+  queue_url = aws_sqs_queue.small_ehr_observability.id
+  policy    = data.aws_iam_policy_document.small_ehr_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "negative_acks" {
+  queue_url = aws_sqs_queue.negative_acks.id
+  policy    = data.aws_iam_policy_document.negative_acks_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "negative_acks_observability" {
+  queue_url = aws_sqs_queue.negative_acks_observability.id
+  policy    = data.aws_iam_policy_document.negative_acks_policy_doc.json
+}
+
 data "aws_iam_policy_document" "attachments_policy_doc" {
   statement {
 
@@ -284,6 +330,134 @@ data "aws_iam_policy_document" "attachments_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.attachments.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "parsing_dlq_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.parsing_dlq.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.parsing_dlq.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "positive_acks_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.positive_acks_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.positive_acks.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "large_ehr_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.large_ehr.arn,
+      aws_sqs_queue.large_ehr_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.large_ehr.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "small_ehr_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.small_ehr.arn,
+      aws_sqs_queue.small_ehr_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.small_ehr.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "negative_acks_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.negative_acks.arn,
+      aws_sqs_queue.negative_acks_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.negative_acks.arn]
       variable = "aws:SourceArn"
     }
   }
