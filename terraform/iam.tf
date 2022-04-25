@@ -256,3 +256,35 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     ]
   }
 }
+
+resource "aws_sqs_queue_policy" "attachments" {
+  queue_url = aws_sqs_queue.attachments.id
+  policy    = data.aws_iam_policy_document.attachments_policy_doc.json
+}
+
+data "aws_iam_policy_document" "attachments_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.attachments.arn,
+      aws_sqs_queue.attachments_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.attachments.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
