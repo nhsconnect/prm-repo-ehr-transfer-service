@@ -62,14 +62,14 @@ public class JmsConsumer {
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
             log.info("Successfully parsed message");
             String interactionId = parsedMessage.getInteractionId();
-            broker.sendMessageToCorrespondingTopicPublisher(interactionId, parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
-
 
             if (interactionId == null) {
                 log.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
+
+            broker.sendMessageToCorrespondingTopicPublisher(interactionId, parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
 
             MessageHandler matchingHandler = this.getHandlers().get(interactionId);
 
