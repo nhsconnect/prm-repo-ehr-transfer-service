@@ -4,6 +4,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-@Ignore
 public class ParserBrokerIntegrationTest {
     @Autowired
     private AmazonSQSAsync sqs;
@@ -51,6 +51,7 @@ public class ParserBrokerIntegrationTest {
     private final TestDataLoader dataLoader = new TestDataLoader();
 
     @Test
+    @Disabled("WIP")
     void shouldPublishAttachmentToAttachmentTopic() throws IOException, InterruptedException {
         String attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
         String attachmentSanitized = dataLoader.getDataAsString("COPC_IN000001UK01Sanitized");
