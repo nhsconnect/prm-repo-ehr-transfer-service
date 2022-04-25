@@ -13,6 +13,7 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.CopcMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.JMSException;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
@@ -31,6 +33,7 @@ public class JmsConsumerTest {
     EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
     CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
     EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
+    Broker broker = mock(Broker.class);
 
     List<MessageHandler> handlerList = new ArrayList();
     String messageContent = "test";
@@ -40,7 +43,7 @@ public class JmsConsumerTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, handlerList);
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, handlerList);
 
     private void jmsConsumerTestFactory(String expectedQueue) throws JMSException {
         String message = messageContent;
@@ -50,6 +53,21 @@ public class JmsConsumerTest {
 
         jmsConsumer.onMessage(bytesMessage);
         verify(jmsProducer).sendMessageToQueue(expectedQueue, message);
+    }
+
+    @Test
+    void shouldParseAndCallBrokerForReceivedMessage() throws IOException, JMSException {
+        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
+        message.reset();
+        var conversationId = UUID.randomUUID();
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        when(parsedMessage.getRawMessage()).thenReturn("test-message");
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
+
+        jmsConsumer.onMessage(message);
+        verify(broker).sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "test-message", conversationId, false, false);
     }
 
     @Test
