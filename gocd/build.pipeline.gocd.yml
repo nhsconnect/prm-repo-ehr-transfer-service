@@ -33,7 +33,7 @@ pipelines:
                 - build:
                     source: build
               tabs:
-                TestReport: build/reports/test/integration/index.html
+                TestReport: build/reports/tests/integration/index.html
               tasks:
                 - exec:
                     command: /bin/bash
