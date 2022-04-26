@@ -12,6 +12,7 @@ import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
@@ -50,15 +51,11 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
-        BytesMessage bytesMessage = (BytesMessage) message;
-        byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-        bytesMessage.readBytes(contentAsBytes);
-        String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
-
-        log.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", bytesMessage.getJMSCorrelationID()));
+        String rawMessage = getRawMessage(message);
+        log.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", message.getJMSCorrelationID()));
 
         try {
-            String sanitizedMessage = messageSanitizer.sanitize(contentAsBytes);
+            String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
             log.info("Successfully parsed message");
             String interactionId = parsedMessage.getInteractionId();
@@ -84,6 +81,20 @@ public class JmsConsumer {
             log.error("Failed to process message from the queue", e);
             jmsProducer.sendMessageToQueue(unhandledQueue, rawMessage);
         }
+    }
+
+    private String getRawMessage(Message message) throws JMSException {
+        if (message instanceof BytesMessage) {
+            log.info("Received BytesMessage from MQ");
+            BytesMessage bytesMessage = (BytesMessage) message;
+            byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
+            bytesMessage.readBytes(contentAsBytes);
+            String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
+            return rawMessage;
+        }
+        log.info("Received TextMessage from MQ");
+        var textMessage = (TextMessage) message;
+        return textMessage.getText();
     }
 
     private Dictionary<String, MessageHandler> getHandlers() {

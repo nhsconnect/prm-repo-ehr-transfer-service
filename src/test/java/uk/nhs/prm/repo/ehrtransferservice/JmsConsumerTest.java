@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,11 +57,26 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldParseAndCallBrokerForReceivedMessage() throws IOException, JMSException {
+    void shouldParseAndCallBrokerForReceivedByteMessage() throws IOException, JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
         message.reset();
         var conversationId = UUID.randomUUID();
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        when(parsedMessage.getRawMessage()).thenReturn("test-message");
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
+
+        jmsConsumer.onMessage(message);
+        verify(broker).sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "test-message", conversationId, false, false);
+    }
+
+    @Test
+    void shouldParseAndCallBrokerForReceivedTextMessage() throws IOException, JMSException {
+        var message = new ActiveMQTextMessage();
+        message.setText("test-message");
+        var conversationId = UUID.randomUUID();
+        var parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         when(parsedMessage.getRawMessage()).thenReturn("test-message");
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
