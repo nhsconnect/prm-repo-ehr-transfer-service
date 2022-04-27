@@ -23,35 +23,34 @@ public class Broker {
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
 
     public void sendMessageToCorrespondingTopicPublisher(String interactionId, String message, UUID conversationId, boolean isLargeMessage, boolean isNegativeAck) {
-        log.info("IN BROKER");
         switch (interactionId) {
             case ATTACHMENT_INTERACTION_ID:
-                log.info("IDENTIFIED AS ATTACHMENT MESSAGE");
+                log.info("Message Type: ATTACHMENT");
                 attachmentMessagePublisher.sendMessage(message, conversationId);
                 break;
             case EHR_EXTRACT_INTERACTION_ID:
                 if (isLargeMessage) {
-                    log.info("IDENTIFIED AS LARGE EHR EXTRACT");
+                    log.info("Message Type: LARGE EHR EXTRACT");
                     largeEhrMessagePublisher.sendMessage(message, conversationId);
                     break;
                 }
-                log.info("IDENTIFIED AS SMALL EHR EXTRACT");
+                log.info("Message Type: SMALL EHR EXTRACT");
                 smallEhrMessagePublisher.sendMessage(message, conversationId);
                 break;
             case ACKNOWLEDGEMENT_INTERACTION_ID:
                 if (isNegativeAck) {
-                    log.info("IDENTIFIED AS NEGATIVE ACKNOWLEDGEMENT");
+                    log.info("Message Type: NEGATIVE ACKNOWLEDGEMENT");
                     negativeAcknowledgementMessagePublisher.sendMessage(message, conversationId);
                     break;
                 }
-                log.info("IDENTIFIED AS POSITIVE ACKNOWLEDGEMENT");
+                log.info("Message Type: POSITIVE ACKNOWLEDGEMENT");
                 positiveAcknowledgementMessagePublisher.sendMessage(message, conversationId);
                 break;
             case EHR_REQUEST_INTERACTION_ID:
-                log.info("Identified as EHR Request - Not currently handled until Repo OUT");
+                log.info("Message Type: EHR REQUEST - Not currently handled until Repo OUT");
                 break;
             default:
-                log.warn("Unrecognised interaction ID - cannot identify message type");
+                log.warn("Unknown Interaction ID: " + interactionId);
                 break;
         }
     }
