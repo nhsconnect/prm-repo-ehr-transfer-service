@@ -34,7 +34,13 @@ public class Tracer {
         }
     }
 
-    public void handleTraceIdFromMhsInbound(String traceId) {
+    public void setMDCContextFromMhsInbound(String traceId, String conversationId) {
+        clearMDCContext();
+        handleTraceIdFromMhsInbound(traceId);
+        setConversationId(conversationId);
+    }
+
+    private void handleTraceIdFromMhsInbound(String traceId) {
         if (traceId == null) {
             log.info("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
             setTraceId(createRandomUUID());

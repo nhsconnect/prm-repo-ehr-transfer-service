@@ -75,12 +75,18 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldSetTraceId() throws JMSException {
+    void shouldSetTraceId() throws JMSException, IOException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
         message.reset();
+        var conversationId = UUID.randomUUID();
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        when(parsedMessage.getRawMessage()).thenReturn("test-message");
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
-        verify(tracer).handleTraceIdFromMhsInbound(any());
+        verify(tracer).setMDCContextFromMhsInbound(any(), eq(conversationId.toString()));
     }
 
     @Test

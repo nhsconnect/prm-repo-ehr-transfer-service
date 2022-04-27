@@ -59,7 +59,7 @@ public class JmsConsumer {
         try {
             String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
-            tracer.handleTraceIdFromMhsInbound(message.getJMSCorrelationID());
+            tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID(), parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
             if (parsedMessage.getInteractionId() == null) {
