@@ -26,7 +26,7 @@ public class Tracer {
     }
 
     private void handleTraceId(Message message) throws JMSException {
-        if (message.getStringProperty(TRACE_ID) == null) {
+        if (message.getStringProperty(TRACE_ID) == null || message.getStringProperty(TRACE_ID).isBlank()) {
             log.info("The message has no trace ID attribute, we'll create and assign one.");
             setTraceId(createRandomUUID());
         } else {
@@ -41,7 +41,7 @@ public class Tracer {
     }
 
     private void handleTraceIdFromMhsInbound(String traceId) {
-        if (traceId == null) {
+        if (traceId == null || traceId.isBlank()) {
             log.info("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
             setTraceId(createRandomUUID());
         } else {
