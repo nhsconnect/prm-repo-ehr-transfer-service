@@ -52,7 +52,7 @@ public class JmsConsumer {
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
         String rawMessage = getRawMessage(message);
-        log.info("Received Message from Inbound queue", v("queue", inboundQueue), v("correlationId", message.getJMSCorrelationID()));
+        log.info("Received Message from Inbound queue with correlation ID: " + message.getJMSCorrelationID());
 
         try {
             String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
@@ -62,7 +62,7 @@ public class JmsConsumer {
             log.info(message.getJMSCorrelationID());
 
             if (interactionId == null) {
-                log.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
+                log.warn("Sending message without soap envelope header to unhandled queue");
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
@@ -72,7 +72,7 @@ public class JmsConsumer {
             MessageHandler matchingHandler = this.getHandlers().get(interactionId);
 
             if (matchingHandler == null) {
-                log.warn("Sending message with an unknown or missing interactionId to unhandled queue", v("queue", unhandledQueue), v("interactionId", interactionId));
+                log.warn("Sending message with an unknown or missing interactionId \"" + interactionId + "\" to unhandled queue");
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
