@@ -14,6 +14,7 @@ public class Broker {
     private static final String ATTACHMENT_INTERACTION_ID = "COPC_IN000001UK01";
     private static final String EHR_EXTRACT_INTERACTION_ID = "RCMR_IN030000UK06";
     private static final String ACKNOWLEDGEMENT_INTERACTION_ID = "MCCI_IN010000UK13";
+    private static final String EHR_REQUEST_INTERACTION_ID = "RCMR_IN010000UK05";
 
     private final AttachmentMessagePublisher attachmentMessagePublisher;
     private final SmallEhrMessagePublisher smallEhrMessagePublisher;
@@ -45,6 +46,9 @@ public class Broker {
                 }
                 log.info("IDENTIFIED AS POSITIVE ACKNOWLEDGEMENT");
                 positiveAcknowledgementMessagePublisher.sendMessage(message, conversationId);
+                break;
+            case EHR_REQUEST_INTERACTION_ID:
+                log.info("Identified as EHR Request - Not currently handled until Repo OUT");
                 break;
             default:
                 log.warn("Unrecognised interaction ID - cannot identify message type");
