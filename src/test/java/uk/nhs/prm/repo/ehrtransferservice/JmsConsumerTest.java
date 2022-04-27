@@ -114,6 +114,7 @@ public class JmsConsumerTest {
         when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -130,6 +131,7 @@ public class JmsConsumerTest {
         when(copcMessageHandler.getInteractionId()).thenReturn("COPC_IN000001UK01");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("COPC_IN000001UK01");
+        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
@@ -145,6 +147,7 @@ public class JmsConsumerTest {
         when(ehrRequestMessageHandler.getInteractionId()).thenReturn("RCMR_IN010000UK05");
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN010000UK05");
+        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
