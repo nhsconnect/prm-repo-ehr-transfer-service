@@ -59,6 +59,7 @@ public class JmsConsumer {
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
             log.info("Successfully parsed message");
             String interactionId = parsedMessage.getInteractionId();
+            log.info(message.getJMSCorrelationID());
 
             if (interactionId == null) {
                 log.warn("Sending message without soap envelope header to unhandled queue", v("queue", unhandledQueue));
