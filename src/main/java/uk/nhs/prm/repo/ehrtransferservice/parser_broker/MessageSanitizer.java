@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice;
+package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import org.springframework.stereotype.Component;
 

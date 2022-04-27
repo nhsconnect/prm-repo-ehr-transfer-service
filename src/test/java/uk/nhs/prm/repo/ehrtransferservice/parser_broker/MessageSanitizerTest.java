@@ -1,5 +1,6 @@
-package uk.nhs.prm.repo.ehrtransferservice;
+package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -9,14 +10,11 @@ import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-
 @Tag("unit")
 class MessageSanitizerTest {
 
     MessageSanitizer messageSanitizer = new MessageSanitizer();
-    private TestDataLoader loader = new TestDataLoader();
+    private final TestDataLoader loader = new TestDataLoader();
 
     @ParameterizedTest
     @CsvSource({
@@ -28,13 +26,12 @@ class MessageSanitizerTest {
     void shouldRemovePrefixCharactersFromJsonMessage(String rawMessageFile, String sanitizedMessageFile) throws IOException {
         byte[] rawMessageFromQueue = loader.getDataAsBytes(rawMessageFile);
         String sanitizedMessage = loader.getDataAsString(sanitizedMessageFile);
-        assertThat(messageSanitizer.sanitize(rawMessageFromQueue), equalTo(sanitizedMessage));
+        Assertions.assertEquals(messageSanitizer.sanitize(rawMessageFromQueue), sanitizedMessage);
     }
 
     @Test
     void shouldNotChangeAMessageWithoutExpectedEbxml() {
         String nonEbxmlMessage = "Not an ebxml message";
-        assertThat(messageSanitizer.sanitize(nonEbxmlMessage.getBytes(StandardCharsets.UTF_8)), equalTo(nonEbxmlMessage));
+        Assertions.assertEquals(messageSanitizer.sanitize(nonEbxmlMessage.getBytes(StandardCharsets.UTF_8)), nonEbxmlMessage);
     }
-
 }

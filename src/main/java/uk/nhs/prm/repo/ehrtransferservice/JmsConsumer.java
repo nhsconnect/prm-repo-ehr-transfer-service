@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.HeaderParser;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.BytesMessage;
@@ -18,8 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
-
-import static net.logstash.logback.argument.StructuredArguments.v;
 
 /*
  Responsible for:
@@ -37,24 +38,30 @@ public class JmsConsumer {
     private String inboundQueue;
     private String unhandledQueue;
     private Broker broker;
+    private HeaderParser headerParser;
+    private Tracer tracer;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, List<MessageHandler> handlers) {
+    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, HeaderParser headerParser, Tracer tracer, List<MessageHandler> handlers) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
         this.parser = parser;
         this.broker = broker;
+        this.headerParser = headerParser;
+        this.tracer = tracer;
         this.handlersList = handlers;
     }
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
         String rawMessage = getRawMessage(message);
-        log.info("Received Message from Inbound queue with correlation ID: " + message.getJMSCorrelationID());
+        log.info("Received Message from Inbound queue");
 
         try {
+            var correlationId = headerParser.getCorrelationId(rawMessage.getBytes(StandardCharsets.UTF_8));
+            tracer.handleTraceIdFromMhsInbound(correlationId);
             String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
             log.info("Successfully parsed message");

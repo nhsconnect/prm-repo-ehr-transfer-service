@@ -34,6 +34,15 @@ public class Tracer {
         }
     }
 
+    public void handleTraceIdFromMhsInbound(String traceId) {
+        if (traceId == null) {
+            log.info("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
+            setTraceId(createRandomUUID());
+        } else {
+            setTraceId(traceId);
+        }
+    }
+
     public String getTraceId() {
         return MDC.get(TRACE_ID);
     }
@@ -55,7 +64,7 @@ public class Tracer {
         }
     }
 
-    public String getConversationIdId() {
+    public String getConversationId() {
         return MDC.get(CONVERSATION_ID);
     }
 
