@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -34,20 +35,20 @@ public class JmsConsumer {
     final Parser parser;
     // can't initialize the dictionary in the constructor because it makes mocking harder
     private final List<MessageHandler> handlersList;
-    private String inboundQueue;
-    private String unhandledQueue;
-    private Broker broker;
-    private Tracer tracer;
+    private final String unhandledQueue;
+    private final Broker broker;
+    private final Tracer tracer;
+    private final ParsingDlqPublisher parsingDlqPublisher;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, Tracer tracer, List<MessageHandler> handlers) {
+    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, Tracer tracer, ParsingDlqPublisher parsingDlqPublisher, List<MessageHandler> handlers) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
-        this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
         this.parser = parser;
         this.broker = broker;
         this.tracer = tracer;
+        this.parsingDlqPublisher = parsingDlqPublisher;
         this.handlersList = handlers;
     }
 
@@ -80,8 +81,8 @@ public class JmsConsumer {
 
             matchingHandler.handleMessage(parsedMessage);
         } catch (RuntimeException | IOException e) {
-            log.error("Failed to process message from the queue", e);
-            jmsProducer.sendMessageToQueue(unhandledQueue, rawMessage);
+            log.error("Failed to process message - sending to dlq", e);
+            parsingDlqPublisher.sendMessage(rawMessage);
         }
     }
 

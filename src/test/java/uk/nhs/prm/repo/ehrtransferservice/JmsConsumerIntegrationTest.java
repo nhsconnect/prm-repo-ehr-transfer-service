@@ -6,11 +6,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import javax.jms.JMSException;
@@ -24,17 +24,18 @@ import static org.mockito.Mockito.verify;
  */
 @Tag("unit")
 public class JmsConsumerIntegrationTest {
-    @Mock
-    JmsProducer jmsProducer;
-
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
+
+    @Mock
+    ParsingDlqPublisher parsingDlqPublisher;
+
     @InjectMocks
     JmsConsumer jmsConsumer;
     private AutoCloseable closeable;
-    private TestDataLoader dataLoader = new TestDataLoader();
+    private final TestDataLoader dataLoader = new TestDataLoader();
 
     @BeforeEach
     void setUp() {
@@ -67,6 +68,6 @@ public class JmsConsumerIntegrationTest {
 
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage(bytes);
         jmsConsumer.onMessage(bytesMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(ArgumentMatchers.eq(unhandledQueue), ArgumentMatchers.eq(message));
+        verify(parsingDlqPublisher, times(1)).sendMessage(message);
     }
 }

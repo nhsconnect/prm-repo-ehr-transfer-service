@@ -3,8 +3,6 @@ package uk.nhs.prm.repo.ehrtransferservice.message_publishers;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 public class ParsingDlqPublisher {
     private final String parsingDlqTopicArn;
@@ -15,8 +13,8 @@ public class ParsingDlqPublisher {
         this.parsingDlqTopicArn = parsingDlqTopicArn;
     }
 
-    public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.parsingDlqTopicArn, message, "conversationId", conversationId.toString());
+    public void sendMessage(String message) {
+        messagePublisher.sendMessage(this.parsingDlqTopicArn, message);
     }
 }
 

@@ -15,6 +15,7 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.CopcMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -36,6 +37,7 @@ public class JmsConsumerTest {
     EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
     CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
     EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
+    ParsingDlqPublisher parsingDlqPublisher = mock(ParsingDlqPublisher.class);
     Broker broker = mock(Broker.class);
     Tracer tracer = mock(Tracer.class);
 
@@ -47,16 +49,16 @@ public class JmsConsumerTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, tracer, handlerList);
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, tracer, parsingDlqPublisher, handlerList);
 
-    private void jmsConsumerTestFactory(String expectedQueue) throws JMSException {
+    private void jmsConsumerTestFactory() throws JMSException {
         String message = messageContent;
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
         bytesMessage.reset();
 
         jmsConsumer.onMessage(bytesMessage);
-        verify(jmsProducer).sendMessageToQueue(expectedQueue, message);
+        verify(parsingDlqPublisher).sendMessage(message);
     }
 
     @Test
@@ -166,7 +168,7 @@ public class JmsConsumerTest {
         when(parsedMessage.getInteractionId()).thenReturn(interactionId);
         when(parsedMessage.getRawMessage()).thenReturn(messageContent);
 
-        jmsConsumerTestFactory(unhandledQueue);
+        jmsConsumerTestFactory();
     }
 
     @Test
@@ -176,20 +178,20 @@ public class JmsConsumerTest {
         when(parsedMessage.getRawMessage()).thenReturn(messageContent);
 
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-        jmsConsumerTestFactory(unhandledQueue);
+        jmsConsumerTestFactory();
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws JMSException, IOException {
         IOException expectedError = new IOException("failed to parse message");
         when(parser.parse(Mockito.any())).thenThrow(expectedError);
-        jmsConsumerTestFactory(unhandledQueue);
+        jmsConsumerTestFactory();
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenSanitizingFails() throws JMSException {
         RuntimeException expectedError = new RuntimeException("failed to sanitize message");
         when(messageSanitizer.sanitize(Mockito.any())).thenThrow(expectedError);
-        jmsConsumerTestFactory(unhandledQueue);
+        jmsConsumerTestFactory();
     }
 }
