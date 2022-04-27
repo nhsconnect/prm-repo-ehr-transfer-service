@@ -8,7 +8,6 @@ import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.HeaderParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
@@ -38,18 +37,16 @@ public class JmsConsumer {
     private String inboundQueue;
     private String unhandledQueue;
     private Broker broker;
-    private HeaderParser headerParser;
     private Tracer tracer;
     private Dictionary<String, MessageHandler> handlers;
 
-    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, HeaderParser headerParser, Tracer tracer, List<MessageHandler> handlers) {
+    public JmsConsumer(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue, @Value("${activemq.inboundQueue}") String inboundQueue, MessageSanitizer messageSanitizer, Parser parser, Broker broker, Tracer tracer, List<MessageHandler> handlers) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
         this.inboundQueue = inboundQueue;
         this.messageSanitizer = messageSanitizer;
         this.parser = parser;
         this.broker = broker;
-        this.headerParser = headerParser;
         this.tracer = tracer;
         this.handlersList = handlers;
     }
@@ -60,26 +57,23 @@ public class JmsConsumer {
         log.info("Received Message from Inbound queue");
 
         try {
-            var correlationId = headerParser.getCorrelationId(rawMessage.getBytes(StandardCharsets.UTF_8));
-            tracer.handleTraceIdFromMhsInbound(correlationId);
             String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
             ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
+            tracer.handleTraceIdFromMhsInbound(message.getJMSCorrelationID());
             log.info("Successfully parsed message");
-            String interactionId = parsedMessage.getInteractionId();
-            log.info("... with interactionId " + interactionId);
 
-            if (interactionId == null) {
-                log.warn("Sending message without soap envelope header to unhandled queue");
+            if (parsedMessage.getInteractionId() == null) {
+                log.warn("Sending message without Interaction ID to unhandled queue");
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
 
-            broker.sendMessageToCorrespondingTopicPublisher(interactionId, parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
+            broker.sendMessageToCorrespondingTopicPublisher(parsedMessage.getInteractionId(), parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
 
-            MessageHandler matchingHandler = this.getHandlers().get(interactionId);
+            MessageHandler matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
 
             if (matchingHandler == null) {
-                log.warn("Sending message with an unknown or missing interactionId \"" + interactionId + "\" to unhandled queue");
+                log.warn("Sending message with an unknown or missing interactionId \"" + parsedMessage.getInteractionId() + "\" to unhandled queue");
                 jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
                 return;
             }
@@ -97,8 +91,7 @@ public class JmsConsumer {
             BytesMessage bytesMessage = (BytesMessage) message;
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
-            String rawMessage = new String(contentAsBytes, StandardCharsets.UTF_8);
-            return rawMessage;
+            return new String(contentAsBytes, StandardCharsets.UTF_8);
         }
         log.info("Received TextMessage from MQ");
         var textMessage = (TextMessage) message;

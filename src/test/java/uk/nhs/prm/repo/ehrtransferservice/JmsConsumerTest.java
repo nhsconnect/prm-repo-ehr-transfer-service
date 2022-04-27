@@ -16,7 +16,6 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.HeaderParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
@@ -38,7 +37,6 @@ public class JmsConsumerTest {
     CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
     EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
     Broker broker = mock(Broker.class);
-    HeaderParser headerParser = mock(HeaderParser.class);
     Tracer tracer = mock(Tracer.class);
 
     List<MessageHandler> handlerList = new ArrayList();
@@ -49,7 +47,7 @@ public class JmsConsumerTest {
     @Value("${activemq.inboundQueue}")
     String inboundQueue;
 
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, headerParser, tracer, handlerList);
+    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, tracer, handlerList);
 
     private void jmsConsumerTestFactory(String expectedQueue) throws JMSException {
         String message = messageContent;
@@ -77,14 +75,12 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldCallHeaderParserWhenReceivingMessageAndSetAsTraceId() throws JMSException {
-        when(headerParser.getCorrelationId(any())).thenReturn("trace-id");
+    void shouldSetTraceId() throws JMSException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
         message.reset();
 
         jmsConsumer.onMessage(message);
-        verify(headerParser).getCorrelationId(any());
-        verify(tracer).handleTraceIdFromMhsInbound("trace-id");
+        verify(tracer).handleTraceIdFromMhsInbound(any());
     }
 
     @Test
