@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,13 +69,10 @@ class EhrTransferServiceApplicationTests {
       String requestBody = "{\"data\":{\"type\":\"registration-requests\",\"id\":\"" + conversationId + "\",\"attributes\":{\"ehrRequestId\":\"" + ehrRequestId + "\",\"odsCode\":\"" + odsCode + "\",\"nhsNumber\":\"" + nhsNumber + "\"}}}";
       wireMock.stubFor(post(urlMatching("/registration-requests")).willReturn(aResponse().withStatus(204)));
 
-      jmsTemplate.send(inboundQueue, new MessageCreator() {
-          @Override
-          public Message createMessage(Session session) throws JMSException {
-              BytesMessage bytesMessage = session.createBytesMessage();
-              bytesMessage.writeBytes(registrationRequestMessage.getBytes(StandardCharsets.UTF_8));
-              return bytesMessage;
-          }
+      jmsTemplate.send(inboundQueue, session -> {
+          BytesMessage bytesMessage = session.createBytesMessage();
+          bytesMessage.writeBytes(registrationRequestMessage.getBytes(StandardCharsets.UTF_8));
+          return bytesMessage;
       });
       sleep(5000);
       verify(postRequestedFor(urlMatching("/registration-requests")).withRequestBody(equalToJson(requestBody)));

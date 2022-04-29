@@ -5,10 +5,10 @@ import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
-import com.amazonaws.services.sns.model.CreateTopicResult;
-import com.amazonaws.services.sns.model.SubscribeRequest;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
@@ -29,8 +29,11 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
+import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
+import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
@@ -48,10 +51,10 @@ public class LocalStackAwsConfig {
     private AmazonSQSAsync amazonSQSAsync;
     @Autowired
     private DynamoDbClient dynamoDbClient;
+
     @Autowired
-    private AmazonSQSExtendedClient s3SupportedSqsClient;
-    @Autowired
-    private AmazonSNSExtendedClient s3SupportedSnsClient;
+    private SnsClient snsClient;
+
     @Autowired
     private S3Client s3Client;
 
@@ -94,7 +97,7 @@ public class LocalStackAwsConfig {
     }
 
     @Bean
-    public static AmazonSQSExtendedClient s3SupportedSqsClient(SqsClient sqsClient, S3Client s3) {
+    public static AmazonSQSExtendedClient s3SupportedSqsClient(AmazonSQSAsync sqsClient, AmazonS3 s3) {
         return new AmazonSQSExtendedClient(sqsClient, new ExtendedClientConfiguration().withPayloadSupportEnabled(s3, "test-s3-bucket-name-cant-have-underscores", true));
     }
 
@@ -107,8 +110,35 @@ public class LocalStackAwsConfig {
     }
 
     @Bean
-    public static AmazonSNSExtendedClient s3SupportedSnsClient(AmazonSNS amazonSNS, S3Client s3) {
+    public static AmazonSNSExtendedClient s3SupportedSnsClient(AmazonSNS amazonSNS, AmazonS3 s3) {
         return new AmazonSNSExtendedClient(amazonSNS, new SNSExtendedClientConfiguration(), new S3BackedPayloadStore(new S3Dao(s3), "test-s3-bucket-name-cant-have-underscores"));
+    }
+
+    @Bean
+    public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
+        return SnsClient.builder()
+                .endpointOverride(URI.create(localstackUrl))
+                .region(Region.EU_WEST_2)
+                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                    @Override
+                    public String accessKeyId() {
+                        return "FAKE";
+                    }
+
+                    @Override
+                    public String secretAccessKey() {
+                        return "FAKE";
+                    }
+                }))
+                .build();
+    }
+
+    @Bean
+    public AmazonS3 amazonS3Client(@Value("${localstack.url}") String localstackUrl) {
+        return AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
+                .build();
     }
 
     @Bean
@@ -161,16 +191,17 @@ public class LocalStackAwsConfig {
         ensureQueueDeleted(repoIncomingQueueName);
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
-        var attachmentQueue = s3SupportedSqsClient.createQueue(CreateQueueRequest.builder().queueName(attachmentsQueueName).build());
-        var topic = s3SupportedSnsClient.createTopic("test_attachments_topic");
-        createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.queueUrl()));
+        var attachmentQueue = amazonSQSAsync.createQueue(attachmentsQueueName);
+        var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_attachments_topic").build());
+
+        createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.getQueueUrl()));
     }
 
     private void ensureQueueDeleted(String queueName) {
         try {
             amazonSQSAsync.deleteQueue(amazonSQSAsync.getQueueUrl(queueName).getQueueUrl());
         } catch (QueueDoesNotExistException e) {
-            // no biggie
+            // TODO: this try/catch will go
         }
     }
 
@@ -180,7 +211,7 @@ public class LocalStackAwsConfig {
                 .bucket(sqsLargeMessageBucketName)
                 .grantFullControl("GrantFullControl")
                 .build();
-        for (Bucket bucket: s3Client.listBuckets().buckets()) {
+        for (var bucket: s3Client.listBuckets().buckets()) {
             if (Objects.equals(bucket.name(), sqsLargeMessageBucketName)) {
                 resetS3ForLocalEnvironment(waiter);
                 break;
@@ -237,20 +268,21 @@ public class LocalStackAwsConfig {
         waiter.waitUntilBucketNotExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
-    private void createSnsTestReceiverSubscription(CreateTopicResult topic, String queueArn) {
+    private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
         final Map<String, String> attributes = new HashMap<>();
         attributes.put("RawMessageDelivery", "True");
-        var subscribeRequest = new SubscribeRequest()
-                .withTopicArn(topic.getTopicArn())
-                .withProtocol("sqs")
-                .withEndpoint(queueArn)
-                .withAttributes(attributes);
+        SubscribeRequest subscribeRequest = SubscribeRequest.builder()
+                .topicArn(topic.topicArn())
+                .protocol("sqs")
+                .endpoint(queueArn)
+                .attributes(attributes)
+                .build();
 
-        s3SupportedSnsClient.subscribe(subscribeRequest);
+        snsClient.subscribe(subscribeRequest);
     }
 
     private String getQueueArn(String queueUrl) {
-        GetQueueAttributesResult queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
+        var queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
         return queueAttributes.getAttributes().get("QueueArn");
     }
 }
