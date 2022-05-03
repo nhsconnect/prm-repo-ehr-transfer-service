@@ -462,3 +462,27 @@ data "aws_iam_policy_document" "negative_acks_policy_doc" {
     }
   }
 }
+
+data "aws_iam_policy_document" "sqs_large_message_bucket_access_policy_doc" {
+  statement {
+    sid = ""
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.sqs_large_message_bucket.bucket}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "sqs_large_message_bucket_access_policy" {
+  name   = "sqs_large_message_bucket"
+  policy = data.aws_iam_policy_document.sqs_large_message_bucket_access_policy_doc.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_role_s3_large_bucket_policy_attach" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.sqs_large_message_bucket_access_policy.arn
+}
