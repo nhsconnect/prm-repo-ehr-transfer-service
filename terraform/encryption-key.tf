@@ -10,7 +10,7 @@ resource "aws_kms_key" "repo_incoming" {
 }
 
 resource "aws_kms_alias" "repo_incoming_encryption" {
-  name          = "alias/repo-incoming-encryption-kms-key"
+  name          = "alias/repo-incoming-encryption-kms-key-old"
   target_key_id = aws_kms_key.repo_incoming.id
 }
 
