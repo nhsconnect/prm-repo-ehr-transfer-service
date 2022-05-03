@@ -30,7 +30,7 @@ public class Parser {
             case "MCCI_IN010000UK13":
                 message = xmlMapper.readValue(mhsJsonMessage.payload, AcknowledgementMessageWrapper.class);
                 break;
-            case "COPC_IN000001UK01": //TODO: this needs a AttachmentMessageWrapper
+            case "COPC_IN000001UK01": //TODO: check if this needs an AttachmentMessageWrapper
             default:
                 log.warn("No interaction ID match found for current message");
                 break;
