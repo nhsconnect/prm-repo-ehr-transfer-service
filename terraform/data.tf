@@ -51,3 +51,11 @@ data "aws_ssm_parameter" "ehr_transfer_service_authorization_keys_for_gp2gp_mess
 data "aws_ssm_parameter" "repository_asid" {
   name = "/repo/${var.environment}/user-input/external/repository-asid"
 }
+
+data "aws_ssm_parameter" "repo_incoming_topic_arn" {
+  name = "/repo/${var.environment}/output/suspension-service/repo-incoming-topic-arn"
+}
+
+data "aws_ssm_parameter" "repo_incoming_kms_key" {
+  name = "/repo/${var.environment}/output/suspension-service/repo-incoming-kms-key"
+}

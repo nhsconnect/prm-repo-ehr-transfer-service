@@ -1,3 +1,10 @@
+resource "aws_sns_topic_subscription" "repo_incoming_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = data.aws_ssm_parameter.repo_incoming_topic_arn.value
+  endpoint             = aws_sqs_queue.repo_incoming.arn
+}
+
 resource "aws_sns_topic_subscription" "negative_acks_topic" {
   protocol             = "sqs"
   raw_message_delivery = true
