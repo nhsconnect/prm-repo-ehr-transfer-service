@@ -11,12 +11,15 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFactoryConfigurer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
+import org.springframework.jms.config.JmsListenerContainerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -24,7 +27,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.Bucket;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
@@ -40,8 +42,11 @@ import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import javax.annotation.PostConstruct;
+import javax.jms.ConnectionFactory;
 import java.net.URI;
 import java.util.*;
+
+import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 
 
 @TestConfiguration
@@ -69,6 +74,51 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.attachmentsQueueName}")
     private String attachmentsQueueName;
+
+    @Value("${aws.positiveAcksQueueName}")
+    private String positiveAcksQueueName;
+
+    @Value("${aws.positiveAcksTopicArn}")
+    private String positiveAcksTopicArn;
+
+    @Value("${activemq.amqEndpoint1}")
+    private String amqEndpoint1;
+
+    @Value("${activemq.amqEndpoint2}")
+    private String amqEndpoint2;
+
+    @Value("${activemq.userName}")
+    private String brokerUsername;
+
+    @Value("${activemq.password}")
+    private String brokerPassword;
+
+    @Value("${activemq.randomOption}")
+    private String randomOption;
+
+    @Bean
+    public JmsListenerContainerFactory<?> myFactory(ConnectionFactory connectionFactory,
+                                                    DefaultJmsListenerContainerFactoryConfigurer configurer) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setSessionAcknowledgeMode(CLIENT_ACKNOWLEDGE);
+        // This provides all boot's default to this factory, including the message converter
+        configurer.configure(factory, connectionFactory);
+        // You could still override some of Boot's default if necessary.
+        return factory;
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+        activeMQConnectionFactory.setBrokerURL(failoverUrl());
+        activeMQConnectionFactory.setPassword(brokerPassword);
+        activeMQConnectionFactory.setUserName(brokerUsername);
+        return activeMQConnectionFactory;
+    }
+
+    private String failoverUrl() {
+        return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
+    }
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -194,7 +244,13 @@ public class LocalStackAwsConfig {
         var attachmentQueue = amazonSQSAsync.createQueue(attachmentsQueueName);
         var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_attachments_topic").build());
 
+        var positiveAcksTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_positive_acks_topic").build());
+
+        var positiveAcksQueue = amazonSQSAsync.createQueue(positiveAcksQueueName);
+
         createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.getQueueUrl()));
+
+        createSnsTestReceiverSubscription(positiveAcksTopic, getQueueArn(positiveAcksQueue.getQueueUrl()));
     }
 
     private void ensureQueueDeleted(String queueName) {

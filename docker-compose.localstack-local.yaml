@@ -1,6 +1,14 @@
 version: "3.8"
 
 services:
+  mq-1:
+    image: symptoma/activemq:5.17.0
+    ports:
+      - 61616:61616
+  mq-2:
+    image: symptoma/activemq:5.17.0
+    ports:
+      - 61617:61616
   localstack:
     container_name: "localstack-ehr-transfer-service"
     image: localstack/localstack
