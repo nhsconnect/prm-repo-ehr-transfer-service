@@ -9,6 +9,7 @@ import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
 
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,6 +24,8 @@ public class BrokerTest {
     NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
     @Mock
     PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
+    @Mock
+    ParsingDlqPublisher parsingDlqPublisher;
 
     @InjectMocks
     Broker broker;
@@ -65,5 +68,13 @@ public class BrokerTest {
         broker.sendMessageToCorrespondingTopicPublisher("MCCI_IN010000UK13", "positive-ack", conversationId, false, false);
 
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
+    }
+
+    @Test
+    public void shouldSendUnreckognizedMessagesToDlq()  {
+        var conversationId = UUID.randomUUID();
+        broker.sendMessageToCorrespondingTopicPublisher("something-unreckognizable", "some-ack", conversationId, false, false);
+
+        verify(parsingDlqPublisher).sendMessage(any());
     }
 }

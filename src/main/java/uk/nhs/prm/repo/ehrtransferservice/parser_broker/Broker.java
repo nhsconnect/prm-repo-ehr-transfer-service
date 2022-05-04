@@ -21,6 +21,8 @@ public class Broker {
     private final LargeEhrMessagePublisher largeEhrMessagePublisher;
     private final NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
+    private final ParsingDlqPublisher parsingDlqPublisher;
+
 
     public void sendMessageToCorrespondingTopicPublisher(String interactionId, String message, UUID conversationId, boolean isLargeMessage, boolean isNegativeAck) {
         switch (interactionId) {
@@ -51,7 +53,7 @@ public class Broker {
                 break;
             default:
                 log.warn("Unknown Interaction ID: " + interactionId);
-                // TODO: send to dlq
+                parsingDlqPublisher.sendMessage(message);
                 break;
         }
     }
