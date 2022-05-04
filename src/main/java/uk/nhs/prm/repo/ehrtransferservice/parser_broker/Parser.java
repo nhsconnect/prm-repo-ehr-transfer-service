@@ -14,11 +14,11 @@ import java.io.IOException;
 @Component
 @Slf4j
 public class Parser {
+    private final XmlMapper xmlMapper = new XmlMapper();
+
     public ParsedMessage parse(String contentAsString) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        MhsJsonMessage mhsJsonMessage = objectMapper.readValue(contentAsString, MhsJsonMessage.class);
-        XmlMapper xmlMapper = new XmlMapper();
-        SOAPEnvelope envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
+        var mhsJsonMessage = new ObjectMapper().readValue(contentAsString, MhsJsonMessage.class);
+        var envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
         MessageContent message = null;
         switch (envelope.header.messageHeader.action) {
             case "RCMR_IN030000UK06":
@@ -30,7 +30,9 @@ public class Parser {
             case "MCCI_IN010000UK13":
                 message = xmlMapper.readValue(mhsJsonMessage.payload, AcknowledgementMessageWrapper.class);
                 break;
-            case "COPC_IN000001UK01": //TODO: check if this needs an AttachmentMessageWrapper
+            //TODO: AttachmentMessageWrapper for COPC_IN000001UK01 needs so be implemented. Happy path works now,
+            //but a specific wrapper will be necessary whey playing NACK stories
+            case "COPC_IN000001UK01":
             default:
                 log.warn("No interaction ID match found for current message");
                 break;
