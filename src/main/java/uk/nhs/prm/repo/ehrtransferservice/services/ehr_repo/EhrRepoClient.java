@@ -45,7 +45,6 @@ public class EhrRepoClient {
 
         URL url = new URL(response.body());
         return new PresignedUrl(url);
-
     }
 
     public void confirmMessageStored(ParsedMessage parsedMessage) throws IOException, URISyntaxException, HttpException, InterruptedException {
@@ -71,7 +70,7 @@ public class EhrRepoClient {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 201) {
-            throw new HttpException(String.format("Unexpected response from EHR Repo when storing message: %d", response.statusCode()));
+            throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
         }
     }
 }
