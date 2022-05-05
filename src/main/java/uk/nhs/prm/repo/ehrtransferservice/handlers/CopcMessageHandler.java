@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.JmsProducer;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
@@ -32,7 +31,7 @@ public class CopcMessageHandler implements MessageHandler {
         try {
             ehrRepoService.storeMessage(parsedMessage);
             log.info("Successfully stored copc message");
-        } catch (HttpException e) {
+        } catch (Exception e) {
             log.error("Failed to store copc message", e);
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
         }

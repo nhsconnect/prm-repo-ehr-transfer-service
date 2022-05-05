@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
@@ -15,25 +16,18 @@ public class PresignedUrl {
         this.presignedUrl = presignedUrl;
     }
 
-    public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException {
-        String rawMessage = parsedMessage.getRawMessage();
-
-        HttpRequest.BodyPublisher message = HttpRequest.BodyPublishers.ofString(rawMessage);
+    public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, IOException, InterruptedException {
+        var message = HttpRequest.BodyPublishers.ofString(parsedMessage.getRawMessage());
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(presignedUrl.toURI())
                 .PUT(message).build();
-        HttpResponse<String> response;
-        try {
-            response = HttpClient.newBuilder()
-                    .build()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+        var response = HttpClient.newBuilder()
+                .build()
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("Unexpected response from S3");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to store EHR in S3", e);
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Unexpected response from S3");
         }
     }
 }

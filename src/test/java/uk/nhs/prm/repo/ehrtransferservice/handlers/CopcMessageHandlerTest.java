@@ -46,7 +46,7 @@ public class CopcMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoToStoreMessage() throws HttpException {
+    public void shouldCallEhrRepoToStoreMessage() throws Exception {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
 
         copcMessageHandler.handleMessage(parsedMessage);
@@ -54,7 +54,7 @@ public class CopcMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
+    public void shouldPutMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         String rawMessage = "test";
         when(parsedMessage.getRawMessage()).thenReturn(rawMessage);

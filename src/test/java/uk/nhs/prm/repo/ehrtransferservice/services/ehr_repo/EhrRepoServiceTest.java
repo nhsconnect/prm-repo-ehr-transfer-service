@@ -10,6 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -32,7 +33,7 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldCoordinateEhrRepoClientCalls() throws MalformedURLException, URISyntaxException, HttpException {
+    void shouldCoordinateEhrRepoClientCalls() throws Exception {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
@@ -49,24 +50,23 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws MalformedURLException, URISyntaxException, HttpException {
+    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws IOException, URISyntaxException, InterruptedException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
         ParsedMessage mockParsedMessage = mock(ParsedMessage.class);
         when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
         when(mockParsedMessage.getMessageId()).thenReturn(messageId);
-        when(mockEhrRepoClient.fetchStorageUrl(conversationId, messageId)).thenThrow(new HttpException());
+        when(mockEhrRepoClient.fetchStorageUrl(conversationId, messageId)).thenThrow(new RuntimeException());
 
-
-        Exception expected = assertThrows(HttpException.class, () ->
+        Exception expected = assertThrows(Exception.class, () ->
                 ehrRepoService.storeMessage(mockParsedMessage)
         );
         assertThat(expected, notNullValue());
     }
 
     @Test
-    void shouldThrowStorageFailureExceptionWhenCannotStoreMessage() throws MalformedURLException, URISyntaxException, HttpException {
+    void shouldThrowStorageFailureExceptionWhenCannotStoreMessage() throws Exception {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
@@ -77,8 +77,7 @@ public class EhrRepoServiceTest {
         when(mockEhrRepoClient.fetchStorageUrl(conversationId, messageId)).thenReturn(mockPresignedUrl);
         doThrow(new HttpException()).when(mockEhrRepoClient).confirmMessageStored(any());
 
-
-        Exception expected = assertThrows(HttpException.class, () ->
+        Exception expected = assertThrows(Exception.class, () ->
                 ehrRepoService.storeMessage(mock(ParsedMessage.class))
         );
         assertThat(expected, notNullValue());

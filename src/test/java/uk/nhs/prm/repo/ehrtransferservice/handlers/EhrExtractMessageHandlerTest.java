@@ -59,7 +59,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoToStoreMessageForLargeHealthRecords() throws HttpException {
+    public void shouldCallEhrRepoToStoreMessageForLargeHealthRecords() throws Exception {
         when(parsedMessage.isLargeMessage()).thenReturn(true);
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
@@ -67,7 +67,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws HttpException {
+    public void shouldCallGPToRepoToSendContinueMessageForLargeHealthRecords() throws Exception {
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(messageId);
@@ -77,7 +77,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws HttpException {
+    public void shouldPutLargeMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws Exception {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
@@ -92,12 +92,12 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
+    public void shouldPutLargeMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(parsedMessage.getRawMessage()).thenReturn(message);
 
-        HttpException expectedError = new HttpException();
+        var expectedError = new Exception();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
@@ -105,7 +105,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoToStoreMessageForSmallHealthRecords() throws HttpException {
+    public void shouldCallEhrRepoToStoreMessageForSmallHealthRecords() throws Exception {
         when(parsedMessage.isLargeMessage()).thenReturn(false);
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
@@ -113,7 +113,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallGPToRepoToSendEhrExtractReceivedNotificationForSmallHealthRecords() throws HttpException {
+    public void shouldCallGPToRepoToSendEhrExtractReceivedNotificationForSmallHealthRecords() throws Exception {
         when(parsedMessage.isLargeMessage()).thenReturn(false);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(messageId);
@@ -123,12 +123,12 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws HttpException {
+    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(false);
         when(parsedMessage.getRawMessage()).thenReturn(message);
 
-        HttpException expectedError = new HttpException();
+        var expectedError = new Exception();
         doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
 
         ehrExtractMessageHandler.handleMessage(parsedMessage);
@@ -136,7 +136,7 @@ public class EhrExtractMessageHandlerTest {
     }
 
     @Test
-    public void shouldPutSmallMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws HttpException {
+    public void shouldPutSmallMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws Exception {
         String message = "test";
         when(parsedMessage.isLargeMessage()).thenReturn(false);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);

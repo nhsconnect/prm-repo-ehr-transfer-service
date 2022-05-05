@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -22,7 +23,7 @@ public class PresignedUrlTest {
     WireMockExtension wireMock = new WireMockExtension();
 
     @Test
-    void shouldUploadMessageToS3() throws MalformedURLException, URISyntaxException {
+    void shouldUploadMessageToS3() throws IOException, URISyntaxException, InterruptedException {
         URL url = new URL(wireMock.baseUrl());
         String rawMessage = "test";
         ParsedMessage parsedMessage = new ParsedMessage(null, null, rawMessage);

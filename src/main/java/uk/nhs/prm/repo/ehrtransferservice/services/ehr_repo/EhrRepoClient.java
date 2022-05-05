@@ -8,13 +8,13 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored.StoreMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -27,7 +27,7 @@ public class EhrRepoClient {
         this.ehrRepoAuthKey = ehrRepoAuthKey;
     }
 
-    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws MalformedURLException, URISyntaxException, HttpException {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws IOException, URISyntaxException, InterruptedException {
         String endpoint = "/messages/" + conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -35,32 +35,29 @@ public class EhrRepoClient {
                 .header("Content-Type", "application/json")
                 .GET().build();
 
-        try {
-            HttpResponse<String> response = HttpClient.newBuilder()
-                    .build()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = HttpClient.newBuilder()
+                .build()
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 200) {
-                throw new RuntimeException("Unexpected response from EHR Repo when retrieving presigned URL");
-            }
-
-            URL url = new URL(response.body());
-            return new PresignedUrl(url);
-        } catch (Exception e) {
-            throw new HttpException("Failed to retrieve presigned URL from EHR Repo", e);
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Unexpected response from EHR Repo when retrieving presigned URL");
         }
+
+        URL url = new URL(response.body());
+        return new PresignedUrl(url);
+
     }
 
-    public void confirmMessageStored(ParsedMessage parsedMessage) throws MalformedURLException, URISyntaxException, HttpException {
-        String endpoint = "/messages";
-        UUID conversationId = parsedMessage.getConversationId();
-        UUID messageId = parsedMessage.getMessageId();
-        String messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
-        String nhsNumber = parsedMessage.getNhsNumber();
-        List<UUID> attachmentMessageIds = parsedMessage.getAttachmentMessageIds();
+    public void confirmMessageStored(ParsedMessage parsedMessage) throws IOException, URISyntaxException, HttpException, InterruptedException {
+        var endpoint = "/messages";
+        var conversationId = parsedMessage.getConversationId();
+        var messageId = parsedMessage.getMessageId();
+        var messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
+        var nhsNumber = parsedMessage.getNhsNumber();
+        var attachmentMessageIds = parsedMessage.getAttachmentMessageIds();
 
-        String jsonPayloadString = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
-        HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
+        var jsonPayloadString = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
+        var jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -68,17 +65,13 @@ public class EhrRepoClient {
                 .header("Content-Type", "application/json")
                 .POST(jsonPayload).build();
 
-        try {
-            HttpResponse<String> response = HttpClient.newBuilder()
-                    .build()
-                    .send(request, HttpResponse.BodyHandlers.ofString());
 
-            if (response.statusCode() != 201) {
-                throw new HttpException(String.format("Unexpected response from EHR Repo when storing message: %d", response.statusCode()));
-            }
+        var response = HttpClient.newBuilder()
+                .build()
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-        } catch (Exception e) {
-            throw new HttpException("Failed to store message in EHR repo", e);
+        if (response.statusCode() != 201) {
+            throw new HttpException(String.format("Unexpected response from EHR Repo when storing message: %d", response.statusCode()));
         }
     }
 }

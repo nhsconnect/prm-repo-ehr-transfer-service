@@ -9,6 +9,7 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,7 +30,7 @@ public class EhrRepoClientTest {
     WireMockExtension wireMock = new WireMockExtension();
 
     @Test
-    public void shouldFetchStorageUrlFromEhrRepo() throws MalformedURLException, URISyntaxException, HttpException {
+    public void shouldFetchStorageUrlFromEhrRepo() throws IOException, URISyntaxException, InterruptedException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
@@ -63,7 +64,7 @@ public class EhrRepoClientTest {
                         .withHeader("Content-Type", "application/json")));
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret");
-        Exception expected = assertThrows(HttpException.class, () ->
+        Exception expected = assertThrows(Exception.class, () ->
                 ehrRepoClient.fetchStorageUrl(conversationId, messageId)
         );
         assertThat(expected, notNullValue());
@@ -99,7 +100,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldConfirmMessageStoredInEhrRepo() throws MalformedURLException, URISyntaxException, HttpException {
+    public void shouldConfirmMessageStoredInEhrRepo() throws IOException, URISyntaxException, HttpException, InterruptedException {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
