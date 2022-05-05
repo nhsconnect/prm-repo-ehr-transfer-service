@@ -23,6 +23,7 @@ public class EhrRepoService {
             log.info("Uploaded message to S3");
             ehrRepoClient.confirmMessageStored(parsedMessage);
             log.info("Message stored in EHR Repo");
+            //TODO: do we need this exception that is rethrown straight away?
         } catch (Exception e) {
             throw new HttpException("Failed to store message", e);
         }

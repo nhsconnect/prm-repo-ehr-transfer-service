@@ -35,13 +35,13 @@ public class EhrExtractMessageHandler implements MessageHandler {
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
+            //TODO: we get 503 from s3, investigate (probably we need to set right permissions)
+            ehrRepoService.storeMessage(parsedMessage);
             if (parsedMessage.isLargeMessage()) {
-                ehrRepoService.storeMessage(parsedMessage);
                 log.info("Successfully stored large EHR extract message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
                 log.info("Successfully sent continue message");
             } else {
-                ehrRepoService.storeMessage(parsedMessage);
                 log.info("Successfully stored small EHR extract message");
                 gpToRepoClient.notifySmallEhrExtractArrived(parsedMessage.getMessageId(), parsedMessage.getConversationId());
                 log.info("Small ehr extract arrived notification sent");

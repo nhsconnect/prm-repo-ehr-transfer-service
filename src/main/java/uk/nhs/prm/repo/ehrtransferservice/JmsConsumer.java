@@ -69,6 +69,7 @@ public class JmsConsumer {
                 return;
             }
 
+            //TODO: pass parsedMessage direclty
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage.getInteractionId(), parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
 
             MessageHandler matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
