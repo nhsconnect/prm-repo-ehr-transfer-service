@@ -3,9 +3,8 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
-
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -23,15 +22,17 @@ public class Broker {
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
     private final ParsingDlqPublisher parsingDlqPublisher;
 
-
-    public void sendMessageToCorrespondingTopicPublisher(String interactionId, String message, UUID conversationId, boolean isLargeMessage, boolean isNegativeAck) {
+    public void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
+        final var interactionId = parsedMessage.getInteractionId();
+        final var message = parsedMessage.getRawMessage();
+        final var conversationId = parsedMessage.getConversationId();
         switch (interactionId) {
             case ATTACHMENT_INTERACTION_ID:
                 log.info("Message Type: ATTACHMENT");
                 attachmentMessagePublisher.sendMessage(message, conversationId);
                 break;
             case EHR_EXTRACT_INTERACTION_ID:
-                if (isLargeMessage) {
+                if (parsedMessage.isLargeMessage()) {
                     log.info("Message Type: LARGE EHR EXTRACT");
                     largeEhrMessagePublisher.sendMessage(message, conversationId);
                     break;
@@ -40,7 +41,7 @@ public class Broker {
                 smallEhrMessagePublisher.sendMessage(message, conversationId);
                 break;
             case ACKNOWLEDGEMENT_INTERACTION_ID:
-                if (isNegativeAck) {
+                if (parsedMessage.isNegativeAcknowledgement()) {
                     log.info("Message Type: NEGATIVE ACKNOWLEDGEMENT");
                     negativeAcknowledgementMessagePublisher.sendMessage(message, conversationId);
                     break;

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
@@ -54,12 +53,12 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
-        String rawMessage = getRawMessage(message);
+        var rawMessage = getRawMessage(message);
         log.info("Received Message from Inbound queue");
 
         try {
-            String sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
-            ParsedMessage parsedMessage = parser.parse(sanitizedMessage);
+            var sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
+            var parsedMessage = parser.parse(sanitizedMessage);
             tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID(), parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
@@ -69,10 +68,8 @@ public class JmsConsumer {
                 return;
             }
 
-            //TODO: try to pass parsedMessage directly
-            broker.sendMessageToCorrespondingTopicPublisher(parsedMessage.getInteractionId(), parsedMessage.getRawMessage(), parsedMessage.getConversationId(), parsedMessage.isLargeMessage(), parsedMessage.isNegativeAcknowledgement());
-
-            MessageHandler matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
+            broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+            var matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
 
             if (matchingHandler == null) {
                 log.warn("Sending message with an unknown or missing interactionId \"" + parsedMessage.getInteractionId() + "\" to unhandled queue");
@@ -90,7 +87,7 @@ public class JmsConsumer {
     private String getRawMessage(Message message) throws JMSException {
         if (message instanceof BytesMessage) {
             log.info("Received BytesMessage from MQ");
-            BytesMessage bytesMessage = (BytesMessage) message;
+            var bytesMessage = (BytesMessage) message;
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
             return new String(contentAsBytes, StandardCharsets.UTF_8);

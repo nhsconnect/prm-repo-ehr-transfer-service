@@ -34,7 +34,6 @@ public class EhrExtractMessageHandler implements MessageHandler {
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
-            //TODO: we get 503 from s3, investigate (probably we need to set right permissions)
             ehrRepoService.storeMessage(parsedMessage);
             if (parsedMessage.isLargeMessage()) {
                 log.info("Successfully stored large EHR extract message");

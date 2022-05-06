@@ -73,7 +73,7 @@ public class JmsConsumerTest {
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
-        verify(broker).sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "test-message", conversationId, false, false);
+        verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class JmsConsumerTest {
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
-        verify(broker).sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "test-message", conversationId, false, false);
+        verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
     @Test

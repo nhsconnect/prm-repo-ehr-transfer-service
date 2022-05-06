@@ -5,12 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
-
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class BrokerTest {
@@ -30,34 +31,56 @@ public class BrokerTest {
     @InjectMocks
     Broker broker;
 
+    private ParsedMessage getMockParsedMessage(String interactionId, String rawMessage, UUID conversationId) {
+        var parsedMessage = mock(ParsedMessage.class);
+        when(parsedMessage.getInteractionId()).thenReturn(interactionId);
+        when(parsedMessage.getRawMessage()).thenReturn(rawMessage);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        return parsedMessage;
+    }
+
     @Test
     public void shouldSendCopcMessageToAttachmentMessagePublisher()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("COPC_IN000001UK01", "copc-raw-message", conversationId, false, false);
+        var rawMessage = "copc-raw-message";
+        var parsedMessage = getMockParsedMessage("COPC_IN000001UK01", rawMessage, conversationId);
 
-        verify(attachmentMessagePublisher).sendMessage("copc-raw-message", conversationId);
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+
+        verify(attachmentMessagePublisher).sendMessage(rawMessage, conversationId);
     }
 
     @Test
     public void shouldSendSmallEhrMessageToSmallEhrMessagePublisher()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "ehr-raw-message", conversationId, false, false);
+        var rawMessage = "ehr-raw-message";
+        var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", rawMessage, conversationId);
 
-        verify(smallEhrMessagePublisher).sendMessage("ehr-raw-message", conversationId);
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+
+        verify(smallEhrMessagePublisher).sendMessage(rawMessage, conversationId);
     }
 
     @Test
     public void shouldSendLargeEhrMessageToLargeEhrMessagePublisher()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("RCMR_IN030000UK06", "large-raw-message", conversationId, true, false);
+        var rawMessage = "copc-raw-message";
+        var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", rawMessage, conversationId);
+        when(parsedMessage.isLargeMessage()).thenReturn(true);
 
-        verify(largeEhrMessagePublisher).sendMessage("large-raw-message", conversationId);
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+
+        verify(largeEhrMessagePublisher).sendMessage(rawMessage, conversationId);
     }
 
     @Test
     public void shouldSendNegativeAcknowledgementToNegativeAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("MCCI_IN010000UK13", "nack", conversationId, false, true);
+        var rawMessage = "nack";
+        var parsedMessage = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId);
+        when(parsedMessage.isNegativeAcknowledgement()).thenReturn(true);
+
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
 
         verify(negativeAcknowledgementMessagePublisher).sendMessage("nack", conversationId);
     }
@@ -65,7 +88,10 @@ public class BrokerTest {
     @Test
     public void shouldSendPositiveAcknowledgementToPositiveAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("MCCI_IN010000UK13", "positive-ack", conversationId, false, false);
+        var rawMessage = "positive-ack";
+        var parsedMessage = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId);
+
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
 
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
     }
@@ -73,7 +99,9 @@ public class BrokerTest {
     @Test
     public void shouldSendUnreckognizedMessagesToDlq()  {
         var conversationId = UUID.randomUUID();
-        broker.sendMessageToCorrespondingTopicPublisher("something-unreckognizable", "some-ack", conversationId, false, false);
+        var parsedMessage = getMockParsedMessage("something-unreckognizable", "some-ack", conversationId);
+
+        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
 
         verify(parsingDlqPublisher).sendMessage(any());
     }
