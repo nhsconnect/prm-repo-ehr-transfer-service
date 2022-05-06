@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -65,6 +66,8 @@ class EhrRequestTest {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
+        var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
+        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
         wireMock.stop();
     }
 

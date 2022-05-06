@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
-
 import javax.jms.BytesMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

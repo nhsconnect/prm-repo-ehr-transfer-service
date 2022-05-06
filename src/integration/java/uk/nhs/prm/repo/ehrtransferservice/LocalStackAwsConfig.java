@@ -238,7 +238,6 @@ public class LocalStackAwsConfig {
     }
 
     private void setUpQueueAndTopics() {
-        ensureQueueDeleted(repoIncomingQueueName);
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
         var attachmentQueue = amazonSQSAsync.createQueue(attachmentsQueueName);
@@ -251,14 +250,6 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.getQueueUrl()));
 
         createSnsTestReceiverSubscription(positiveAcksTopic, getQueueArn(positiveAcksQueue.getQueueUrl()));
-    }
-
-    private void ensureQueueDeleted(String queueName) {
-        try {
-            amazonSQSAsync.deleteQueue(amazonSQSAsync.getQueueUrl(queueName).getQueueUrl());
-        } catch (QueueDoesNotExistException e) {
-            // TODO: this try/catch will go
-        }
     }
 
     private void setupS3Bucket() {
