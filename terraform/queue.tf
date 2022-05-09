@@ -1,5 +1,7 @@
 locals {
   repo_incoming_queue_name = "${var.environment}-${var.component_name}-repo-incoming"
+  repo_incoming_observability_queue_name = "${var.environment}-${var.component_name}-repo-incoming-observability"
+  repo_incoming_audit_queue_name = "${var.environment}-${var.component_name}-repo-incoming-audit"
   negative_acks_queue_name = "${var.environment}-${var.component_name}-negative-acknowledgments"
   negative_acks_observability_queue_name = "${var.environment}-${var.component_name}-negative-acknowledgments-observability"
   small_ehr_queue_name = "${var.environment}-${var.component_name}-small-ehr"
@@ -166,4 +168,42 @@ resource "aws_sqs_queue" "parsing_dlq" {
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
+}
+
+resource "aws_sqs_queue" "repo_incoming_observability_queue" {
+  name                       = local.repo_incoming_observability_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id = data.aws_ssm_parameter.repo_incoming_observability_kms_key.value
+
+  tags = {
+    Name = local.repo_incoming_observability_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "repo_incoming_observability_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = data.aws_ssm_parameter.repo_incoming_observability_sns_topic_arn.value
+  endpoint             = aws_sqs_queue.repo_incoming_observability_queue.arn
+}
+
+resource "aws_sqs_queue" "repo_incoming_audit_queue" {
+  name                       = local.repo_incoming_audit_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id = data.aws_ssm_parameter.repo_incoming_audit_kms_key.value
+
+  tags = {
+    Name = local.repo_incoming_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sns_topic_subscription" "repo_incoming_audit_queue" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = data.aws_ssm_parameter.repo_incoming_audit_sns_topic_arn.value
+  endpoint             = aws_sqs_queue.repo_incoming_audit_queue.arn
 }
