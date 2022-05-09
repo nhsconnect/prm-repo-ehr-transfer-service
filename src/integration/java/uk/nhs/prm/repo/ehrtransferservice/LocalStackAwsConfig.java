@@ -47,7 +47,6 @@ import java.util.*;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 
-
 @TestConfiguration
 public class LocalStackAwsConfig {
 
@@ -74,11 +73,14 @@ public class LocalStackAwsConfig {
     @Value("${aws.attachmentsQueueName}")
     private String attachmentsQueueName;
 
+    @Value("${aws.smallEhrQueueName}")
+    private String smallEhrQueueName;
+
     @Value("${aws.positiveAcksQueueName}")
     private String positiveAcksQueueName;
 
-    @Value("${aws.smallEhrQueueName}")
-    private String smallEhrQueueName;
+    @Value("${aws.parsingDlqQueueName}")
+    private String parsingDlqQueueName;
 
     @Value("${activemq.amqEndpoint1}")
     private String amqEndpoint1;
@@ -250,6 +252,10 @@ public class LocalStackAwsConfig {
         var positiveAcksTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_positive_acks_topic").build());
         var positiveAcksQueue = amazonSQSAsync.createQueue(positiveAcksQueueName);
         createSnsTestReceiverSubscription(positiveAcksTopic, getQueueArn(positiveAcksQueue.getQueueUrl()));
+
+        var parsingDlqTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_dlq_topic").build());
+        var parsingDlqQueue = amazonSQSAsync.createQueue(parsingDlqQueueName);
+        createSnsTestReceiverSubscription(parsingDlqTopic, getQueueArn(parsingDlqQueue.getQueueUrl()));
     }
 
     private void setupS3Bucket() {

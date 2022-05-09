@@ -47,14 +47,16 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
 
-    private final TestDataLoader dataLoader = new TestDataLoader();
+    @Value("${aws.parsingDlqQueueName}")
+    private String parsingDlqQueueName;
 
-    //TODO: add test for: large message, ack, dlq
+    private final TestDataLoader dataLoader = new TestDataLoader();
 
     @AfterEach
     public void tearDown() {
         purgeQueue(attachmentsQueueName);
         purgeQueue(smallEhrQueueName);
+        purgeQueue(parsingDlqQueueName);
     }
 
     @Test
@@ -98,6 +100,25 @@ public class ParserBrokerIntegrationTest {
             assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+        });
+    }
+
+    @Test
+    void shouldPublishInvalidMessageToDlq() throws InterruptedException {
+        var wrongMessage = "something wrong";
+
+        jmsTemplate.send(inboundQueue, session -> {
+            var bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(wrongMessage.getBytes(StandardCharsets.UTF_8));
+            return bytesMessage;
+        });
+        sleep(5000);
+
+        var parsingDqlQueueUrl = sqs.getQueueUrl(parsingDlqQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(parsingDqlQueueUrl);
+            assertTrue(receivedMessageHolder.get(0).getBody().contains(wrongMessage));
         });
     }
 
