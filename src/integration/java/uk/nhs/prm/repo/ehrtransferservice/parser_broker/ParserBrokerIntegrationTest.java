@@ -11,16 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Session;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -48,12 +44,17 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.attachmentsQueueName}")
     private String attachmentsQueueName;
 
+    @Value("${aws.smallEhrQueueName}")
+    private String smallEhrQueueName;
+
     private final TestDataLoader dataLoader = new TestDataLoader();
+
+    //TODO: add test for: large message, ack, dlq
 
     @AfterEach
     public void tearDown() {
-        var attachmentsQueueUrl = sqs.getQueueUrl(attachmentsQueueName).getQueueUrl();
-        sqs.purgeQueue(new PurgeQueueRequest(attachmentsQueueUrl));
+        purgeQueue(attachmentsQueueName);
+        purgeQueue(smallEhrQueueName);
     }
 
     @Test
@@ -78,6 +79,28 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
+    @Test
+    void shouldPublishSmallMessageToSmallTopic() throws IOException, InterruptedException {
+        var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
+
+        jmsTemplate.send(inboundQueue, session -> {
+            var bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
+            return bytesMessage;
+        });
+        sleep(5000);
+
+        var smallEhrQueueUrl = sqs.getQueueUrl(smallEhrQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrQueueUrl);
+            assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+        });
+    }
+
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
 
@@ -87,5 +110,10 @@ public class ParserBrokerIntegrationTest {
         var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
         assertThat(messages).hasSize(1);
         return messages;
+    }
+
+    private void purgeQueue(String queueName) {
+        var queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }

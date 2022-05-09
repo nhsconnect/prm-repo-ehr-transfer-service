@@ -11,7 +11,6 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
-import com.amazonaws.services.sqs.model.QueueDoesNotExistException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,8 +77,8 @@ public class LocalStackAwsConfig {
     @Value("${aws.positiveAcksQueueName}")
     private String positiveAcksQueueName;
 
-    @Value("${aws.positiveAcksTopicArn}")
-    private String positiveAcksTopicArn;
+    @Value("${aws.smallEhrQueueName}")
+    private String smallEhrQueueName;
 
     @Value("${activemq.amqEndpoint1}")
     private String amqEndpoint1;
@@ -241,14 +240,15 @@ public class LocalStackAwsConfig {
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
         var attachmentQueue = amazonSQSAsync.createQueue(attachmentsQueueName);
-        var topic = snsClient.createTopic(CreateTopicRequest.builder().name("test_attachments_topic").build());
+        var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_attachments_topic").build());
+        createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentQueue.getQueueUrl()));
+
+        var smallEhrQueue = amazonSQSAsync.createQueue(smallEhrQueueName);
+        var smallEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
+        createSnsTestReceiverSubscription(smallEhrTopic, getQueueArn(smallEhrQueue.getQueueUrl()));
 
         var positiveAcksTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_positive_acks_topic").build());
-
         var positiveAcksQueue = amazonSQSAsync.createQueue(positiveAcksQueueName);
-
-        createSnsTestReceiverSubscription(topic, getQueueArn(attachmentQueue.getQueueUrl()));
-
         createSnsTestReceiverSubscription(positiveAcksTopic, getQueueArn(positiveAcksQueue.getQueueUrl()));
     }
 
