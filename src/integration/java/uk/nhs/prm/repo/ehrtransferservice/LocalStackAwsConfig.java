@@ -7,6 +7,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
@@ -26,15 +27,12 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
-import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
-import software.amazon.awssdk.services.s3.waiters.S3Waiter;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
-import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
@@ -51,15 +49,18 @@ import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 public class LocalStackAwsConfig {
 
     @Autowired
+    private AmazonS3 amazonS3;
+
+    @Autowired
+    private S3Client s3Client;
+
+    @Autowired
     private AmazonSQSAsync amazonSQSAsync;
     @Autowired
     private DynamoDbClient dynamoDbClient;
 
     @Autowired
     private SnsClient snsClient;
-
-    @Autowired
-    private S3Client s3Client;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -75,6 +76,9 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
+
+    @Value("${aws.largeEhrQueueName}")
+    private String largeEhrQueueName;
 
     @Value("${aws.positiveAcksQueueName}")
     private String positiveAcksQueueName;
@@ -117,57 +121,21 @@ public class LocalStackAwsConfig {
         return activeMQConnectionFactory;
     }
 
-    private String failoverUrl() {
-        return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
-    }
-
     @Bean
-    public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
-        return AmazonSQSAsyncClientBuilder.standard()
+    public AmazonS3 amazonS3(@Value("${localstack.url}") String localstackUrl) {
+        return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
                 .build();
     }
 
+    // TODO: this S3Client bean is used to setup large message bucket only.
+    // the real dependency used in code is the one above (AmazonS3 / v1).
+    // Therefore: find a way to create the bucket - setting GrantFullControl using
+    // the class above, then get rid of this S3Client / v2.
     @Bean
-    public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) {
-        return SqsClient.builder()
-                .endpointOverride(URI.create(localstackUrl))
-                .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return "FAKE";
-                    }
-
-                    @Override
-                    public String secretAccessKey() {
-                        return "FAKE";
-                    }
-                })).build();
-    }
-
-    @Bean
-    public static AmazonSQSExtendedClient s3SupportedSqsClient(AmazonSQSAsync sqsClient, AmazonS3 s3) {
-        return new AmazonSQSExtendedClient(sqsClient, new ExtendedClientConfiguration().withPayloadSupportEnabled(s3, "test-s3-bucket-name-cant-have-underscores", true));
-    }
-
-    @Bean
-    public static AmazonSNS amazonSNS(@Value("${localstack.url}") String localstackUrl) {
-        return AmazonSNSClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
-                .build();
-    }
-
-    @Bean
-    public static AmazonSNSExtendedClient s3SupportedSnsClient(AmazonSNS amazonSNS, AmazonS3 s3) {
-        return new AmazonSNSExtendedClient(amazonSNS, new SNSExtendedClientConfiguration(), new S3BackedPayloadStore(new S3Dao(s3), "test-s3-bucket-name-cant-have-underscores"));
-    }
-
-    @Bean
-    public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
-        return SnsClient.builder()
+    public static S3Client s3Client(@Value("${localstack.url}") String localstackUrl) {
+        return S3Client.builder()
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
@@ -184,17 +152,39 @@ public class LocalStackAwsConfig {
                 .build();
     }
 
+    private String failoverUrl() {
+        return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
+    }
+
     @Bean
-    public AmazonS3 amazonS3Client(@Value("${localstack.url}") String localstackUrl) {
-        return AmazonS3ClientBuilder.standard()
+    public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
+        return AmazonSQSAsyncClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
                 .build();
     }
 
     @Bean
-    public static S3Client s3Client(@Value("${localstack.url}") String localstackUrl) {
-        return S3Client.builder()
+    public static AmazonSQSExtendedClient s3SupportedSqsClient(AmazonSQSAsync sqsClient, AmazonS3 amazonS3, @Value("${aws.sqsLargeMessageBucketName}") String sqsLargeMessageBucketName) {
+        return new AmazonSQSExtendedClient(sqsClient, new ExtendedClientConfiguration().withPayloadSupportEnabled(amazonS3, sqsLargeMessageBucketName, true));
+    }
+
+    @Bean
+    public static AmazonSNS amazonSNS(@Value("${localstack.url}") String localstackUrl) {
+        return AmazonSNSClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
+                .build();
+    }
+
+    @Bean
+    public static AmazonSNSExtendedClient s3SupportedSnsClient(AmazonSNS amazonSNS, AmazonS3 amazonS3, @Value("${aws.sqsLargeMessageBucketName}") String sqsLargeMessageBucketName) {
+        return new AmazonSNSExtendedClient(amazonSNS, new SNSExtendedClientConfiguration(), new S3BackedPayloadStore(new S3Dao(amazonS3), sqsLargeMessageBucketName));
+    }
+
+    @Bean
+    public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
+        return SnsClient.builder()
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
@@ -249,6 +239,10 @@ public class LocalStackAwsConfig {
         var smallEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
         createSnsTestReceiverSubscription(smallEhrTopic, getQueueArn(smallEhrQueue.getQueueUrl()));
 
+        var largeEhrQueue = amazonSQSAsync.createQueue(largeEhrQueueName);
+        var largeEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_ehr_topic").build());
+        createSnsTestReceiverSubscription(largeEhrTopic, getQueueArn(largeEhrQueue.getQueueUrl()));
+
         var positiveAcksTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_positive_acks_topic").build());
         var positiveAcksQueue = amazonSQSAsync.createQueue(positiveAcksQueueName);
         createSnsTestReceiverSubscription(positiveAcksTopic, getQueueArn(positiveAcksQueue.getQueueUrl()));
@@ -264,10 +258,10 @@ public class LocalStackAwsConfig {
                 .bucket(sqsLargeMessageBucketName)
                 .grantFullControl("GrantFullControl")
                 .build();
+
         for (var bucket: s3Client.listBuckets().buckets()) {
             if (Objects.equals(bucket.name(), sqsLargeMessageBucketName)) {
-                resetS3ForLocalEnvironment(waiter);
-                break;
+                return;
             }
         }
 
@@ -314,11 +308,6 @@ public class LocalStackAwsConfig {
         var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
         dynamoDbClient.deleteTable(deleteRequest);
         waiter.waitUntilTableNotExists(tableRequest);
-    }
-
-    private void resetS3ForLocalEnvironment(S3Waiter waiter) {
-        s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
-        waiter.waitUntilBucketNotExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
     private void createSnsTestReceiverSubscription(CreateTopicResponse topic, String queueArn) {
