@@ -112,6 +112,8 @@ public class ParserBrokerIntegrationTest {
     @Disabled("To be fixed")
     @Test
     void shouldPublishLargeMessageToLargeTopic() throws IOException, InterruptedException {
+        // RCMR_IN030000UK06_Large file was taken from e2e tests, modified to
+        // set values were put for __conversationId__ and __messageId__ placeholders
         var largeEhr = dataLoader.getDataAsString("RCMR_IN030000UK06_Large");
 
         jmsTemplate.send(inboundQueue, session -> {
