@@ -115,6 +115,24 @@ function build_docker_image() {
   echo Build completed on `date`
 }
 
+function ensure_prev_build_images_are_stopped {
+  echo "docker processes running: $(docker ps)"
+
+  MQ_CONTAINER_1=$(docker ps --filter publish=61616 -q)
+  MQ_CONTAINER_2=$(docker ps --filter publish=61617 -q)
+
+  echo "found for mq container 1: $MQ_CONTAINER_1"
+  echo "found for mq container 2: $MQ_CONTAINER_2"
+
+  if [ -n "$MQ_CONTAINER_1" ]; then
+    docker stop $MQ_CONTAINER_1
+  fi
+
+  if [ -n "$MQ_CONTAINER_2" ]; then
+      docker stop $MQ_CONTAINER_2
+  fi
+}
+
 ###########
 ## TASKS ##
 ###########
@@ -151,6 +169,7 @@ case "${command}" in
       gradle --info integration
       ;;
   test_integration)
+      ensure_prev_build_images_are_stopped
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
@@ -158,6 +177,7 @@ case "${command}" in
       gradle jacocoTestCoverageVerification
       ;;
   test_coverage)
+      ensure_prev_build_images_are_stopped
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _test_coverage"
       ;;
@@ -165,6 +185,7 @@ case "${command}" in
       gradle check -x test -x integration
       ;;
   code_quality)
+      ensure_prev_build_images_are_stopped
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
