@@ -125,11 +125,13 @@ function ensure_prev_build_images_are_stopped {
   echo "found for mq container 2: $MQ_CONTAINER_2"
 
   if [ -n "$MQ_CONTAINER_1" ]; then
+    echo "stopping mq container 1"
     docker stop $MQ_CONTAINER_1
   fi
 
   if [ -n "$MQ_CONTAINER_2" ]; then
-      docker stop $MQ_CONTAINER_2
+    echo "stopping mq container 2"
+    docker stop $MQ_CONTAINER_2
   fi
 }
 
