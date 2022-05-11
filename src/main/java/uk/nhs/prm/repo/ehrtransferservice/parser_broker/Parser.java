@@ -30,9 +30,8 @@ public class Parser {
             case "MCCI_IN010000UK13":
                 message = xmlMapper.readValue(mhsJsonMessage.payload, AcknowledgementMessageWrapper.class);
                 break;
-            //TODO: AttachmentMessageWrapper for COPC_IN000001UK01 needs so be implemented. Happy path works now,
-            //but a specific wrapper will be necessary whey playing NACK stories
             case "COPC_IN000001UK01":
+                log.info("COPC message received in Parser");
             default:
                 log.warn("No interaction ID match found for current message");
                 break;
