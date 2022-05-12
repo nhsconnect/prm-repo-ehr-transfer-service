@@ -11,12 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
 
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 @Configuration
@@ -26,9 +26,13 @@ public class SqsListenerSpringConfiguration {
 
     private final Tracer tracer;
     private final RepoIncomingService repoIncomingService;
-    private final RepoIncomingEventParser parser;
+    private final RepoIncomingEventParser repoIncomingEventParser;
+
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
+
+    @Value("${aws.smallEhrQueueName}")
+    private String smallEhrQueueName;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -37,17 +41,21 @@ public class SqsListenerSpringConfiguration {
 
     @Bean
     public SQSConnection createConnection(AmazonSQSAsync amazonSQSAsync) throws JMSException {
-        SQSConnectionFactory connectionFactory = new SQSConnectionFactory(new ProviderConfiguration(), amazonSQSAsync);
+        var connectionFactory = new SQSConnectionFactory(new ProviderConfiguration(), amazonSQSAsync);
         return connectionFactory.createConnection();
     }
 
     @Bean
     public Session createListeners(SQSConnection connection) throws JMSException {
-        Session session = connection.createSession(false, SQSSession.UNORDERED_ACKNOWLEDGE);
-        log.info("repo incoming queue name : {}", repoIncomingQueueName);
-        MessageConsumer consumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
+        var session = connection.createSession(false, SQSSession.UNORDERED_ACKNOWLEDGE);
 
-        consumer.setMessageListener(new RepoIncomingEventListener(tracer, repoIncomingService, parser));
+        log.info("repo incoming queue name : {}", repoIncomingQueueName);
+        var incomingQueueConsumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
+        incomingQueueConsumer.setMessageListener(new RepoIncomingEventListener(tracer, repoIncomingService, repoIncomingEventParser));
+
+//        log.info("ehr small queue name : {}", smallEhrQueueName);
+//        var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
+//        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener());
 
         connection.start();
 
