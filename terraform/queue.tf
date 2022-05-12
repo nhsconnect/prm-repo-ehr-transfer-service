@@ -12,6 +12,7 @@ locals {
   attachments_observability_queue_name = "${var.environment}-${var.component_name}-attachments-observability"
   positive_acks_observability_queue_name = "${var.environment}-${var.component_name}-positive-acknowledgements-observability"
   parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
+  ehr_complete_queue_name = "${var.environment}-${var.component_name}-ehr-complete"
   max_retention_period = 1209600
   thirty_minute_retention_period = 1800
 }
@@ -187,4 +188,18 @@ resource "aws_sns_topic_subscription" "repo_incoming_audit_queue" {
   raw_message_delivery = true
   topic_arn            = data.aws_ssm_parameter.repo_incoming_audit_sns_topic_arn.value
   endpoint             = aws_sqs_queue.repo_incoming_audit_queue.arn
+}
+
+resource "aws_sqs_queue" "ehr_complete" {
+  name                       = local.ehr_complete_queue_name
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id          = aws_kms_key.ehr_complete.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.ehr_complete_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
 }
