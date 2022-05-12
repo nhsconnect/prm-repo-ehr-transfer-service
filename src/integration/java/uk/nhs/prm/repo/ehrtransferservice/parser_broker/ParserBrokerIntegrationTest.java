@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,6 @@ import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -106,31 +104,6 @@ public class ParserBrokerIntegrationTest {
             assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-        });
-    }
-
-    @Disabled("To be fixed")
-    @Test
-    void shouldPublishLargeMessageToLargeTopic() throws IOException, InterruptedException {
-        // RCMR_IN030000UK06_Large file was taken from e2e tests, modified to
-        // set values were put for __conversationId__ and __messageId__ placeholders
-        var largeEhr = dataLoader.getDataAsString("RCMR_IN030000UK06_Large");
-
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(largeEhr.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
-        sleep(5000);
-
-        var largeEhrQueueUrl = sqs.getQueueUrl(largeEhrQueueName).getQueueUrl();
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(largeEhrQueueUrl);
-            assertFalse(receivedMessageHolder.isEmpty());
-//            assertTrue(receivedMessageHolder.get(0).getBody().contains(largeEhrSanitized));
-//            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-//            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
     }
 
