@@ -74,3 +74,10 @@ resource "aws_sns_topic_subscription" "parsing_dlq_topic" {
   topic_arn            = aws_sns_topic.parsing_dlq.arn
   endpoint             = aws_sqs_queue.parsing_dlq.arn
 }
+
+resource "aws_sns_topic_subscription" "ehr_complete_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.ehr_complete.arn
+  endpoint             = aws_sqs_queue.ehr_complete.arn
+}
