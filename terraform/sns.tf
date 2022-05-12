@@ -69,3 +69,15 @@ resource "aws_sns_topic" "parsing_dlq" {
     Environment = var.environment
   }
 }
+
+resource "aws_sns_topic" "ehr_complete" {
+  name = "${var.environment}-${var.component_name}-ehr-complete-sns-topic"
+  kms_master_key_id = aws_kms_key.ehr_complete.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-ehr-complete-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
