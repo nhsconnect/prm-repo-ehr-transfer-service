@@ -308,6 +308,11 @@ resource "aws_sqs_queue_policy" "negative_acks_observability" {
   policy    = data.aws_iam_policy_document.negative_acks_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "ehr_complete" {
+  queue_url = aws_sqs_queue.ehr_complete.id
+  policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
+}
+
 data "aws_iam_policy_document" "attachments_policy_doc" {
   statement {
 
@@ -432,6 +437,31 @@ data "aws_iam_policy_document" "small_ehr_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.small_ehr.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "ehr_complete_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.ehr_complete.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.ehr_complete.arn]
       variable = "aws:SourceArn"
     }
   }
