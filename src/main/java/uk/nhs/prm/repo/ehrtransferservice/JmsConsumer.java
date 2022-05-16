@@ -78,7 +78,7 @@ public class JmsConsumer {
             }
 
             matchingHandler.handleMessage(parsedMessage);
-        } catch (RuntimeException | IOException e) {
+        } catch (Exception e) {
             log.error("Failed to process message - sending to dlq", e);
             parsingDlqPublisher.sendMessage(rawMessage);
         }

@@ -5,5 +5,5 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 public interface MessageHandler {
     String getInteractionId();
 
-    void handleMessage(ParsedMessage parsedMessage);
+    void handleMessage(ParsedMessage parsedMessage) throws Exception;
 }
