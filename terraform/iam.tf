@@ -252,7 +252,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.attachments.arn,
       aws_sns_topic.large_ehr.arn,
       aws_sns_topic.small_ehr.arn,
-      aws_sns_topic.negative_acks.arn
+      aws_sns_topic.negative_acks.arn,
+      aws_sns_topic.ehr_complete.arn
     ]
   }
 }

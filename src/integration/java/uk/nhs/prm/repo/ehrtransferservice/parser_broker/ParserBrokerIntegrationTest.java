@@ -152,27 +152,6 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    @Test
-    void shouldPublishEhrCompleteMessageToEhrCompleteTopic() throws IOException, InterruptedException {
-        var ehrCompleteMessage = dataLoader.getDataAsString("RCMR_IN030000UK06");
-        var ehrCompleteMessageSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
-
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(ehrCompleteMessage.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
-        sleep(5000);
-
-        var ehrCompleteQueueUrl = sqs.getQueueUrl(ehrCompleteQueueName).getQueueUrl();
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(ehrCompleteQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrCompleteMessageSanitized));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-        });
-    }
 
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
