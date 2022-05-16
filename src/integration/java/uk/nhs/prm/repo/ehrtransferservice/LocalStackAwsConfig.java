@@ -86,6 +86,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.parsingDlqQueueName}")
     private String parsingDlqQueueName;
 
+    @Value("${aws.ehrCompleteQueueName}")
+    private String ehrCompleteQueueName;
+
     @Value("${activemq.amqEndpoint1}")
     private String amqEndpoint1;
 
@@ -250,6 +253,10 @@ public class LocalStackAwsConfig {
         var parsingDlqTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_dlq_topic").build());
         var parsingDlqQueue = amazonSQSAsync.createQueue(parsingDlqQueueName);
         createSnsTestReceiverSubscription(parsingDlqTopic, getQueueArn(parsingDlqQueue.getQueueUrl()));
+
+        var ehrCompleteQueue = amazonSQSAsync.createQueue(ehrCompleteQueueName);
+        var ehrCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_ehr_complete_topic").build());
+        createSnsTestReceiverSubscription(ehrCompleteTopic, getQueueArn(ehrCompleteQueue.getQueueUrl()));
     }
 
     private void setupS3Bucket() {
