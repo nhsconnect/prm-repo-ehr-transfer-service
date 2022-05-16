@@ -33,7 +33,8 @@ locals {
     { name = "ATTACHMENTS_TOPIC_ARN", value = aws_sns_topic.attachments.arn },
     { name = "PARSING_DLQ_TOPIC_ARN", value = aws_sns_topic.parsing_dlq.arn },
     { name = "POSITIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.positive_acks.arn },
-    { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn }
+    { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn },
+    { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
