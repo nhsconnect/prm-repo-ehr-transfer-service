@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
@@ -27,6 +28,8 @@ public class SqsListenerSpringConfiguration {
     private final Tracer tracer;
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser repoIncomingEventParser;
+
+    private final Parser parser;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -53,9 +56,10 @@ public class SqsListenerSpringConfiguration {
         var incomingQueueConsumer = session.createConsumer(session.createQueue(repoIncomingQueueName));
         incomingQueueConsumer.setMessageListener(new RepoIncomingEventListener(tracer, repoIncomingService, repoIncomingEventParser));
 
-//        log.info("ehr small queue name : {}", smallEhrQueueName);
-//        var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
-//        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener());
+        log.info("ehr small queue name : {}", smallEhrQueueName);
+        var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
+        //ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer,smallEhrService,smallEhrEventParser));
+        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer,parser));
 
         connection.start();
 
