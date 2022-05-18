@@ -15,19 +15,26 @@ class SmallEhrMessagePublisherTest {
     @Mock
     private MessagePublisher messagePublisher;
 
-    private final static String topicArn = "topicArn";
+    private final static String smallEhrTopicArn = "smallEhrTopicArn";
 
     private SmallEhrMessagePublisher smallEhrMessagePublisher;
+    private UUID conversationId;
+    private UUID messageId;
+
+    SmallEhrMessagePublisherTest() {
+        conversationId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
+    }
 
     @BeforeEach
     void setUp() {
-        smallEhrMessagePublisher = new SmallEhrMessagePublisher(messagePublisher, topicArn);
+        smallEhrMessagePublisher = new SmallEhrMessagePublisher(messagePublisher, smallEhrTopicArn);
     }
+
 
     @Test
     void shouldPublishMessageToTheSmallEhrTopic() {
-        var conversationId = UUID.randomUUID();
         smallEhrMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());
+        verify(messagePublisher).sendMessage(smallEhrTopicArn, "message", "conversationId", conversationId.toString());
     }
 }

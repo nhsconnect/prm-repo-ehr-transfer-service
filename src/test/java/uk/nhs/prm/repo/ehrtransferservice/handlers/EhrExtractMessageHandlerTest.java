@@ -112,15 +112,6 @@ public class EhrExtractMessageHandlerTest {
         verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
-    @Test
-    public void shouldCallGPToRepoToSendEhrExtractReceivedNotificationForSmallHealthRecords() throws Exception {
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getMessageId()).thenReturn(messageId);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(gpToRepoClient).notifySmallEhrExtractArrived(messageId, conversationId);
-    }
 
     @Test
     public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
@@ -135,18 +126,5 @@ public class EhrExtractMessageHandlerTest {
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
 
-    @Test
-    public void shouldPutSmallMessageOnUnhandledQueueWhenGPToRepoCallThrows() throws Exception {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getMessageId()).thenReturn(messageId);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
 
-        HttpException expectedError = new HttpException("Failed to send the small EHR extract received notification");
-        doThrow(expectedError).when(gpToRepoClient).notifySmallEhrExtractArrived(messageId, conversationId);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
-    }
 }

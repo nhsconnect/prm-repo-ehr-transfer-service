@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.message_publishers;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 
 import java.util.UUID;
 
@@ -15,8 +16,8 @@ public class EhrCompleteMessagePublisher {
         this.ehrCompleteTopicArn = ehrCompleteTopicArn;
     }
 
-    public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.ehrCompleteTopicArn, message, "conversationId", conversationId.toString());
+    public void sendMessage(EhrCompleteEvent ehrCompleteEvent) {
+        messagePublisher.sendJsonMessage(this.ehrCompleteTopicArn, ehrCompleteEvent, "conversationId", ehrCompleteEvent.getConversationId().toString());
     }
 }
 

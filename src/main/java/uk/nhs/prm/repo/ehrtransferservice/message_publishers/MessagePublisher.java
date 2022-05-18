@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.message_publishers;
 
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,11 @@ public class MessagePublisher {
 
     public void sendMessage(String topicArn, String message) {
         sendMessage(topicArn, message, null, null);
+    }
+
+    public void sendJsonMessage(String topicArn, Object message, String attributeKey, String attributeValue) {
+        String jsonMessage = new Gson().toJson(message);
+        sendMessage(topicArn, jsonMessage, attributeKey, attributeValue);
     }
 
     public void sendMessage(String topicArn, String message, String attributeKey, String attributeValue) {

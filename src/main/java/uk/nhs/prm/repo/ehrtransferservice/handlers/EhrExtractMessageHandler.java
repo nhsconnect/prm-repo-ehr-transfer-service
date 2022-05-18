@@ -39,10 +39,6 @@ public class EhrExtractMessageHandler implements MessageHandler {
                 log.info("Successfully stored large EHR extract message");
                 gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
                 log.info("Successfully sent continue message");
-            } else {
-                log.info("Successfully stored small EHR extract message");
-                gpToRepoClient.notifySmallEhrExtractArrived(parsedMessage.getMessageId(), parsedMessage.getConversationId());
-                log.info("Small ehr extract arrived notification sent");
             }
         } catch (Exception e) {
             log.warn("Sending EHR extract message to the unhandled queue", e, v("queue", unhandledQueue));

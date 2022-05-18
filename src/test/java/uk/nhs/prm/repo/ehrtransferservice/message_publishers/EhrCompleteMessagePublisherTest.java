@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 
 import java.util.UUID;
 
@@ -13,23 +14,31 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EhrCompleteMessagePublisherTest {
+
     @Mock
     private MessagePublisher messagePublisher;
 
-    private final static String topicArn = "topicArn";
-
+    private final static String ehrCompleteTopicArn = "ehrCompleteTopicArn";
     private EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
+    private UUID conversationId;
+    private UUID messageId;
+    private EhrCompleteEvent ehrCompleteEvent;
+
+    public EhrCompleteMessagePublisherTest() {
+        conversationId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
+    }
 
     @BeforeEach
     void setUp() {
-        ehrCompleteMessagePublisher = new EhrCompleteMessagePublisher(messagePublisher, topicArn);
+        ehrCompleteMessagePublisher = new EhrCompleteMessagePublisher(messagePublisher, ehrCompleteTopicArn);
+        ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
     }
 
     @Test
     void shouldPublishMessageToTheSmallEhrTopic() {
-        var conversationId = UUID.randomUUID();
-        ehrCompleteMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());
+        ehrCompleteMessagePublisher.sendMessage(ehrCompleteEvent);
+        verify(messagePublisher).sendJsonMessage(ehrCompleteTopicArn, ehrCompleteEvent, "conversationId", conversationId.toString());
     }
 
 }
