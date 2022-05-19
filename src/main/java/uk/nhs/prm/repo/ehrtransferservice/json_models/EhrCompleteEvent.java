@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.json_models;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.UUID;
