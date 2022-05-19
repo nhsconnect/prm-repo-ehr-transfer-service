@@ -34,12 +34,15 @@ public class EhrExtractMessageHandler implements MessageHandler {
     @Override
     public void handleMessage(ParsedMessage parsedMessage) {
         try {
-            ehrRepoService.storeMessage(parsedMessage);
-            if (parsedMessage.isLargeMessage()) {
-                log.info("Successfully stored large EHR extract message");
-                gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
-                log.info("Successfully sent continue message");
+            //TODO: this class will be deleted. Putting a guard to break dependency for small message code execution
+            if (!parsedMessage.isLargeMessage()) {
+                return;
             }
+
+            ehrRepoService.storeMessage(parsedMessage);
+            log.info("Successfully stored large EHR extract message");
+            gpToRepoClient.sendContinueMessage(parsedMessage.getMessageId(), parsedMessage.getConversationId());
+            log.info("Successfully sent continue message");
         } catch (Exception e) {
             log.warn("Sending EHR extract message to the unhandled queue", e, v("queue", unhandledQueue));
             jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());

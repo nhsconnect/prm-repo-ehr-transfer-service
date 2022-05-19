@@ -68,7 +68,7 @@ class SmallEhrMessageHandlerTest {
 //    }
 
     @Test
-    public void shouldPublishSmallEhrMessageToEhrCompleteTopic() {
+    public void shouldPublishSmallEhrMessageToEhrCompleteTopic() throws Exception {
         var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
         String messageBody = "{\"conversationId\":\"conversationId\",\"messageId\":\"messageId\"}";
         when(parsedMessage.getConversationId()).thenReturn(conversationId);

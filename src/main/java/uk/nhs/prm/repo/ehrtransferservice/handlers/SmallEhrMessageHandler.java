@@ -14,6 +14,10 @@ public class SmallEhrMessageHandler implements MessageHandler {
     private EhrRepoService ehrRepoService;
     private EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
 
+    public SmallEhrMessageHandler(EhrRepoService ehrRepoService, EhrCompleteMessagePublisher ehrCompleteMessagePublisher) {
+        this.ehrRepoService = ehrRepoService;
+        this.ehrCompleteMessagePublisher = ehrCompleteMessagePublisher;
+    }
 
     @Override
     public String getInteractionId() {
@@ -21,14 +25,10 @@ public class SmallEhrMessageHandler implements MessageHandler {
     }
 
     @Override
-    public void handleMessage(ParsedMessage parsedMessage) {
-        try {
-            ehrRepoService.storeMessage(parsedMessage);
-            log.info("Successfully stored small-ehr message in the ehr-repo-service");
-            ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(parsedMessage.getConversationId(), parsedMessage.getMessageId()));
-            log.info("Successfully published message to ehr-complete topic");
-        } catch (Exception e) {
-            log.error("Failed to store small-ehr message", e);
-        }
+    public void handleMessage(ParsedMessage parsedMessage) throws Exception {
+        ehrRepoService.storeMessage(parsedMessage);
+        log.info("Successfully stored small-ehr message in the ehr-repo-service");
+        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(parsedMessage.getConversationId(), parsedMessage.getMessageId()));
+        log.info("Successfully published message to ehr-complete topic");
     }
 }

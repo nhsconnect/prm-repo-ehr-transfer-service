@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
@@ -28,6 +29,7 @@ public class SqsListenerSpringConfiguration {
     private final Tracer tracer;
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser repoIncomingEventParser;
+    private final SmallEhrMessageHandler smallEhrMessageHandler;
 
     private final Parser parser;
 
@@ -58,8 +60,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", smallEhrQueueName);
         var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
-        //ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer,smallEhrService,smallEhrEventParser));
-        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer,parser));
+        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer, parser, smallEhrMessageHandler));
 
         connection.start();
 

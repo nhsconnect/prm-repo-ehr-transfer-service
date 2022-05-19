@@ -2,9 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.listeners;
 
 import lombok.RequiredArgsConstructor;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SmallEhrMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.Message;
@@ -19,7 +17,7 @@ public class SmallEhrMessageListener implements MessageListener {
 
     private final Tracer tracer;
     private final Parser parser;
-    SmallEhrMessageHandler smallEhrMessageHandler;
+    private final SmallEhrMessageHandler smallEhrMessageHandler;
 
     @Override
     public void onMessage(Message message) {
