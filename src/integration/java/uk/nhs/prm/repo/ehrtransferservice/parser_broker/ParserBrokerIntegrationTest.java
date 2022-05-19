@@ -90,7 +90,7 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    @Disabled("Under investigation, other adjust it to the new logic or delete it")
+    @Disabled("Use observability queue instead?")
     @Test
     void shouldPublishSmallMessageToSmallTopic() throws IOException, InterruptedException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
