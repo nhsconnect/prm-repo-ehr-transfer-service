@@ -89,27 +89,27 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-//    @Test
-//    void shouldPublishSmallMessageToSmallTopic() throws IOException, InterruptedException {
-//        var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
-//        var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
-//
-//        jmsTemplate.send(inboundQueue, session -> {
-//            var bytesMessage = session.createBytesMessage();
-//            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
-//            return bytesMessage;
-//        });
-//        sleep(5000);
-//
-//        var smallEhrQueueUrl = sqs.getQueueUrl(smallEhrQueueName).getQueueUrl();
-//
-//        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-//            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrQueueUrl);
-//            assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
-//            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-//            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-//        });
-//    }
+    @Test
+    void shouldPublishSmallMessageToSmallTopic() throws IOException, InterruptedException {
+        var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
+
+        jmsTemplate.send(inboundQueue, session -> {
+            var bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
+            return bytesMessage;
+        });
+        sleep(5000);
+
+        var smallEhrQueueUrl = sqs.getQueueUrl(smallEhrQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrQueueUrl);
+            assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+        });
+    }
 
     @Test
     void shouldPublishInvalidMessageToDlq() throws InterruptedException {
@@ -130,27 +130,6 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-
-    @Test
-    void shouldPublishEhrCompleteMessageToEhrCompleteTopic() throws IOException, InterruptedException {
-        var ehrCompleteMessage = dataLoader.getDataAsString("EhrCompleteEvent_Valid");
-
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(ehrCompleteMessage.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
-        sleep(5000);
-
-        var ehrCompleteQueueUrl = sqs.getQueueUrl(ehrCompleteQueueName).getQueueUrl();
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(ehrCompleteQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrCompleteMessage));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("messageId"));
-        });
-    }
 
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
