@@ -34,6 +34,10 @@ public class EhrExtractMessageHandlerTest {
     String unhandledQueue;
     @InjectMocks
     EhrExtractMessageHandler ehrExtractMessageHandler;
+
+//    @InjectMocks
+//    SmallEhrMessageHandler smallEhrMessageHandler;
+
     private AutoCloseable closeable;
     private UUID conversationId;
     private UUID messageId;
@@ -104,27 +108,19 @@ public class EhrExtractMessageHandlerTest {
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
 
-    @Test
-    public void shouldCallEhrRepoToStoreMessageForSmallHealthRecords() throws Exception {
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
 
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(ehrRepoService).storeMessage(parsedMessage);
-    }
-
-
-    @Test
-    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
-        String message = "test";
-        when(parsedMessage.isLargeMessage()).thenReturn(false);
-        when(parsedMessage.getRawMessage()).thenReturn(message);
-
-        var expectedError = new Exception();
-        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
-
-        ehrExtractMessageHandler.handleMessage(parsedMessage);
-        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
-    }
+//    @Test
+//    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
+//        String message = "test";
+////        when(parsedMessage.isLargeMessage()).thenReturn(false);
+////        when(parsedMessage.getRawMessage()).thenReturn(message);
+//
+//        var expectedError = new Exception();
+//        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
+//
+//        smallEhrMessageHandler.handleMessage(parsedMessage);
+//        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
+//    }
 
 
 }

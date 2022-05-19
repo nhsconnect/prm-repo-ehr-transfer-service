@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,8 +13,8 @@ import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SmallEhrMessageHandlerTest {
@@ -36,7 +35,6 @@ class SmallEhrMessageHandlerTest {
     SmallEhrMessageHandler smallEhrMessageHandler;
 
 
-
     private final static String ehrCompleteTopicArn = "ehrCompleteTopicArn";
 
     private UUID conversationId;
@@ -47,30 +45,17 @@ class SmallEhrMessageHandlerTest {
         messageId = UUID.randomUUID();
     }
 
-//    @BeforeEach
-//    void setUp() {
-//        ehrCompleteMessagePublisher = new EhrCompleteMessagePublisher(messagePublisher, ehrCompleteTopicArn);
-//    }
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForSmallEhr() throws Exception {
-
         smallEhrMessageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
-//    @Test
-//    public void shouldStoreSmallEhrMessageInEhrRepo() throws Exception {
-//        ParsedMessage parsedMessage = mock(ParsedMessage.class);
-//
-//        smallEhrMessageHandler.handleMessage(parsedMessage);
-//        verify(ehrRepoService).storeMessage(parsedMessage);
-//    }
 
     @Test
     public void shouldPublishSmallEhrMessageToEhrCompleteTopic() throws Exception {
         var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
-        String messageBody = "{\"conversationId\":\"conversationId\",\"messageId\":\"messageId\"}";
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(messageId);
         smallEhrMessageHandler.handleMessage(parsedMessage);
