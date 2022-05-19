@@ -19,11 +19,9 @@ class SmallEhrMessagePublisherTest {
 
     private SmallEhrMessagePublisher smallEhrMessagePublisher;
     private UUID conversationId;
-    private UUID messageId;
 
     SmallEhrMessagePublisherTest() {
         conversationId = UUID.randomUUID();
-        messageId = UUID.randomUUID();
     }
 
     @BeforeEach
