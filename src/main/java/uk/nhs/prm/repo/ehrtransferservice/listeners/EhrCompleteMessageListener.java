@@ -22,7 +22,7 @@ public class EhrCompleteMessageListener implements MessageListener {
             tracer.setMDCContext(message);
             log.info("RECEIVED: Message from ehr-complete topic");
             String payload = ((TextMessage) message).getText();
-            var parsedMessage = parser.parse(payload);
+            parser.parse(payload);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from ehr-complete topic");
         } catch (Exception e) {
