@@ -108,19 +108,4 @@ public class EhrExtractMessageHandlerTest {
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
     }
 
-
-//    @Test
-//    public void shouldPutSmallMessageOnUnhandledQueueWhenEhrRepoCallThrows() throws Exception {
-//        String message = "test";
-////        when(parsedMessage.isLargeMessage()).thenReturn(false);
-////        when(parsedMessage.getRawMessage()).thenReturn(message);
-//
-//        var expectedError = new Exception();
-//        doThrow(expectedError).when(ehrRepoService).storeMessage(parsedMessage);
-//
-//        smallEhrMessageHandler.handleMessage(parsedMessage);
-//        verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, message);
-//    }
-
-
 }
