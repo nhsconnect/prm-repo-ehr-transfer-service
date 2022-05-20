@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +47,9 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
 
+    @Value("${aws.smallEhrObservabilityQueueName}")
+    private String smallEhrObservabilityQueueName;
+
     @Value("${aws.largeEhrQueueName}")
     private String largeEhrQueueName;
 
@@ -63,6 +65,7 @@ public class ParserBrokerIntegrationTest {
     public void tearDown() {
         purgeQueue(attachmentsQueueName);
         purgeQueue(smallEhrQueueName);
+        purgeQueue(smallEhrObservabilityQueueName);
         purgeQueue(largeEhrQueueName);
         purgeQueue(parsingDlqQueueName);
         purgeQueue(ehrCompleteQueueName);
@@ -90,9 +93,8 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    @Disabled("Use observability queue instead?")
     @Test
-    void shouldPublishSmallMessageToSmallTopic() throws IOException, InterruptedException {
+    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, InterruptedException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
         var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
 
@@ -103,10 +105,10 @@ public class ParserBrokerIntegrationTest {
         });
         sleep(5000);
 
-        var smallEhrQueueUrl = sqs.getQueueUrl(smallEhrQueueName).getQueueUrl();
+        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrQueueUrl);
+            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
             assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));

@@ -77,6 +77,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
 
+    @Value("${aws.smallEhrObservabilityQueueName}")
+    private String smallEhrObservabilityQueueName;
+
     @Value("${aws.largeEhrQueueName}")
     private String largeEhrQueueName;
 
@@ -241,6 +244,10 @@ public class LocalStackAwsConfig {
         var smallEhrQueue = amazonSQSAsync.createQueue(smallEhrQueueName);
         var smallEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
         createSnsTestReceiverSubscription(smallEhrTopic, getQueueArn(smallEhrQueue.getQueueUrl()));
+
+        var smallEhrObservabilityQueue = amazonSQSAsync.createQueue(smallEhrObservabilityQueueName);
+        var smallEhrObservabilityTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
+        createSnsTestReceiverSubscription(smallEhrObservabilityTopic, getQueueArn(smallEhrObservabilityQueue.getQueueUrl()));
 
         var largeEhrQueue = amazonSQSAsync.createQueue(largeEhrQueueName);
         var largeEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_ehr_topic").build());
