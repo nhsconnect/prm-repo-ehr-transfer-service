@@ -11,9 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.CopcMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrExtractMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
@@ -34,9 +31,6 @@ public class JmsConsumerTest {
     JmsProducer jmsProducer = mock(JmsProducer.class);
     MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
     Parser parser = mock(Parser.class);
-    EhrExtractMessageHandler ehrExtractMessageHandler = mock(EhrExtractMessageHandler.class);
-    CopcMessageHandler copcMessageHandler = mock(CopcMessageHandler.class);
-    EhrRequestMessageHandler ehrRequestMessageHandler = mock(EhrRequestMessageHandler.class);
     ParsingDlqPublisher parsingDlqPublisher = mock(ParsingDlqPublisher.class);
     Broker broker = mock(Broker.class);
     Tracer tracer = mock(Tracer.class);
@@ -104,56 +98,6 @@ public class JmsConsumerTest {
 
         jmsConsumer.onMessage(message);
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
-    }
-
-    @Test
-    void shouldHandleRCMR_IN030000UK06MessageInEhrExtractMessageHandler() throws IOException, JMSException {
-        handlerList.add(ehrExtractMessageHandler);
-
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.reset();
-
-        when(ehrExtractMessageHandler.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-
-        jmsConsumer.onMessage(message);
-        verify(ehrExtractMessageHandler).handleMessage(parsedMessage);
-    }
-
-
-    @Test
-    void shouldHandleCOPC_IN000001UK01MessageInCopcMessageHandler() throws IOException, JMSException {
-        handlerList.add(copcMessageHandler);
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.reset();
-
-        when(copcMessageHandler.getInteractionId()).thenReturn("COPC_IN000001UK01");
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getInteractionId()).thenReturn("COPC_IN000001UK01");
-        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-
-        jmsConsumer.onMessage(message);
-        verify(copcMessageHandler).handleMessage(parsedMessage);
-    }
-
-    @Test
-    void shouldHandleRCMR_IN010000UK05MessageInEhrRequestMessageHandler() throws IOException, JMSException {
-        handlerList.add(ehrRequestMessageHandler);
-        ActiveMQBytesMessage message = new ActiveMQBytesMessage();
-        message.reset();
-
-        when(ehrRequestMessageHandler.getInteractionId()).thenReturn("RCMR_IN010000UK05");
-        ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN010000UK05");
-        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-
-        jmsConsumer.onMessage(message);
-        verify(ehrRequestMessageHandler).handleMessage(parsedMessage);
     }
 
 

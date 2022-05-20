@@ -69,15 +69,15 @@ public class JmsConsumer {
             }
 
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
-            var matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
-
-            if (matchingHandler == null) {
-                log.warn("Sending message with an unknown or missing interactionId \"" + parsedMessage.getInteractionId() + "\" to unhandled queue");
-                jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
-                return;
-            }
-
-            matchingHandler.handleMessage(parsedMessage);
+//            var matchingHandler = this.getHandlers().get(parsedMessage.getInteractionId());
+//
+//            if (matchingHandler == null) {
+//                log.warn("Sending message with an unknown or missing interactionId \"" + parsedMessage.getInteractionId() + "\" to unhandled queue");
+//                jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
+//                return;
+//            }
+//
+//            matchingHandler.handleMessage(parsedMessage);
         } catch (Exception e) {
             log.error("Failed to process message - sending to dlq", e);
             parsingDlqPublisher.sendMessage(rawMessage);
