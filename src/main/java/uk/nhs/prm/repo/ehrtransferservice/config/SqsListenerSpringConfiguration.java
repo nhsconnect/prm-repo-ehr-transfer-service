@@ -19,6 +19,7 @@ import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
 
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 import javax.jms.Session;
 
 @Configuration
@@ -38,6 +39,11 @@ public class SqsListenerSpringConfiguration {
 
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
+
+/*
+    @Value("${aws.ehrCompleteQueueName}")
+    private String ehrCompleteQueueName;
+*/
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -61,6 +67,12 @@ public class SqsListenerSpringConfiguration {
         log.info("ehr small queue name : {}", smallEhrQueueName);
         var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
         ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer, parser, smallEhrMessageHandler));
+
+/*
+      log.info("ehr complete queue name : {}", ehrCompleteQueueName);
+      var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
+      ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, parser));
+*/
 
         connection.start();
 

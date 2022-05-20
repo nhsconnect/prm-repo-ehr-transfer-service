@@ -81,3 +81,10 @@ resource "aws_sns_topic_subscription" "ehr_complete_topic" {
   topic_arn            = aws_sns_topic.ehr_complete.arn
   endpoint             = aws_sqs_queue.ehr_complete.arn
 }
+
+resource "aws_sns_topic_subscription" "ehr_complete_observability_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.ehr_complete.arn
+  endpoint             = aws_sqs_queue.ehr_complete_observability.arn
+}

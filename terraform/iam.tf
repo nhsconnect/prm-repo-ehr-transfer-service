@@ -104,7 +104,8 @@ data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
 
     resources = [
       aws_sqs_queue.repo_incoming.arn,
-      aws_sqs_queue.small_ehr.arn
+      aws_sqs_queue.small_ehr.arn,
+      aws_sqs_queue.ehr_complete.arn
     ]
   }
 }
@@ -315,6 +316,11 @@ resource "aws_sqs_queue_policy" "ehr_complete" {
   policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
 }
 
+resource "aws_sqs_queue_policy" "ehr_complete_observability" {
+  queue_url = aws_sqs_queue.ehr_complete_observability.id
+  policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
+}
+
 data "aws_iam_policy_document" "attachments_policy_doc" {
   statement {
 
@@ -458,7 +464,8 @@ data "aws_iam_policy_document" "ehr_complete_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.ehr_complete.arn
+      aws_sqs_queue.ehr_complete.arn,
+      aws_sqs_queue.ehr_complete_observability.arn
     ]
 
     condition {

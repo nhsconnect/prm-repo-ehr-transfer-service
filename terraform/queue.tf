@@ -13,6 +13,7 @@ locals {
   positive_acks_observability_queue_name = "${var.environment}-${var.component_name}-positive-acknowledgements-observability"
   parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
   ehr_complete_queue_name = "${var.environment}-${var.component_name}-ehr-complete"
+  ehr_complete_observability_queue_name = "${var.environment}-${var.component_name}-ehr-complete-observability"
   max_retention_period = 1209600
   thirty_minute_retention_period = 1800
 }
@@ -199,6 +200,20 @@ resource "aws_sqs_queue" "ehr_complete" {
 
   tags = {
     Name        = local.ehr_complete_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "ehr_complete_observability" {
+  name                       = local.ehr_complete_observability_queue_name
+  message_retention_seconds  = local.thirty_minute_retention_period
+  kms_master_key_id          = aws_kms_key.ehr_complete.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.ehr_complete_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
