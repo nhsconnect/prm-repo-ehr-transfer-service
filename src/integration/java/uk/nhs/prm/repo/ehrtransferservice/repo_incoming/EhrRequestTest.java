@@ -72,7 +72,7 @@ class EhrRequestTest {
         wireMock.stop();
     }
 
-    @Disabled("To be fixed as it fails")
+
     @Test
     void shouldProcessAndStoreInitialInformationInDbAndSendEhrRequest()  {
         var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
