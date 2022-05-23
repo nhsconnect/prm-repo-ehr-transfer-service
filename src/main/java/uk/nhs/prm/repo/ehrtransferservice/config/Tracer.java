@@ -80,7 +80,7 @@ public class Tracer {
 
     private void handleNemsMessageId(Message message) throws JMSException {
         if (message.getStringProperty(NEMS_MESSAGE_ID) == null) {
-            log.error("The message has no NEMS message ID attribute");
+            log.warn("The message has no NEMS message ID attribute");
         } else {
             setNemsMessageId(message.getStringProperty(NEMS_MESSAGE_ID));
         }
