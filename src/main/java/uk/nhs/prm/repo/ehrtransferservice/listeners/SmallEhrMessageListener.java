@@ -23,12 +23,12 @@ public class SmallEhrMessageListener implements MessageListener {
     public void onMessage(Message message) {
         try {
             tracer.setMDCContext(message);
-            log.info("RECEIVED: Message from small-ehr");
+            log.info("RECEIVED: Message from small-ehr queue");
             String payload = ((TextMessage) message).getText();
             var parsedMessage = parser.parse(payload);
             smallEhrMessageHandler.handleMessage(parsedMessage);
             message.acknowledge();
-            log.info("ACKNOWLEDGED: Message from small-ehr");
+            log.info("ACKNOWLEDGED: Message from small-ehr queue");
         } catch (Exception e) {
             log.error("Error while processing message", e);
         }
