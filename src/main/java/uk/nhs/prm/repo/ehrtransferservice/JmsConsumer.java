@@ -61,6 +61,7 @@ public class JmsConsumer {
             var parsedMessage = parser.parse(sanitizedMessage);
             tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID(), parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
+            log.info("Trace ID: "+message.getStringProperty("traceId")+" // "+message.getJMSCorrelationID()+" // Conversation ID: "+message.getStringProperty("conversationId")+" // "+parsedMessage.getConversationId().toString());
 
             if (parsedMessage.getInteractionId() == null) {
                 log.warn("Sending message without Interaction ID to unhandled queue");
