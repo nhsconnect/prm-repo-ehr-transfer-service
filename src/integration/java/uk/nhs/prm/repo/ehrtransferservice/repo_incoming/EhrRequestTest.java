@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,6 +94,9 @@ class EhrRequestTest {
             assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
         });
+
+        verify(postRequestedFor(urlMatching("/health-record-requests/" + NHS_NUMBER)));
+
     }
 
     private String getRepoIncomingData() {
