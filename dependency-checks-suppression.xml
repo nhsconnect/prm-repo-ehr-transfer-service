@@ -1,27 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-    <suppress until="2022-02-01Z">
+    <suppress>
         <notes><![CDATA[
-   log4j-api jar file false positives while multiple log4j implementation issues being uncovered
-   file name: log4j-api-2.17.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j\-api@.*$</packageUrl>
-        <cpe>cpe:/a:apache:log4j</cpe>
+     Suppress this CVE that is a wontfix from spring because it is about how spring provides
+     a java deserialisation and invocation endpoint implementation that if you expose
+     unauthenticated would be risky.  They argue that's a you (app) problem.
+     ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
     </suppress>
-    <suppress until="2022-02-01Z">
+    <suppress>
         <notes><![CDATA[
-   log4j-to-slf4j jar file false positives while multiple log4j implementation issues being uncovered
-   file name: log4j-to-slf4j-2.17.0.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j\-to\-slf4j@.*$</packageUrl>
-        <cpe>cpe:/a:apache:log4j</cpe>
+     Spring-framework libraries always have groupId org.springframework with no further extension, so suppress the
+     spring_framework package identification for old and third party libs that merely include spring jars
+     ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-.*$</packageUrl>
+        <cpe>cpe:/a:springsource:spring_framework</cpe>
+        <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
+        <cpe>cpe:/a:vmware:spring_framework</cpe>
     </suppress>
-   <suppress>
-      <notes><![CDATA[
-      false positive: https://github.com/jeremylong/DependencyCheck/issues/3865
-      file name: netty-tcnative-classes-2.0.46.Final.jar
-      ]]></notes>
-      <packageUrl regex="true">^pkg:maven/io\.netty/netty\-tcnative\-classes@.*$</packageUrl>
-      <cpe>cpe:/a:netty:netty</cpe>
-   </suppress>
 </suppressions>
