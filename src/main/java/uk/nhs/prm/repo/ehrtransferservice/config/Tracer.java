@@ -22,7 +22,7 @@ public class Tracer {
         clearMDCContext();
         handleTraceId(message);
         handleNemsMessageId(message);
-        handleConversationId(message.getStringProperty(CONVERSATION_ID));
+        handleConversationId(message);
     }
 
     private void handleTraceId(Message message) throws JMSException {
@@ -34,15 +34,15 @@ public class Tracer {
         }
     }
 
-    public void setMDCContextFromMhsInbound(String conversationId) {
+    public void setMDCContextFromMhsInbound(String traceId, String conversationId) {
         clearMDCContext();
-        handleTraceIdFromMhsInbound(conversationId);
-        handleConversationId(conversationId);
+        handleTraceIdFromMhsInbound(traceId);
+        setConversationId(conversationId);
     }
 
     private void handleTraceIdFromMhsInbound(String traceId) {
         if (traceId == null || traceId.isBlank()) {
-            log.error("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
+            log.info("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
             setTraceId(createRandomUUID());
         } else {
             setTraceId(traceId);
@@ -61,11 +61,12 @@ public class Tracer {
         return UUID.randomUUID().toString();
     }
 
-    private void handleConversationId(String conversationId) {
-        if (conversationId == null) {
-            log.error("The message has no conversation ID attribute.");
+    private void handleConversationId(Message message) throws JMSException {
+        if (message.getStringProperty(CONVERSATION_ID) == null) {
+            log.warn("The message has no conversation ID attribute, we'll create and assign one.");
+            setConversationId(createRandomUUID());
         } else {
-            setConversationId(conversationId);
+            setConversationId(message.getStringProperty(CONVERSATION_ID));
         }
     }
 
