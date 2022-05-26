@@ -27,7 +27,7 @@ public class PresignedUrl {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
-            throw new RuntimeException("Unexpected response from S3");
+            throw new RuntimeException("Unexpected response from S3 with status code :"+ response.statusCode());
         }
     }
 }
