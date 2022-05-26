@@ -90,4 +90,4 @@ pipelines:
                     command: /bin/bash
                     arguments:
                       - -c
-                      - ./tasks build_docker
+                      - ./tasks assemble_docker

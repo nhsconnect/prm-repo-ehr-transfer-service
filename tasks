@@ -144,9 +144,9 @@ function ensure_prev_build_images_are_stopped {
 
 command="$1"
 case "${command}" in
-  build_docker)
+  assemble_docker)
       configure_local_envs
-      dojo -c Dojofile-itest "./tasks _build"
+      dojo "./tasks _assemble"
       configure_docker_repository_uri
       build_docker_image
       echo "Pushing the Docker image... $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG"
@@ -162,6 +162,13 @@ case "${command}" in
       ;;
   build)
       dojo "./tasks _build"
+      ;;
+  _assemble)
+      rm -rf build/
+      gradle assemble
+      ;;
+  assemble)
+      dojo "./tasks _assemble"
       ;;
   _test_unit)
       gradle test
