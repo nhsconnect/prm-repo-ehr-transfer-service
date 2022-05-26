@@ -23,6 +23,7 @@ locals {
     { name = "REPO_INCOMING_QUEUE_NAME", value = aws_sqs_queue.repo_incoming.name },
     { name = "SMALL_EHR_QUEUE_NAME", value = aws_sqs_queue.small_ehr.name },
     { name = "SMALL_EHR_OBSERVABILITY_QUEUE_NAME", value = aws_sqs_queue.small_ehr_observability.name },
+    { name = "LARGE_EHR_QUEUE_NAME", value = aws_sqs_queue.large_ehr.name },
     { name = "ATTACHMENTS_QUEUE_NAME", value = aws_sqs_queue.attachments.name },
     { name = "EHR_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.ehr_complete.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
