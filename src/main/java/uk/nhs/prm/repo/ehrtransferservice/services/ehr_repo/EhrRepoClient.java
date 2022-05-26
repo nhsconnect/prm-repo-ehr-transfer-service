@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored.StoreMessageRequestBody;
@@ -21,10 +22,12 @@ import java.util.UUID;
 public class EhrRepoClient {
     private final URL ehrRepoUrl;
     private final String ehrRepoAuthKey;
+    private final Tracer tracer;
 
-    public EhrRepoClient(@Value("${ehrRepoUrl}") String ehrRepoUrl, @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey) throws MalformedURLException {
+    public EhrRepoClient(@Value("${ehrRepoUrl}") String ehrRepoUrl, @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey, Tracer tracer) throws MalformedURLException {
         this.ehrRepoUrl = new URL(ehrRepoUrl);
         this.ehrRepoAuthKey = ehrRepoAuthKey;
+        this.tracer = tracer;
     }
 
     public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws IOException, URISyntaxException, InterruptedException {
@@ -33,6 +36,7 @@ public class EhrRepoClient {
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
                 .header("Authorization", ehrRepoAuthKey)
                 .header("Content-Type", "application/json")
+                .header("traceId", tracer.getTraceId())
                 .GET().build();
 
         HttpResponse<String> response = HttpClient.newBuilder()
@@ -62,6 +66,7 @@ public class EhrRepoClient {
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
                 .header("Authorization", ehrRepoAuthKey)
                 .header("Content-Type", "application/json")
+                .header("traceId", tracer.getTraceId())
                 .POST(jsonPayload).build();
 
 
