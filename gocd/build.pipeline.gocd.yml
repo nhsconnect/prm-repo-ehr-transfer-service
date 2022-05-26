@@ -76,6 +76,11 @@ pipelines:
             build:
               resources:
                 - docker
+              artifacts:
+                - build:
+                    source: build
+              tabs:
+                TestReport: build/reports/tests/integration/index.html
               tasks:
                 - fetch:
                     stage: build
