@@ -5,7 +5,6 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +44,9 @@ class EhrRequestTest {
     @Value("${aws.transferTrackerDbTableName}")
     private String transferTrackerDbTableName;
 
+    @Value("${gp2gpMessengerAuthKey}")
+    private String gp2gpMessengerAuthKey;
+
     private static final String NHS_NUMBER = "2222222222";
     private static final String CONVERSATION_ID = "000-111-222-333-444";
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
@@ -69,14 +71,18 @@ class EhrRequestTest {
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
         var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
         sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
+
+        wireMock.resetAll();
         wireMock.stop();
     }
 
-    @Disabled("To be fixed as it fails")
     @Test
-    void shouldProcessAndStoreInitialInformationInDbAndSendEhrRequest()  {
+    void shouldSendEhrRequestAndUpdateDbWhenMessageOnRepoIncomingQueue()  {
         var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
-        wireMock.stubFor(post(anyUrl()).willReturn(aResponse().withStatus(204)));
+        stubFor(post(urlMatching("/health-record-requests/" + NHS_NUMBER))
+                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .willReturn(aResponse().withStatus(204)));
 
         sqs.sendMessage(queueUrl, getRepoIncomingData());
 
@@ -93,10 +99,8 @@ class EhrRequestTest {
             assertThat(dbClientItem.get("nems_message_id").s()).isEqualTo(NEMS_MESSAGE_ID);
             assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
+            assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_REQUEST_SENT");
         });
-
-        verify(postRequestedFor(urlMatching("/health-record-requests/" + NHS_NUMBER)));
-
     }
 
     private String getRepoIncomingData() {
