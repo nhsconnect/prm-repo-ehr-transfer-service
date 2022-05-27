@@ -9,20 +9,23 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 public class Gp2gpMessengerServiceTest {
     @Mock
     Gp2gpMessengerClient gp2gpMessengerClient;
+    @Mock
+    ParsedMessage parsedMessage;
     @InjectMocks
     Gp2gpMessengerService gp2gpMessengerService;
 
@@ -49,6 +52,18 @@ public class Gp2gpMessengerServiceTest {
         doThrow(new HttpException()).when(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest(any(), any());
 
         Assertions.assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrRequest(incomingEvent));
+    }
+
+    @Test
+    void shouldCallGp2GpMessengerForContinueRequest() {
+        UUID messageId = UUID.randomUUID();
+        UUID conversationId = UUID.randomUUID();
+        when(parsedMessage.getMessageId()).thenReturn(messageId);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        when(parsedMessage.getOdsCode()).thenReturn("ods-code");
+        gp2gpMessengerService.sendContinueMessage(parsedMessage);
+        verify(gp2gpMessengerClient).sendContinueMessage(conversationId, messageId, "ods-code");
+
     }
 
     private RepoIncomingEvent createIncomingEvent() {

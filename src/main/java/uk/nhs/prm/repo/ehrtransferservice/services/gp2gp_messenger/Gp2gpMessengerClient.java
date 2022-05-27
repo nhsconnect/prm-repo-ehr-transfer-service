@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 
 @Component
 @Slf4j
@@ -70,5 +71,7 @@ public class Gp2gpMessengerClient {
         }
     }
 
+    public void sendContinueMessage(UUID conversationId, UUID messageId, String odsCode) {
+    }
 }
 

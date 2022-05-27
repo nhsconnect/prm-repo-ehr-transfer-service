@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 @Service
@@ -26,5 +27,14 @@ public class Gp2gpMessengerService {
             log.error("Caught error during ehr-request");
             throw new Exception("Error while sending ehr-request", e);
         }
+    }
+
+    public void sendContinueMessage(ParsedMessage parsedMessage) {
+        var conversationId = parsedMessage.getConversationId();
+        var messageId = parsedMessage.getMessageId();
+        var odsCode = parsedMessage.getOdsCode();
+        gp2gpMessengerClient.sendContinueMessage(conversationId, messageId, odsCode);
+
+
     }
 }
