@@ -105,7 +105,8 @@ data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
     resources = [
       aws_sqs_queue.repo_incoming.arn,
       aws_sqs_queue.small_ehr.arn,
-      aws_sqs_queue.ehr_complete.arn
+      aws_sqs_queue.ehr_complete.arn,
+      aws_sqs_queue.large_ehr.arn
     ]
   }
 }

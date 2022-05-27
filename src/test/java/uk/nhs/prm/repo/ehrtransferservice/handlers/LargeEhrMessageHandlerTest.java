@@ -30,9 +30,6 @@ class LargeEhrMessageHandlerTest {
     @InjectMocks
     LargeEhrMessageHandler largeEhrMessageHandler;
 
-
-//    private final static String ehrCompleteTopicArn = "ehrCompleteTopicArn";
-
     private UUID conversationId;
     private UUID messageId;
 
@@ -40,7 +37,6 @@ class LargeEhrMessageHandlerTest {
         conversationId = UUID.randomUUID();
         messageId = UUID.randomUUID();
     }
-
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
