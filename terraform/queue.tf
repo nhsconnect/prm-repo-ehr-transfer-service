@@ -14,6 +14,8 @@ locals {
   parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
   ehr_complete_queue_name = "${var.environment}-${var.component_name}-ehr-complete"
   ehr_complete_observability_queue_name = "${var.environment}-${var.component_name}-ehr-complete-observability"
+  transfer_complete_queue_name = "${var.environment}-${var.component_name}-transfer-complete"
+  transfer_complete_observability_queue_name = "${var.environment}-${var.component_name}-transfer-complete-observability"
   max_retention_period = 1209600
   thirty_minute_retention_period = 1800
 }
@@ -214,6 +216,34 @@ resource "aws_sqs_queue" "ehr_complete_observability" {
 
   tags = {
     Name        = local.ehr_complete_observability_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "transfer_complete" {
+  name                       = local.transfer_complete_queue_name
+  message_retention_seconds  = local.max_retention_period
+  kms_master_key_id          = aws_kms_key.transfer_complete.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.transfer_complete_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "transfer_complete_observability" {
+  name                       = local.transfer_complete_observability_queue_name
+  message_retention_seconds  = local.thirty_minute_retention_period
+  kms_master_key_id          = aws_kms_key.transfer_complete.id
+  receive_wait_time_seconds  = 20
+  visibility_timeout_seconds = 240
+
+  tags = {
+    Name        = local.transfer_complete_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

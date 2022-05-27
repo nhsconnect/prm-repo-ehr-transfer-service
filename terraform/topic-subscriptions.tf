@@ -88,3 +88,17 @@ resource "aws_sns_topic_subscription" "ehr_complete_observability_topic" {
   topic_arn            = aws_sns_topic.ehr_complete.arn
   endpoint             = aws_sqs_queue.ehr_complete_observability.arn
 }
+
+resource "aws_sns_topic_subscription" "transfer_complete_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.transfer_complete.arn
+  endpoint             = aws_sqs_queue.transfer_complete.arn
+}
+
+resource "aws_sns_topic_subscription" "transfer_complete_observability_topic" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.transfer_complete.arn
+  endpoint             = aws_sqs_queue.transfer_complete_observability.arn
+}

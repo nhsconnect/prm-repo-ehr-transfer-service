@@ -106,6 +106,7 @@ data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
       aws_sqs_queue.repo_incoming.arn,
       aws_sqs_queue.small_ehr.arn,
       aws_sqs_queue.ehr_complete.arn,
+      aws_sqs_queue.transfer_complete.arn,
       aws_sqs_queue.large_ehr.arn
     ]
   }
@@ -256,7 +257,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.large_ehr.arn,
       aws_sns_topic.small_ehr.arn,
       aws_sns_topic.negative_acks.arn,
-      aws_sns_topic.ehr_complete.arn
+      aws_sns_topic.ehr_complete.arn,
+      aws_sns_topic.transfer_complete.arn
     ]
   }
 }
@@ -320,6 +322,16 @@ resource "aws_sqs_queue_policy" "ehr_complete" {
 resource "aws_sqs_queue_policy" "ehr_complete_observability" {
   queue_url = aws_sqs_queue.ehr_complete_observability.id
   policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "transfer_complete" {
+  queue_url = aws_sqs_queue.transfer_complete.id
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "transfer_complete_observability" {
+  queue_url = aws_sqs_queue.transfer_complete_observability.id
+  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
 }
 
 data "aws_iam_policy_document" "attachments_policy_doc" {
@@ -472,6 +484,32 @@ data "aws_iam_policy_document" "ehr_complete_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.ehr_complete.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "transfer_complete_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.transfer_complete.arn,
+      aws_sqs_queue.transfer_complete_observability.arn
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.transfer_complete.arn]
       variable = "aws:SourceArn"
     }
   }
