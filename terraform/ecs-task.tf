@@ -26,6 +26,7 @@ locals {
     { name = "LARGE_EHR_QUEUE_NAME", value = aws_sqs_queue.large_ehr.name },
     { name = "ATTACHMENTS_QUEUE_NAME", value = aws_sqs_queue.attachments.name },
     { name = "EHR_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.ehr_complete.name },
+    { name = "TRANSFER_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.transfer_complete.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
@@ -37,7 +38,8 @@ locals {
     { name = "PARSING_DLQ_TOPIC_ARN", value = aws_sns_topic.parsing_dlq.arn },
     { name = "POSITIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.positive_acks.arn },
     { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn },
-    { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn }
+    { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn },
+    { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },

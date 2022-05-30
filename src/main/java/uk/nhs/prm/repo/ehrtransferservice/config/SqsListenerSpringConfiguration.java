@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -44,6 +45,9 @@ public class SqsListenerSpringConfiguration {
 
     @Value("${aws.largeEhrQueueName}")
     private String largeEhrQueueName;
+
+    @Value("${aws.ehrCompleteQueueName}")
+    private String ehrCompleteQueueName;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -89,6 +93,19 @@ public class SqsListenerSpringConfiguration {
         log.info("ehr small queue name : {}", largeEhrQueueName);
         var ehrSmallConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
         ehrSmallConsumer.setMessageListener(new LargeEhrMessageListener(tracer, parser, largeEhrMessageHandler));
+
+        connection.start();
+
+        return session;
+    }
+
+    @Bean
+    public Session createEhrCompleteQueueListener(SQSConnection connection) throws JMSException {
+        Session session = getSession(connection);
+
+        log.info("ehr complete queue name : {}", ehrCompleteQueueName);
+        var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
+        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer));
 
         connection.start();
 
