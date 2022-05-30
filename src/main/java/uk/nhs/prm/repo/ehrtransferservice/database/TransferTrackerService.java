@@ -39,6 +39,15 @@ public class TransferTrackerService {
         }
     }
 
+    public TransferTrackerDbEntry getEhrTransferData(String conversationId) {
+        try {
+            return transferTrackerDb.getByConversationId(conversationId);
+        } catch (Exception e) {
+            log.error("Failed to retrieve EHR transfer data for conversation ID: " + conversationId);
+            throw new TransferTrackerDbException("Failed to retrieve EHR transfer data: ", e);
+        }
+    }
+
     private String getTimeNow() {
         return ZonedDateTime.now(ZoneOffset.ofHours(0)).toString();
     }

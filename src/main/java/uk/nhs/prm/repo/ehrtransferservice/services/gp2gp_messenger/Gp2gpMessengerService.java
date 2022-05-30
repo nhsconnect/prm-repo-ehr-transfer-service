@@ -8,6 +8,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhr
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,6 @@ public class Gp2gpMessengerService {
         gp2gpMessengerClient.sendContinueMessage(conversationId, messageId, odsCode);
     }
 
-    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage) {
+    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) {
     }
 }

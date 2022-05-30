@@ -73,6 +73,4 @@ public class TransferTrackerDb {
         var state = itemResponse.item().get("state").s();
         return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, state, dateTime);
     }
-
-
 }

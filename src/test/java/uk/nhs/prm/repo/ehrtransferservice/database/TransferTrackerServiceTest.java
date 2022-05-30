@@ -65,6 +65,14 @@ class TransferTrackerServiceTest {
         assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.updateStateOfEhrTransfer("conversation-id","ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
+    @Test
+    void shouldGetDbInformationForSpecifiedConversationId() {
+        var conversationId = "conversation-id";
+        transferTrackerService.getEhrTransferData(conversationId);
+
+        verify(transferTrackerDb).getByConversationId(conversationId);
+    }
+
     private RepoIncomingEvent createIncomingEvent() {
         return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "conversation-id");
     }
