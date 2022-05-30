@@ -16,6 +16,7 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
@@ -34,7 +35,7 @@ public class SqsListenerSpringConfiguration {
     private final RepoIncomingEventParser repoIncomingEventParser;
     private final SmallEhrMessageHandler smallEhrMessageHandler;
     private final LargeEhrMessageHandler largeEhrMessageHandler;
-
+    private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
 
     @Value("${aws.repoIncomingQueueName}")
@@ -105,7 +106,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr complete queue name : {}", ehrCompleteQueueName);
         var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
-        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer));
+        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, ehrCompleteParser));
 
         connection.start();
 

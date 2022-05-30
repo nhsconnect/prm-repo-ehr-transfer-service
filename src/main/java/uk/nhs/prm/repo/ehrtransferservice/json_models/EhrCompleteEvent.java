@@ -1,16 +1,15 @@
 package uk.nhs.prm.repo.ehrtransferservice.json_models;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class EhrCompleteEvent {
-    public UUID conversationId;
-    public UUID messageId;
-
-    public EhrCompleteEvent(UUID conversationId, UUID messageId) {
-        this.conversationId = conversationId;
-        this.messageId = messageId;
-    }
+    private UUID conversationId;
+    private UUID messageId;
 }
