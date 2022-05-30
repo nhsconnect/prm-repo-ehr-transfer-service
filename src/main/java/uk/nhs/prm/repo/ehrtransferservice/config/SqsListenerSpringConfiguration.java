@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
@@ -35,6 +36,7 @@ public class SqsListenerSpringConfiguration {
     private final RepoIncomingEventParser repoIncomingEventParser;
     private final SmallEhrMessageHandler smallEhrMessageHandler;
     private final LargeEhrMessageHandler largeEhrMessageHandler;
+    private final EhrCompleteHandler ehrCompleteHandler;
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
 
@@ -106,7 +108,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr complete queue name : {}", ehrCompleteQueueName);
         var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
-        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, ehrCompleteParser));
+        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, ehrCompleteParser, ehrCompleteHandler));
 
         connection.start();
 
