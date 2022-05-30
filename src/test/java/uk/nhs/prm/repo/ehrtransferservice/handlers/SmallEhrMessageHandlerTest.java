@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.MessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
 import java.util.UUID;
@@ -31,14 +30,13 @@ class SmallEhrMessageHandlerTest {
     @InjectMocks
     SmallEhrMessageHandler smallEhrMessageHandler;
 
-    private UUID conversationId;
-    private UUID messageId;
+    private final UUID conversationId;
+    private final UUID messageId;
 
     public SmallEhrMessageHandlerTest() {
         conversationId = UUID.randomUUID();
         messageId = UUID.randomUUID();
     }
-
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForSmallEhr() throws Exception {
