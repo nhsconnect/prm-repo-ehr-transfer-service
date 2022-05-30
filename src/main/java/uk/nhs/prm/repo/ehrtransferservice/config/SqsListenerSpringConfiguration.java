@@ -92,8 +92,8 @@ public class SqsListenerSpringConfiguration {
         Session session = getSession(connection);
 
         log.info("ehr small queue name : {}", largeEhrQueueName);
-        var ehrSmallConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
-        ehrSmallConsumer.setMessageListener(new LargeEhrMessageListener(tracer, parser, largeEhrMessageHandler));
+        var largeEhrConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
+        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer));
 
         connection.start();
 

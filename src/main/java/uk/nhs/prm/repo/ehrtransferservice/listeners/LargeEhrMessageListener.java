@@ -15,8 +15,6 @@ import javax.jms.TextMessage;
 @RequiredArgsConstructor
 public class LargeEhrMessageListener implements MessageListener {
     private final Tracer tracer;
-    private final LargeEhrMessageHandler largeEhrMessageHandler;
-
 
     @Override
     public void onMessage(Message message) {

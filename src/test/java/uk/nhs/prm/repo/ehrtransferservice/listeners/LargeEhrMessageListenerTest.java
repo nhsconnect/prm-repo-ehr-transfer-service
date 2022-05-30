@@ -21,23 +21,14 @@ class LargeEhrMessageListenerTest {
     @Mock
     Tracer tracer;
 
-    @Mock
-    Parser parser;
-
     @InjectMocks
     LargeEhrMessageListener largeEhrMessageListener;
-
-    public LargeEhrMessageListenerTest() {
-        parser = new Parser();
-    }
 
     @Test
     void shouldParseLargeEhrMessage() throws JMSException, IOException {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
-
         largeEhrMessageListener.onMessage(message);
-        verify(parser).parse(payload);
         verify(tracer).setMDCContext(message);
     }
 }
