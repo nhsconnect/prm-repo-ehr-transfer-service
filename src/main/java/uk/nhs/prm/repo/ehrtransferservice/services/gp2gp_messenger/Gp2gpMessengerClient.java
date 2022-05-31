@@ -39,18 +39,28 @@ public class Gp2gpMessengerClient {
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
         String endpoint = "/health-record-requests/" + nhsNumber;
 
-        HttpRequest request = buildEhrRequest(jsonPayload, endpoint);
-        HttpResponse<String> response = makeEhrRequest(request);
+        HttpRequest request = buildRequest(jsonPayload, endpoint);
+        HttpResponse<String> response = makeRequest(request);
 
         if (response.statusCode() != 204) {
             throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting an EHR request: %d", response.statusCode()));
         }
     }
 
-    public void sendGp2gpMessengerPositiveAcknowledgement(String nhsNumber, Gp2gpMessengerPositiveAcknowledgementRequestBody gp2gpMessengerPositiveAcknowledgementRequestBody) {
+    public void sendGp2gpMessengerPositiveAcknowledgement(String nhsNumber, Gp2gpMessengerPositiveAcknowledgementRequestBody body) throws IOException, URISyntaxException, InterruptedException, HttpException {
+        String jsonPayloadString = new Gson().toJson(body);
+        HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
+        String endpoint = "/health-record-requests/" + nhsNumber + "/acknowledgement";
+
+        HttpRequest request = buildRequest(jsonPayload, endpoint);
+        HttpResponse<String> response = makeRequest(request);
+
+        if (response.statusCode() != 204) {
+            throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting a positive acknowledgement request: %d", response.statusCode()));
+        }
     }
 
-    private HttpRequest buildEhrRequest(HttpRequest.BodyPublisher jsonPayload, String endpoint) throws URISyntaxException, MalformedURLException {
+    private HttpRequest buildRequest(HttpRequest.BodyPublisher jsonPayload, String endpoint) throws URISyntaxException, MalformedURLException {
         try {
             return HttpRequest.newBuilder()
                     .uri(new URL(gp2gpMessengerUrl, endpoint).toURI())
@@ -59,18 +69,18 @@ public class Gp2gpMessengerClient {
                     .header("traceId", tracer.getTraceId())
                     .POST(jsonPayload).build();
         } catch (URISyntaxException | MalformedURLException e) {
-            log.error("Error caught during building ehr-request");
+            log.error("Error caught during building request: "+endpoint);
             throw e;
         }
     }
 
-    private HttpResponse<String> makeEhrRequest(HttpRequest request) throws IOException, InterruptedException {
+    private HttpResponse<String> makeRequest(HttpRequest request) throws IOException, InterruptedException {
         try {
             return HttpClient.newBuilder()
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            log.error("Error caught during ehr-request");
+            log.error("Error caught during request: "+request.uri().getPath());
             throw e;
         }
     }

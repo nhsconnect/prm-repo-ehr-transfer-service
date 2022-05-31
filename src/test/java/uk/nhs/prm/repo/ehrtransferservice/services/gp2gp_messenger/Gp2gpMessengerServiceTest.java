@@ -103,12 +103,6 @@ public class Gp2gpMessengerServiceTest {
 
     }
 
-    @Test
-    @Disabled("WIP, will be enabled once sendGp2gpMessengerPositiveAcknowledgement method is complete")
-    void shouldThrowHTTPExceptionWhenWeGotAnyStatusCodeButNot204ForPositiveAcknowledgement() {
-        Assertions.assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData));
-    }
-
     private RepoIncomingEvent createIncomingEvent() {
         return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "randomUUID");
     }

@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -61,6 +63,50 @@ public class Gp2gpMessengerClientTest {
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
 
+    }
+
+    @Test
+    public void shouldCallGP2GpMessengerPositiveRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
+
+        Gp2gpMessengerPositiveAcknowledgementRequestBody requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody("", "", "", "");
+
+        String jsonPayloadString = new Gson().toJson(requestBody);
+
+        wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
+                .withHeader("Authorization", matching("secret"))
+                .withRequestBody(equalTo(jsonPayloadString))
+                .willReturn(aResponse()
+                        .withStatus(204)
+                        .withHeader("Content-Type", "application/json")));
+
+        tracer.setTraceId("some-trace-id");
+
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody);
+
+        verify(postRequestedFor(urlMatching("/health-record-requests/1234567890/acknowledgement"))
+                .withRequestBody(equalToJson((jsonPayloadString)))
+                .withHeader("Content-Type", matching("application/json"))
+                .withHeader("Authorization", matching("secret")));
+    }
+
+    @Test
+    void shouldThrowHTTPExceptionWhenWeGotAnyStatusCodeButNot204ForPositiveAcknowledgement() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        Gp2gpMessengerPositiveAcknowledgementRequestBody requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody("", "", "", "");
+
+        String jsonPayloadString = new Gson().toJson(requestBody);
+
+        wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
+                .withHeader("Authorization", matching("secret"))
+                .withRequestBody(equalTo(jsonPayloadString))
+                .willReturn(aResponse()
+                        .withStatus(500)
+                        .withHeader("Content-Type", "application/json")));
+
+        tracer.setTraceId("some-trace-id");
+
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        Assertions.assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody));
     }
 
 }
