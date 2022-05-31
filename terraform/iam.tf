@@ -594,33 +594,3 @@ data "aws_iam_policy_document" "repo_incoming_topic_access_to_queue" {
     }
   }
 }
-
-resource "aws_sqs_queue_policy" "repo_incoming_audit" {
-  queue_url = aws_sqs_queue.repo_incoming_audit_queue.id
-  policy    = data.aws_iam_policy_document.repo_incoming_audit_topic_access_to_queue.json
-}
-
-data "aws_iam_policy_document" "repo_incoming_audit_topic_access_to_queue" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      aws_sqs_queue.repo_incoming_audit_queue.arn
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [data.aws_ssm_parameter.repo_incoming_audit_sns_topic_arn.value]
-      variable = "aws:SourceArn"
-    }
-  }
-}

@@ -59,14 +59,3 @@ data "aws_ssm_parameter" "repo_incoming_topic_arn" {
 data "aws_ssm_parameter" "repo_incoming_kms_key" {
   name = "/repo/${var.environment}/output/suspension-service/repo-incoming-kms-key"
 }
-
-data "aws_ssm_parameter" "repo_incoming_audit_kms_key" {
-  name = "/repo/${var.environment}/output/suspension-service/repo-incoming-audit-kms-key"
-}
-
-data "aws_ssm_parameter" "repo_incoming_audit_sns_topic_arn" {
-  name = "/repo/${var.environment}/output/suspension-service/repo-incoming-audit-topic-arn"
-}
-
-
-
