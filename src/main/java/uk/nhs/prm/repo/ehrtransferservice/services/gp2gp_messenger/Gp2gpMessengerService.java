@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
@@ -38,6 +39,14 @@ public class Gp2gpMessengerService {
         gp2gpMessengerClient.sendContinueMessage(conversationId, messageId, odsCode);
     }
 
-    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) {
+    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) throws Exception {
+        Gp2gpMessengerPositiveAcknowledgementRequestBody requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(repositoryAsid, ehrTransferData.getSourceGP(), parsedMessage.getConversationId().toString(), parsedMessage.getMessageId().toString());
+        try {
+            gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(ehrTransferData.getNhsNumber(), requestBody);
+            log.info("Successfully send positive acknowledgement");
+        } catch (Exception e) {
+            log.error("Caught error sending positive acknowledgement request: "+e.getMessage());
+            throw new Exception("Error while sending positive acknowledgement request", e);
+        }
     }
 }

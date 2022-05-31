@@ -15,7 +15,7 @@ public class EhrCompleteHandler {
     private final Gp2gpMessengerService gp2gpMessengerService;
     private final TransferTrackerService transferTrackerService;
 
-    public void handleMessage(EhrCompleteEvent ehrCompleteEvent) {
+    public void handleMessage(EhrCompleteEvent ehrCompleteEvent) throws Exception {
         gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, getEhrData(ehrCompleteEvent));
         // update state in transfer to EHR_TRANSFER_TO_REPO_COMPLETE
         // Put EHR complete message on the transfer complete topic

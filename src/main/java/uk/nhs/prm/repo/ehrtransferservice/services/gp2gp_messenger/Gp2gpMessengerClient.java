@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,6 +45,9 @@ public class Gp2gpMessengerClient {
         if (response.statusCode() != 204) {
             throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting an EHR request: %d", response.statusCode()));
         }
+    }
+
+    public void sendGp2gpMessengerPositiveAcknowledgement(String nhsNumber, Gp2gpMessengerPositiveAcknowledgementRequestBody gp2gpMessengerPositiveAcknowledgementRequestBody) {
     }
 
     private HttpRequest buildEhrRequest(HttpRequest.BodyPublisher jsonPayload, String endpoint) throws URISyntaxException, MalformedURLException {

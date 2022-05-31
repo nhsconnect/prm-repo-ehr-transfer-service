@@ -73,6 +73,13 @@ class TransferTrackerServiceTest {
         verify(transferTrackerDb).getByConversationId(conversationId);
     }
 
+    @Test
+    void shouldThrowExceptionWhenFailsToGetDbInformationForSpecifiedConversationId() {
+        doThrow(RuntimeException.class).when(transferTrackerDb).getByConversationId(eq("conversation-id"));
+
+        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.getEhrTransferData("conversation-id"));
+    }
+
     private RepoIncomingEvent createIncomingEvent() {
         return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "conversation-id");
     }

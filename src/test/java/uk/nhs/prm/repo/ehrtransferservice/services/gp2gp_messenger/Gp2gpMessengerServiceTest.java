@@ -10,8 +10,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -28,6 +31,10 @@ public class Gp2gpMessengerServiceTest {
     Gp2gpMessengerClient gp2gpMessengerClient;
     @Mock
     ParsedMessage parsedMessage;
+    @Mock
+    EhrCompleteEvent ehrCompleteEvent;
+    @Mock
+    TransferTrackerDbEntry ehrTransferData;
     @InjectMocks
     Gp2gpMessengerService gp2gpMessengerService;
 
@@ -48,7 +55,7 @@ public class Gp2gpMessengerServiceTest {
     }
 
     @Test
-    void shouldThrowHttpExceptionWhenWeGotAnyStatusCodeButNot204() throws HttpException, URISyntaxException, IOException, InterruptedException {
+    void shouldThrowHttpExceptionWhenWeGotAnyStatusCodeButNot204ForEhrRequest() throws HttpException, URISyntaxException, IOException, InterruptedException {
         var incomingEvent = createIncomingEvent();
 
         doThrow(new HttpException()).when(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest(any(), any());
@@ -75,6 +82,31 @@ public class Gp2gpMessengerServiceTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getOdsCode()).thenReturn("ods-code");
         assertThrows(Exception.class, () -> gp2gpMessengerService.sendContinueMessage(parsedMessage));
+    }
+
+    @Test
+    void shouldCallGp2gpMessengerForPositiveAcknowledgement() throws Exception {
+        var conversationId = UUID.randomUUID();
+        var messageId = UUID.randomUUID();
+        var nhsNumber = "1234567890";
+
+        when(ehrCompleteEvent.getConversationId()).thenReturn(conversationId);
+        when(ehrCompleteEvent.getMessageId()).thenReturn(messageId);
+        when(ehrTransferData.getSourceGP()).thenReturn("some-ods-code");
+        when(ehrTransferData.getNhsNumber()).thenReturn(nhsNumber);
+
+        gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData);
+
+        var gp2gpMessengerPositiveAcknowledgementRequestBody =
+                new Gp2gpMessengerPositiveAcknowledgementRequestBody("some-asid", "some-ods-code", conversationId.toString(), messageId.toString());
+        verify(gp2gpMessengerClient).sendGp2gpMessengerPositiveAcknowledgement(nhsNumber, gp2gpMessengerPositiveAcknowledgementRequestBody);
+
+    }
+
+    @Test
+    @Disabled("WIP, will be enabled once sendGp2gpMessengerPositiveAcknowledgement method is complete")
+    void shouldThrowHTTPExceptionWhenWeGotAnyStatusCodeButNot204ForPositiveAcknowledgement() {
+        Assertions.assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData));
     }
 
     private RepoIncomingEvent createIncomingEvent() {

@@ -34,7 +34,7 @@ class EhrCompleteHandlerTest {
     EhrCompleteHandler ehrCompleteHandler;
 
     @Test
-    public void shouldCallGp2gpMessengerServiceToSendPositiveAcknowledgement() {
+    public void shouldCallGp2gpMessengerServiceToSendPositiveAcknowledgement() throws Exception {
         var conversationId = UUID.randomUUID();
         when(ehrCompleteEvent.getConversationId()).thenReturn(conversationId);
         when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);

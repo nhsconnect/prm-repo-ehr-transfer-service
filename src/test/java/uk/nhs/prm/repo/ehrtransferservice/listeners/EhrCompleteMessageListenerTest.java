@@ -49,7 +49,7 @@ class EhrCompleteMessageListenerTest {
     }
 
     @Test
-    void shouldHandleEachMessageFromQueueInEhrCompleteHandler() throws JMSException {
+    void shouldHandleEachMessageFromQueueInEhrCompleteHandler() throws Exception {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         var ehrCompleteEvent = new EhrCompleteEvent(UUID.randomUUID(), UUID.randomUUID());
