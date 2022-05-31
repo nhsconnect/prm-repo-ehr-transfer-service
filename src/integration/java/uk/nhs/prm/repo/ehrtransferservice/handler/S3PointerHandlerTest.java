@@ -42,7 +42,7 @@ public class S3PointerHandlerTest {
     @Autowired
     private S3PointerMessageHandler  s3PointerMessageHandler;
 
-    private final String LARGE_MESSAGE_S3_KEY= "/large-message-key";
+    private static final String LARGE_MESSAGE_S3_KEY= "/large-message-key";
 
     @BeforeEach
     void setUp() throws IOException {
