@@ -1,7 +1,8 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import com.amazonaws.services.s3.AmazonS3;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -15,17 +16,19 @@ import java.util.stream.Collectors;
 @Component
 public class S3PointerMessageHandler {
 
-    private AmazonS3 s3Client;
+
+    private S3Client s3Client;
     private final Parser parser;
 
-    public S3PointerMessageHandler(AmazonS3 s3Client, Parser parser) {
+    public S3PointerMessageHandler(S3Client s3Client, Parser parser) {
         this.s3Client = s3Client;
         this.parser = parser;
     }
 
     public ParsedMessage handle(S3PointerMessage message) {
         try {
-            var ehrMessageInputStream = s3Client.getObject(message.getS3BucketName(), message.getS3Key()).getObjectContent();
+            var ehrMessageInputStream =
+                    s3Client.getObject(GetObjectRequest.builder().bucket(message.getS3BucketName()).key(message.getS3Key()).build());
             return parser.parse(getS3MessageContentAsString(ehrMessageInputStream));
         } catch (Exception e) {
             throw new RuntimeException("Encountered exception while parsing s3 message", e);//TODO:Add more context

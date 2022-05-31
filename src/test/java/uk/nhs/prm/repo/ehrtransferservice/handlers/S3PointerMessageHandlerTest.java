@@ -1,7 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.jupiter.api.Test;
@@ -9,6 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.http.AbortableInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
@@ -17,8 +20,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -26,7 +29,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @ExtendWith(MockitoExtension.class)
 class S3PointerMessageHandlerTest {
     @Mock
-    private AmazonS3 s3client;
+    private S3Client s3Client;
     @Mock
     private Parser parser;
 
@@ -35,12 +38,22 @@ class S3PointerMessageHandlerTest {
 
     @Test
     void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
-        var s3PointerMessage = getStaticS3PointerMessage();
-        var s3Object = new S3Object();
-        s3Object.setObjectContent(readResourceFile());
-        when(s3client.getObject(anyString(), anyString())).thenReturn(s3Object);
+        when(s3Client.getObject(
+                any(GetObjectRequest.class)
+        ))
+                .then(
+                        invocation -> {
+                            GetObjectRequest getObjectRequest = invocation.getArgument(0);
+                            assertEquals("s3-bucket-name", getObjectRequest.bucket());
+                            assertEquals("s3-key-value", getObjectRequest.key());
+
+                            return new ResponseInputStream<>(
+                                    GetObjectResponse.builder().build(), AbortableInputStream.create(readResourceFile()));
+                        });
+
         s3PointerMessageHandler.handle(getStaticS3PointerMessage());
-        verify(s3client).getObject(s3PointerMessage.getS3BucketName(), s3PointerMessage.getS3Key());
+
+        verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
         verify(parser, times(1)).parse(any());
 
     }
