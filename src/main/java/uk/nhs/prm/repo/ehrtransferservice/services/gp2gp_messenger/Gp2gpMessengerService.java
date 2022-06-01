@@ -45,7 +45,7 @@ public class Gp2gpMessengerService {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(ehrTransferData.getNhsNumber(), requestBody);
             log.info("Successfully send positive acknowledgement");
         } catch (Exception e) {
-            log.error("Caught error sending positive acknowledgement request: "+e.getMessage());
+            log.error("Caught error sending positive acknowledgement request: " + e.getMessage());
             throw new Exception("Error while sending positive acknowledgement request", e);
         }
     }

@@ -56,7 +56,7 @@ public class Gp2gpMessengerClient {
         HttpResponse<String> response = makeRequest(request);
 
         if (response.statusCode() != 204) {
-            throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting a positive acknowledgement request: %d", response.statusCode()));
+            throw new HttpException(String.format("Unexpected response from GP2GP messenger: %d, %s", response.statusCode(), response.body()));
         }
     }
 

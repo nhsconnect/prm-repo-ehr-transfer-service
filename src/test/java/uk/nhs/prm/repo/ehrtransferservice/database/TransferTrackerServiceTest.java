@@ -19,8 +19,7 @@ import static org.assertj.core.api.BDDAssertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransferTrackerServiceTest {
@@ -67,7 +66,9 @@ class TransferTrackerServiceTest {
 
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
-        var conversationId = "conversation-id";
+        var conversationId = "conversationid";
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "");
+        when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
         transferTrackerService.getEhrTransferData(conversationId);
 
         verify(transferTrackerDb).getByConversationId(conversationId);
@@ -75,7 +76,7 @@ class TransferTrackerServiceTest {
 
     @Test
     void shouldThrowExceptionWhenFailsToGetDbInformationForSpecifiedConversationId() {
-        doThrow(RuntimeException.class).when(transferTrackerDb).getByConversationId(eq("conversation-id"));
+        when(transferTrackerDb.getByConversationId(eq("conversation-id"))).thenReturn(null);
 
         assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.getEhrTransferData("conversation-id"));
     }

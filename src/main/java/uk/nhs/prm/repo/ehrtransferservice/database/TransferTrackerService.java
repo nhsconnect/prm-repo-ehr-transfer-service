@@ -40,12 +40,12 @@ public class TransferTrackerService {
     }
 
     public TransferTrackerDbEntry getEhrTransferData(String conversationId) {
-        try {
-            return transferTrackerDb.getByConversationId(conversationId);
-        } catch (Exception e) {
+        var ehrData = transferTrackerDb.getByConversationId(conversationId);
+        if (ehrData == null) {
             log.error("Failed to retrieve EHR transfer data for conversation ID: " + conversationId);
-            throw new TransferTrackerDbException("Failed to retrieve EHR transfer data: ", e);
+            throw new TransferTrackerDbException("No entry found in transfer tracker db for conversation Id: " + conversationId);
         }
+        return ehrData;
     }
 
     private String getTimeNow() {
