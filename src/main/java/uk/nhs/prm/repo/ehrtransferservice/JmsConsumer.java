@@ -15,7 +15,6 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -94,6 +93,7 @@ public class JmsConsumer {
         }
         log.info("Received TextMessage from MQ");
         var textMessage = (TextMessage) message;
+        log.info(textMessage.getText());
         return textMessage.getText();
     }
 
