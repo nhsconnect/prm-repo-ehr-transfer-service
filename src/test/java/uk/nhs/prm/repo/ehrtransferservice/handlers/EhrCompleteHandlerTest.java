@@ -7,7 +7,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.json_models.TransferCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
@@ -31,6 +34,9 @@ class EhrCompleteHandlerTest {
     @Mock
     TransferTrackerDbEntry transferTrackerDbEntry;
 
+    @Mock
+    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+
     @InjectMocks
     EhrCompleteHandler ehrCompleteHandler;
 
@@ -49,16 +55,35 @@ class EhrCompleteHandlerTest {
     }
 
     @Test
-    void shouldUpdateDbWithEhrTransferStatusWhenEhrRequestSentSuccessfully() throws Exception {
+    public void shouldUpdateDbWithEhrTransferStatusWhenEhrRequestSentSuccessfully() throws Exception {
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
         verify(transferTrackerService).updateStateOfEhrTransfer(conversationId.toString(),"ACTION:EHR_TRANSFER_TO_REPO_COMPLETE");
     }
 
     @Test
-    void shouldThrowErrorAndNotUpdateDbWhenFailsToSendPositiveAcknowledgement() throws Exception {
+    public void shouldThrowErrorAndNotUpdateDbWhenFailsToSendPositiveAcknowledgement() throws Exception {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transferTrackerDbEntry);
 
         assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));
         verify(transferTrackerService, never()).updateStateOfEhrTransfer(conversationId.toString(),"ACTION:EHR_TRANSFER_TO_REPO_COMPLETE");
     }
+
+    @Test
+    public void shouldPublishTransferCompleteMessageToTransferCompleteTopic() throws Exception {
+        var transferComplete = new TransferCompleteEvent(null, "some-ods-code", "SUSPENSION", "some-nems-message-id", "some-nhs-number");
+        when(transferTrackerDbEntry.getNhsNumber()).thenReturn("some-nhs-number");
+        when(transferTrackerDbEntry.getSourceGP()).thenReturn("some-ods-code");
+        when(transferTrackerDbEntry.getNemsMessageId()).thenReturn("some-nems-message-id");
+        ehrCompleteHandler.handleMessage(ehrCompleteEvent);
+        verify(transferCompleteMessagePublisher).sendMessage(transferComplete, conversationId);
+    }
+
+    @Test
+    public void shouldThrowErrorAndNotSendMessageWhenDbFailsTOUpdate() {
+        doThrow(TransferTrackerDbException.class).when(transferTrackerService).updateStateOfEhrTransfer(conversationId.toString(),"ACTION:EHR_TRANSFER_TO_REPO_COMPLETE");
+
+        assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));
+        verify(transferCompleteMessagePublisher, never()).sendMessage(any(), any());
+    }
+
 }
