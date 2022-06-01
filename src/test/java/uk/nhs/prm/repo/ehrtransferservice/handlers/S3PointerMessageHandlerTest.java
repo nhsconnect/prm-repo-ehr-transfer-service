@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -68,8 +69,9 @@ class S3PointerMessageHandlerTest {
                         });
     }
 
+    @SuppressFBWarnings
     private InputStream readResourceFile(String resourceFileName) throws FileNotFoundException {
-        InputStream targetStream = new FileInputStream("src/test/resources/data/"+resourceFileName);
+        InputStream targetStream = new FileInputStream("src/test/resources/data/" + resourceFileName);
         return targetStream;
     }
 }
