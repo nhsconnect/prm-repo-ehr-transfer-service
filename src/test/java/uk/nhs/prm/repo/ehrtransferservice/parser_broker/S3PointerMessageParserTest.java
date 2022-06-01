@@ -1,8 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

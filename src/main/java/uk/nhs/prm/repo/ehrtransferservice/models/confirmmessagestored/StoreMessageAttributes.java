@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored;
+package uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

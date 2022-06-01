@@ -14,7 +14,7 @@ import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

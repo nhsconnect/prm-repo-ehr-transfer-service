@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.json_models.sendEhrRequest;
+package uk.nhs.prm.repo.ehrtransferservice.models.sendEhrRequest;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

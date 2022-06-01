@@ -17,7 +17,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.IOException;
 import java.nio.file.Files;

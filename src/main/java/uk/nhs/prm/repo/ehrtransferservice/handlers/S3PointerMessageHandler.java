@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.EhrExtractMessage
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;

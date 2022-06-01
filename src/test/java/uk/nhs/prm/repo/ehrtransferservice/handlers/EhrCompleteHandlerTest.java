@@ -8,9 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 

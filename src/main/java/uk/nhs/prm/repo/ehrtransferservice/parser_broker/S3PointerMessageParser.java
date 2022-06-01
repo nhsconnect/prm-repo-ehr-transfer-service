@@ -4,7 +4,7 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 @Slf4j
 public class S3PointerMessageParser {

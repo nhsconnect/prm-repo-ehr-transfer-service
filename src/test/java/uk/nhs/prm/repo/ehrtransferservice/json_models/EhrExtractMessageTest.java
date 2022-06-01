@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.json_models;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
+import uk.nhs.prm.repo.ehrtransferservice.models.EhrExtractMessage;
 
 import java.util.UUID;
 

@@ -2,7 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.message_publishers;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.TransferCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 
 import java.util.UUID;
 

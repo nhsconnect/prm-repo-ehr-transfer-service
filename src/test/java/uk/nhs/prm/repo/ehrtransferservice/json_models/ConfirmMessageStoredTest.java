@@ -2,7 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.json_models;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.confirmmessagestored.StoreMessageRequestBody;
+import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.repo.ehrtransferservice.json_models.EhrCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 
 @Component
 @Slf4j
