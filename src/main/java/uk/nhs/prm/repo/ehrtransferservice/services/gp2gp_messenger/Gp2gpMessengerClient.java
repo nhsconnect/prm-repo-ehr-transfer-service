@@ -52,9 +52,6 @@ public class Gp2gpMessengerClient {
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
         String endpoint = "/health-record-requests/" + nhsNumber + "/acknowledgement";
 
-        log.info("Json Payload for sending positive ack: " + jsonPayloadString);
-        log.info("Endpoint: " + endpoint);
-
         HttpRequest request = buildRequest(jsonPayload, endpoint);
         HttpResponse<String> response = makeRequest(request);
 
