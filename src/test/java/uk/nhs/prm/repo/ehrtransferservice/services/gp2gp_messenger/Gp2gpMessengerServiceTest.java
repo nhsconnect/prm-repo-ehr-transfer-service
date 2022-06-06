@@ -104,7 +104,7 @@ public class Gp2gpMessengerServiceTest {
     }
 
     private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "randomUUID");
+        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "last-updated", "randomUUID");
     }
 
 }

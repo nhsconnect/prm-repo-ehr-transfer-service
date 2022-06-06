@@ -38,7 +38,7 @@ class RepoIncomingEventListenerTest {
     }
 
     private RepoIncomingEvent getIncomingEvent() {
-        return new RepoIncomingEvent("111111111", "source-gp", "nem-message-id", "destination-gp", "unique-uuid");
+        return new RepoIncomingEvent("111111111", "source-gp", "nem-message-id", "destination-gp", "last-updated", "unique-uuid");
     }
 
     @Test

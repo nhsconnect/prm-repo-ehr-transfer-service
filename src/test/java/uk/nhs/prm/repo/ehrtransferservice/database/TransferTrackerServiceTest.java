@@ -82,6 +82,6 @@ class TransferTrackerServiceTest {
     }
 
     private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "conversation-id");
+        return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "last-updated", "conversation-id");
     }
 }
