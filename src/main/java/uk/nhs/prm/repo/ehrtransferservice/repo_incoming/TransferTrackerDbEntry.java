@@ -8,14 +8,16 @@ public class TransferTrackerDbEntry {
     String nhsNumber;
     String sourceGP;
     String nemsMessageId;
+    String nemsEventLastUpdated;
     String state;
     String dateTime;
 
-    public TransferTrackerDbEntry(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String state, String dateTime) {
+    public TransferTrackerDbEntry(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String nemsEventLastUpdated, String state, String dateTime) {
         this.conversationId = conversationId;
         this.nhsNumber = nhsNumber;
         this.sourceGP = sourceGP;
         this.nemsMessageId = nemsMessageId;
+        this.nemsEventLastUpdated = nemsEventLastUpdated;
         this.state = state;
         this.dateTime = dateTime;
     }

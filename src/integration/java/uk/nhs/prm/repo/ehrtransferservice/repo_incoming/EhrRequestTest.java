@@ -50,6 +50,7 @@ class EhrRequestTest {
     private static final String NHS_NUMBER = "2222222222";
     private static final String CONVERSATION_ID = "000-111-222-333-444";
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
+    private static final String NEMS_EVENT_LAST_UPDATED = "2017-11-01T15:00:33+00:00";
     private static final String SOURCE_GP = "odscode";
     private WireMockServer wireMock;
 
@@ -98,12 +99,13 @@ class EhrRequestTest {
             assertThat(dbClientItem.get("nhs_number").s()).isEqualTo(NHS_NUMBER);
             assertThat(dbClientItem.get("nems_message_id").s()).isEqualTo(NEMS_MESSAGE_ID);
             assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
+            assertThat(dbClientItem.get("nems_event_last_updated").s()).isEqualTo(NEMS_EVENT_LAST_UPDATED);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
             assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_REQUEST_SENT");
         });
     }
 
     private String getRepoIncomingData() {
-        return "{ \"conversationId\" : \"" + CONVERSATION_ID + "\",\n \"nhsNumber\" : \"" + NHS_NUMBER + "\",\n \"nemsMessageId\" : \"" + NEMS_MESSAGE_ID + "\",\n \"sourceGp\": \"" + SOURCE_GP + "\",\n \"destinationGp\": \"D3ST1NAT10N\" }";
+        return "{ \"conversationId\" : \"" + CONVERSATION_ID + "\",\n \"nhsNumber\" : \"" + NHS_NUMBER + "\",\n \"nemsMessageId\" : \"" + NEMS_MESSAGE_ID + "\",\n \"sourceGp\": \"" + SOURCE_GP + "\",\n \"destinationGp\": \"D3ST1NAT10N\" ,\n \"nemsEventLastUpdated\": \"" + NEMS_EVENT_LAST_UPDATED + "\"}";
     }
 }

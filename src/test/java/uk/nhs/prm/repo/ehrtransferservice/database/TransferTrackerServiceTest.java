@@ -40,6 +40,7 @@ class TransferTrackerServiceTest {
         assertThat(value.getNemsMessageId()).isEqualTo("nems-message-id");
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
+        assertThat(value.getNemsEventLastUpdated()).isEqualTo("last-updated");
         assertThat(Instant.parse(value.getDateTime())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }
 
@@ -67,7 +68,7 @@ class TransferTrackerServiceTest {
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "");
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "");
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
         transferTrackerService.getEhrTransferData(conversationId);
 
