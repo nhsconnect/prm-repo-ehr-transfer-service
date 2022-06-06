@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -31,6 +32,8 @@ import static org.mockito.Mockito.when;
 class S3PointerMessageHandlerTest {
     @Mock
     private S3Client s3Client;
+    @Mock
+    private S3PointerMessageParser s3PointerMessageParser;
 
     @InjectMocks
     private S3PointerMessageHandler s3PointerMessageHandler;
@@ -46,6 +49,15 @@ class S3PointerMessageHandlerTest {
     void shouldThrowExceptionWhenS3MessageIsNotValid() {
         mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
         assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage()));
+    }
+
+    @Test
+    void shouldCallS3PointerMessageParserWithSqsPayLoad() throws IOException {
+        String payload = "Payload";
+        mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
+        when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
+        s3PointerMessageHandler.getLargeMessage(payload);
+        verify(s3PointerMessageParser).parse(payload);
     }
 
     private S3PointerMessage getStaticS3PointerMessage() {

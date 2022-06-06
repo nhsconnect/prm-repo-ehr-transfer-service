@@ -7,13 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 
 import javax.jms.JMSException;
 import java.io.IOException;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LargeEhrMessageListenerTest {
@@ -22,17 +23,19 @@ class LargeEhrMessageListenerTest {
     Tracer tracer;
     @Mock
     S3PointerMessageHandler s3PointerMessageHandler;
+    @Mock
+    LargeEhrMessageHandler largeEhrMessageHandler;
 
     @InjectMocks
     LargeEhrMessageListener largeEhrMessageListener;
 
     @Test
     void shouldParseLargeEhrMessage() throws JMSException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        SQSTextMessage message = getSqsTextMessage();
         largeEhrMessageListener.onMessage(message);
         verify(tracer).setMDCContext(message);
     }
+
 
     @Test
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws IOException, JMSException {
@@ -40,5 +43,19 @@ class LargeEhrMessageListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         largeEhrMessageListener.onMessage(message);
         verify(s3PointerMessageHandler).getLargeMessage(payload);
+    }
+
+    @Test
+    void shouldCallLargeEhrMessageHandlerWithALargeMessage() throws Exception {
+        LargeEhrMessage largeEhrMessage = mock(LargeEhrMessage.class);
+        when(s3PointerMessageHandler.getLargeMessage(anyString())).thenReturn(largeEhrMessage);
+        largeEhrMessageListener.onMessage(getSqsTextMessage());
+        verify(largeEhrMessageHandler).handleMessage(largeEhrMessage);
+    }
+
+    private SQSTextMessage getSqsTextMessage() throws JMSException {
+        String payload = "payload";
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        return message;
     }
 }
