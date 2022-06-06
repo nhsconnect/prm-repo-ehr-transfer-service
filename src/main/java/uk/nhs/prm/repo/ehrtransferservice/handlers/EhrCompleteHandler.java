@@ -30,9 +30,8 @@ public class EhrCompleteHandler {
     }
 
     private TransferCompleteEvent createTransferCompleteEvent(TransferTrackerDbEntry ehrTransferData) {
-//      Update last updated value from null to real value, once it is in db (story #2656)
         return new TransferCompleteEvent(
-                null, ehrTransferData.getSourceGP(),
+                ehrTransferData.getNemsEventLastUpdated(), ehrTransferData.getSourceGP(),
                 "SUSPENSION", ehrTransferData.getNemsMessageId(),
                 ehrTransferData.getNhsNumber()
         );
