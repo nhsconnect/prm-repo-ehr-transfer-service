@@ -11,6 +11,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,16 +25,23 @@ public class S3PointerMessageHandler {
 
 
     private S3Client s3Client;
+    private S3PointerMessageParser s3PointerMessageParser;
 
-    public S3PointerMessageHandler(S3Client s3Client) {
+    public S3PointerMessageHandler(S3Client s3Client, S3PointerMessageParser s3PointerMessageParser) {
         this.s3Client = s3Client;
+        this.s3PointerMessageParser = s3PointerMessageParser;
     }
 
-    public LargeEhrMessage handle(S3PointerMessage message) throws IOException {
-            var ehrMessageInputStream =
-                    s3Client.getObject(GetObjectRequest.builder().bucket(message.getS3BucketName()).key(message.getS3Key()).build());
-            return parse(getS3MessageContentAsString(ehrMessageInputStream));
+    public LargeEhrMessage getLargeMessage(S3PointerMessage sqsMessagePayload) throws IOException {
+        var ehrMessageInputStream =
+                s3Client.getObject(GetObjectRequest.builder().bucket(sqsMessagePayload.getS3BucketName()).key(sqsMessagePayload.getS3Key()).build());
+        return parse(getS3MessageContentAsString(ehrMessageInputStream));
     }
+
+    public LargeEhrMessage getLargeMessage(String sqsMessagePayload) throws IOException {
+        return getLargeMessage(s3PointerMessageParser.parse(sqsMessagePayload));
+    }
+
     private LargeEhrMessage parse(String s3Message) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
         var mhsJsonMessage = new ObjectMapper().readValue(s3Message, MhsJsonMessage.class);
@@ -41,6 +49,7 @@ public class S3PointerMessageHandler {
         var message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
         return new LargeEhrMessage(envelope, message, s3Message);
     }
+
     private String getS3MessageContentAsString(InputStream ehrMessageInputStream) {
         return new BufferedReader(
                 new InputStreamReader(ehrMessageInputStream, StandardCharsets.UTF_8))

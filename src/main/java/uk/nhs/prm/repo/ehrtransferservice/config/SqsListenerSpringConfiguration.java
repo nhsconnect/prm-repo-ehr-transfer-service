@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
@@ -39,6 +40,7 @@ public class SqsListenerSpringConfiguration {
     private final EhrCompleteHandler ehrCompleteHandler;
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
+    private final S3PointerMessageHandler s3PointerMessageHandler;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -95,7 +97,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", largeEhrQueueName);
         var largeEhrConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
-        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer));
+        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer, s3PointerMessageHandler));
 
         connection.start();
 

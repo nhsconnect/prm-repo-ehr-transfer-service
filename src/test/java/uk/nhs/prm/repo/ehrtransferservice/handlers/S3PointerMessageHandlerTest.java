@@ -38,14 +38,14 @@ class S3PointerMessageHandlerTest {
     @Test
     void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        s3PointerMessageHandler.handle(getStaticS3PointerMessage());
+        s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
     @Test
     void shouldThrowExceptionWhenS3MessageIsNotValid() {
         mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
-        assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.handle(getStaticS3PointerMessage()));
+        assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage()));
     }
 
     private S3PointerMessage getStaticS3PointerMessage() {

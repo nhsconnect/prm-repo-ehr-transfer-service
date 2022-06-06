@@ -28,7 +28,7 @@ public class LargeEhrMessageHandler implements MessageHandler<LargeEhrMessage> {
     public void handleMessage(LargeEhrMessage largeEhrMessage) throws Exception {
         //call GP2GP messenger to send continue request
        ehrRepoService.storeMessage(largeEhrMessage);
-        log.info("Successfully stored small-ehr message in the ehr-repo-service");
+        log.info("Successfully stored large-ehr message in the ehr-repo-service");
        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(largeEhrMessage.getConversationId(), largeEhrMessage.getMessageId()));
         log.info("Successfully published message to ehr-complete topic");
     }

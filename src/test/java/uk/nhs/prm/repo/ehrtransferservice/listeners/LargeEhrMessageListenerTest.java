@@ -7,7 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
 
 import javax.jms.JMSException;
 import java.io.IOException;
@@ -20,15 +20,25 @@ class LargeEhrMessageListenerTest {
 
     @Mock
     Tracer tracer;
+    @Mock
+    S3PointerMessageHandler s3PointerMessageHandler;
 
     @InjectMocks
     LargeEhrMessageListener largeEhrMessageListener;
 
     @Test
-    void shouldParseLargeEhrMessage() throws JMSException, IOException {
+    void shouldParseLargeEhrMessage() throws JMSException {
         String payload = "payload";
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         largeEhrMessageListener.onMessage(message);
         verify(tracer).setMDCContext(message);
+    }
+
+    @Test
+    void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws IOException, JMSException {
+        String payload = "payload";
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        largeEhrMessageListener.onMessage(message);
+        verify(s3PointerMessageHandler).getLargeMessage(payload);
     }
 }
