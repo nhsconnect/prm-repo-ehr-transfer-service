@@ -8,8 +8,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.EhrExtractMessageWrapper;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.BufferedReader;
@@ -29,17 +29,17 @@ public class S3PointerMessageHandler {
         this.s3Client = s3Client;
     }
 
-    public ParsedMessage handle(S3PointerMessage message) throws IOException {
+    public LargeEhrMessage handle(S3PointerMessage message) throws IOException {
             var ehrMessageInputStream =
                     s3Client.getObject(GetObjectRequest.builder().bucket(message.getS3BucketName()).key(message.getS3Key()).build());
             return parse(getS3MessageContentAsString(ehrMessageInputStream));
     }
-    private ParsedMessage parse(String s3Message) throws JsonProcessingException {
+    private LargeEhrMessage parse(String s3Message) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
         var mhsJsonMessage = new ObjectMapper().readValue(s3Message, MhsJsonMessage.class);
         var envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
         var message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
-        return new ParsedMessage(envelope, message, s3Message);
+        return new LargeEhrMessage(envelope, message, s3Message);
     }
     private String getS3MessageContentAsString(InputStream ehrMessageInputStream) {
         return new BufferedReader(

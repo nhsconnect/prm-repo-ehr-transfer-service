@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.sqs;
 
 import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
 
 import java.io.IOException;
@@ -15,8 +16,7 @@ public class LargeEhrSqsService {
         this.s3PointerMessageHandler = s3PointerMessageHandler;
     }
 
-    public void getLargeEhrMessage(String sqsPayload) throws IOException {
-        s3PointerMessageHandler.handle(parser.parse(sqsPayload));
-
+    public LargeEhrMessage getLargeEhrMessage(String sqsPayload) throws IOException {
+       return s3PointerMessageHandler.handle(parser.parse(sqsPayload));
     }
 }

@@ -5,9 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
 import java.util.UUID;
@@ -22,7 +22,7 @@ class LargeEhrMessageHandlerTest {
     EhrRepoService ehrRepoService;
 
     @Mock
-    ParsedMessage parsedMessage;
+    LargeEhrMessage parsedMessage;
 
     @Mock
     private EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
