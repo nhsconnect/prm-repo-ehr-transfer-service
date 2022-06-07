@@ -10,14 +10,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Value;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import javax.jms.JMSException;
 import java.io.IOException;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 /*
  Tests JMS Consumer together with queues
@@ -31,6 +31,9 @@ public class JmsConsumerIntegrationTest {
 
     @Mock
     ParsingDlqPublisher parsingDlqPublisher;
+
+    @Mock
+    Tracer tracer;
 
     @InjectMocks
     JmsConsumer jmsConsumer;

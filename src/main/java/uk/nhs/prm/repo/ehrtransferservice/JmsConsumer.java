@@ -52,13 +52,14 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
+        tracer.setMDCContextFromMhsInbound();
         var rawMessage = getRawMessage(message);
         log.info("Received Message from Inbound queue");
 
         try {
             var sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
             var parsedMessage = parser.parse(sanitizedMessage);
-            tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID(), parsedMessage.getConversationId().toString());
+            tracer.handleConversationId(parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
             if (parsedMessage.getInteractionId() == null) {
