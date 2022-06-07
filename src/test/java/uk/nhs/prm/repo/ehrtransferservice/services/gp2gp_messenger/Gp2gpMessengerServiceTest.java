@@ -64,7 +64,7 @@ public class Gp2gpMessengerServiceTest {
     }
 
     @Test
-    void shouldCallGp2GpMessengerForContinueRequest() {
+    void shouldCallGp2GpMessengerForContinueRequest() throws HttpException, IOException, URISyntaxException, InterruptedException {
         UUID messageId = UUID.randomUUID();
         UUID conversationId = UUID.randomUUID();
         when(parsedMessage.getMessageId()).thenReturn(messageId);

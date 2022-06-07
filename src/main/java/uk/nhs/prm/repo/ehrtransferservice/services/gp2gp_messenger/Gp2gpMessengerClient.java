@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 
@@ -16,7 +17,6 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.UUID;
 
 @Component
 @Slf4j
@@ -69,7 +69,7 @@ public class Gp2gpMessengerClient {
                     .header("traceId", tracer.getTraceId())
                     .POST(jsonPayload).build();
         } catch (URISyntaxException | MalformedURLException e) {
-            log.error("Error caught during building request: "+endpoint);
+            log.error("Error caught during building request: " + endpoint);
             throw e;
         }
     }
@@ -80,12 +80,22 @@ public class Gp2gpMessengerClient {
                     .build()
                     .send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            log.error("Error caught during request: "+request.uri().getPath());
+            log.error("Error caught during request: " + request.uri().getPath());
             throw e;
         }
     }
 
-    public void sendContinueMessage(UUID conversationId, UUID messageId, String odsCode) {
+    public void sendContinueMessage(Gp2gpMessengerContinueMessageRequestBody continueMessageRequestBody) throws IOException, URISyntaxException, HttpException, InterruptedException {
+        String jsonPayloadString = new Gson().toJson(continueMessageRequestBody);
+        HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
+        String endpoint = "/health-record-requests/continue-message";
+
+        HttpRequest request = buildRequest(jsonPayload, endpoint);
+        HttpResponse<String> response = makeRequest(request);
+
+        if (response.statusCode() != 204) {
+            throw new HttpException(String.format("Unexpected response from GP2GP messenger while posting a continue message request: %d", response.statusCode()));
+        }
     }
 }
 

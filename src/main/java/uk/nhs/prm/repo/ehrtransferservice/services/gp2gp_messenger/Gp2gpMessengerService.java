@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 @Service
 @RequiredArgsConstructor
@@ -32,11 +37,11 @@ public class Gp2gpMessengerService {
         }
     }
 
-    public void sendContinueMessage(ParsedMessage parsedMessage) {
+    public void sendContinueMessage(ParsedMessage parsedMessage) throws HttpException, IOException, URISyntaxException, InterruptedException {
         var conversationId = parsedMessage.getConversationId();
         var messageId = parsedMessage.getMessageId();
         var odsCode = parsedMessage.getOdsCode();
-        gp2gpMessengerClient.sendContinueMessage(conversationId, messageId, odsCode);
+        gp2gpMessengerClient.sendContinueMessage(new Gp2gpMessengerContinueMessageRequestBody(conversationId, odsCode, messageId));
     }
 
     public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) throws Exception {
