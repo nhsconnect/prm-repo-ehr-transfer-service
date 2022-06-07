@@ -33,9 +33,8 @@ class LargeEhrMessageListenerTest {
     void shouldParseLargeEhrMessage() throws JMSException {
         SQSTextMessage message = getSqsTextMessage();
         largeEhrMessageListener.onMessage(message);
-        verify(tracer).setMDCContext(message);
+        verify(tracer).setMDCContextFromSqs(message);
     }
-
 
     @Test
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws IOException, JMSException {
@@ -55,7 +54,6 @@ class LargeEhrMessageListenerTest {
 
     private SQSTextMessage getSqsTextMessage() throws JMSException {
         String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
-        return message;
+        return spy(new SQSTextMessage(payload));
     }
 }

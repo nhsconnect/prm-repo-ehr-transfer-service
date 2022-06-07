@@ -15,29 +15,34 @@ import java.util.UUID;
 public class Tracer {
 
     public static final String TRACE_ID = "traceId";
-    public static final String NEMS_MESSAGE_ID = "nemsMessageId";
     public static final String CONVERSATION_ID = "conversationId";
 
-    public void setMDCContext(Message message) throws JMSException {
+    public void setMDCContextFromSqs(Message message) throws JMSException {
         clearMDCContext();
-        handleTraceId(message);
-        handleNemsMessageId(message);
+        handleTraceId(message.getStringProperty(TRACE_ID));
         handleConversationId(message.getStringProperty(CONVERSATION_ID));
     }
 
-    private void handleTraceId(Message message) throws JMSException {
-        if (message.getStringProperty(TRACE_ID) == null || message.getStringProperty(TRACE_ID).isBlank()) {
-            log.info("The message has no trace ID attribute, we'll create and assign one.");
+    public void setMDCContextFromMhsInbound(String traceId) {
+        clearMDCContext();
+        handleTraceId(traceId);
+    }
+
+    private void handleTraceId(String traceId) {
+        if (traceId == null || traceId.isBlank()) {
+            log.info("The message has no trace ID attribute, we'll create and assign one");
             setTraceId(createRandomUUID());
         } else {
-            setTraceId(message.getStringProperty(TRACE_ID));
+            setTraceId(traceId);
         }
     }
 
-    public void setMDCContextFromMhsInbound() {
-        clearMDCContext();
-        log.info("The message received on mhs inbound has no trace ID attribute, we'll create and assign one.");
-        setTraceId(createRandomUUID());
+    public void handleConversationId(String conversationId) {
+        if (conversationId == null || conversationId.isBlank()) {
+            log.warn("The message has no conversation ID attribute");
+        } else {
+            setConversationId(conversationId);
+        }
     }
 
     public String getTraceId() {
@@ -48,41 +53,16 @@ public class Tracer {
         MDC.put(TRACE_ID, traceId);
     }
 
-    private String createRandomUUID() {
-        return UUID.randomUUID().toString();
-    }
-
-    public void handleConversationId(String conversationId) throws JMSException {
-        if (conversationId == null) {
-            log.warn("The message has no conversation ID attribute.");
-        } else {
-            setConversationId(conversationId);
-        }
-    }
-
-    public String getConversationId() {
-        return MDC.get(CONVERSATION_ID);
-    }
-
     private void setConversationId(String conversationId) {
         MDC.put(CONVERSATION_ID, conversationId);
     }
 
-    private void handleNemsMessageId(Message message) throws JMSException {
-        if (message.getStringProperty(NEMS_MESSAGE_ID) == null) {
-            log.warn("The message has no NEMS message ID attribute");
-        } else {
-            setNemsMessageId(message.getStringProperty(NEMS_MESSAGE_ID));
-        }
-    }
-
-    private void setNemsMessageId(String nemsMessageId) {
-        MDC.put(NEMS_MESSAGE_ID, nemsMessageId);
+    private String createRandomUUID() {
+        return UUID.randomUUID().toString();
     }
 
     private void clearMDCContext() {
         MDC.remove(TRACE_ID);
-        MDC.remove(NEMS_MESSAGE_ID);
         MDC.remove(CONVERSATION_ID);
     }
 }

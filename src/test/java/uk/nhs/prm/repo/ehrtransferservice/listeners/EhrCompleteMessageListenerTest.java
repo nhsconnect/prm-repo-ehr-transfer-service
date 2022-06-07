@@ -36,7 +36,7 @@ class EhrCompleteMessageListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         EhrCompleteMessageListener.onMessage(message);
-        verify(tracer).setMDCContext(message);
+        verify(tracer).setMDCContextFromSqs(message);
     }
 
     @Test

@@ -33,7 +33,7 @@ class RepoIncomingEventListenerTest {
         SQSTextMessage message = spy(new SQSTextMessage(payload));
         repoIncomingEventListener.onMessage(message);
         verify(incomingEventParser).parse(payload);
-        verify(tracer).setMDCContext(message);
+        verify(tracer).setMDCContextFromSqs(message);
         verify(repoIncomingService).processIncomingEvent(incomingEvent);
     }
 

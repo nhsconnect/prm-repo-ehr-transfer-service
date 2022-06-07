@@ -23,7 +23,7 @@ public class LargeEhrMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message);
+            tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from large-ehr queue");
             var largeEhrMessage = getLargeEhrMessage(message);
             largeEhrMessageHandler.handleMessage(largeEhrMessage);

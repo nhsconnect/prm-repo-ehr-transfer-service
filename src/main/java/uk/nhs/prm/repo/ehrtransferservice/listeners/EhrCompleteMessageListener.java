@@ -21,7 +21,7 @@ public class EhrCompleteMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message);
+            tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from ehr-complete queue");
             String payload = ((TextMessage) message).getText();
             var parsedMessage = parser.parse(payload);

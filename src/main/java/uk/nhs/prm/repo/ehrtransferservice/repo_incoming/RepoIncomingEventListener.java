@@ -18,7 +18,7 @@ public class RepoIncomingEventListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message);
+            tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from RepoIncoming");
             parseAndProcessMessage(message);
             message.acknowledge();

@@ -10,7 +10,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
-import static uk.nhs.prm.repo.ehrtransferservice.config.Tracer.*;
+import static uk.nhs.prm.repo.ehrtransferservice.config.Tracer.CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.config.Tracer.TRACE_ID;
 
 class TracerTest {
 
@@ -30,7 +31,7 @@ class TracerTest {
         message.setStringProperty(TRACE_ID, SOME_TRACE_ID);
         message.setStringProperty(CONVERSATION_ID, SOME_CONVERSATION_ID);
 
-        tracer.setMDCContext(message);
+        tracer.setMDCContextFromSqs(message);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         String mdcConversationIdValue = MDC.get(CONVERSATION_ID);
         assertThat(mdcTraceIdValue).isEqualTo(SOME_TRACE_ID);
@@ -41,19 +42,9 @@ class TracerTest {
     void shouldCreateAndAddHyphenatedUuidTraceIdToMDCWhenItIsNotPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
-        tracer.setMDCContext(message);
+        tracer.setMDCContextFromSqs(message);
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         assertThat(mdcTraceIdValue).isNotNull();
         assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
-    }
-
-    @Test
-    void shouldAddNemsMessageIdToMDC() throws JMSException {
-        SQSTextMessage message = spy(new SQSTextMessage("payload"));
-        message.setStringProperty(NEMS_MESSAGE_ID, SOME_NEMS_ID);
-
-        tracer.setMDCContext(message);
-        String mdcValue = MDC.get(NEMS_MESSAGE_ID);
-        assertThat(mdcValue).isEqualTo(SOME_NEMS_ID);
     }
 }

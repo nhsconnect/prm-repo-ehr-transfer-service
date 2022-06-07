@@ -52,7 +52,7 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message) throws JMSException {
-        tracer.setMDCContextFromMhsInbound();
+        tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID());
         var rawMessage = getRawMessage(message);
         log.info("Received Message from Inbound queue");
 

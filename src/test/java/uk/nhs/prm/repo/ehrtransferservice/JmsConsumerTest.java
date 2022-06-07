@@ -82,7 +82,7 @@ public class JmsConsumerTest {
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
-        verify(tracer).setMDCContextFromMhsInbound();
+        verify(tracer).setMDCContextFromMhsInbound(null);
     }
 
     @Test

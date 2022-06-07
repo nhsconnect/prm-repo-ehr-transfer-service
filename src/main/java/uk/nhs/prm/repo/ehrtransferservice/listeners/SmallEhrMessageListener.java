@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.listeners;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -8,8 +9,6 @@ import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class SmallEhrMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message) {
         try {
-            tracer.setMDCContext(message);
+            tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from small-ehr queue");
             String payload = ((TextMessage) message).getText();
             var parsedMessage = parser.parse(payload);
