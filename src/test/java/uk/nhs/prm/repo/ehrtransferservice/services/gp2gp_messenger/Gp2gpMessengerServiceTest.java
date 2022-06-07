@@ -2,7 +2,6 @@ package uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
-import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
@@ -71,17 +69,6 @@ public class Gp2gpMessengerServiceTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getOdsCode()).thenReturn("ods-code");
         gp2gpMessengerService.sendContinueMessage(parsedMessage);
-    }
-
-    @Test
-    @Disabled("WIP, this test shall be enabled when send continue functionality is plugged correctly")
-    void shouldCatchExceptionWhenThrownFromClient() {
-        UUID messageId = UUID.randomUUID();
-        UUID conversationId = UUID.randomUUID();
-        when(parsedMessage.getMessageId()).thenReturn(messageId);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getOdsCode()).thenReturn("ods-code");
-        assertThrows(Exception.class, () -> gp2gpMessengerService.sendContinueMessage(parsedMessage));
     }
 
     @Test
