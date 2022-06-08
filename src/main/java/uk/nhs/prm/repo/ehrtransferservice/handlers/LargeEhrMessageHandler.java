@@ -18,7 +18,7 @@ public class LargeEhrMessageHandler implements MessageHandler<LargeEhrMessage> {
     private Gp2gpMessengerService gp2gpMessengerService;
     private TransferTrackerService transferTrackerService;
 
-    public LargeEhrMessageHandler(EhrRepoService ehrRepoService, EhrCompleteMessagePublisher ehrCompleteMessagePublisher, Gp2gpMessengerService gp2gpMessengerService,TransferTrackerService transferTrackerService) {
+    public LargeEhrMessageHandler(EhrRepoService ehrRepoService, EhrCompleteMessagePublisher ehrCompleteMessagePublisher, Gp2gpMessengerService gp2gpMessengerService, TransferTrackerService transferTrackerService) {
         this.ehrRepoService = ehrRepoService;
         this.ehrCompleteMessagePublisher = ehrCompleteMessagePublisher;
         this.gp2gpMessengerService = gp2gpMessengerService;
@@ -32,12 +32,19 @@ public class LargeEhrMessageHandler implements MessageHandler<LargeEhrMessage> {
 
     @Override
     public void handleMessage(LargeEhrMessage largeEhrMessage) throws Exception {
-        //call GP2GP messenger to send continue request
+        var conversationId = largeEhrMessage.getConversationId();
+
         ehrRepoService.storeMessage(largeEhrMessage);
-        gp2gpMessengerService.sendContinueMessage(largeEhrMessage);
-        transferTrackerService.updateStateOfEhrTransfer(largeEhrMessage.getConversationId().toString(),"ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
         log.info("Successfully stored large-ehr message in the ehr-repo-service");
-        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(largeEhrMessage.getConversationId(), largeEhrMessage.getMessageId()));
+
+        var ehrTransferData = transferTrackerService.getEhrTransferData(conversationId.toString());
+        gp2gpMessengerService.sendContinueMessage(largeEhrMessage, ehrTransferData);
+        log.info("Successfully sent continue message request");
+
+        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+        log.info("Updated transfer tracker dp with status : ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+
+        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(conversationId, largeEhrMessage.getMessageId()));
         log.info("Successfully published message to ehr-complete topic");
     }
 }

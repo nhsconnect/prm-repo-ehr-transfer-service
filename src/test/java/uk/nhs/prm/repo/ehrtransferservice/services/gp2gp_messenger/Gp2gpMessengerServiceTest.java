@@ -7,7 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
@@ -29,6 +31,8 @@ public class Gp2gpMessengerServiceTest {
     Gp2gpMessengerClient gp2gpMessengerClient;
     @Mock
     ParsedMessage parsedMessage;
+    @Mock
+    TransferTrackerService transferTrackerService;
     @Mock
     EhrCompleteEvent ehrCompleteEvent;
     @Mock
@@ -62,13 +66,14 @@ public class Gp2gpMessengerServiceTest {
     }
 
     @Test
-    void shouldCallGp2GpMessengerForContinueRequest() throws HttpException, IOException, URISyntaxException, InterruptedException {
+    void shouldCallGp2GpMessengerClientForContinueRequest() throws HttpException, IOException, URISyntaxException, InterruptedException {
         UUID messageId = UUID.randomUUID();
         UUID conversationId = UUID.randomUUID();
         when(parsedMessage.getMessageId()).thenReturn(messageId);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parsedMessage.getOdsCode()).thenReturn("ods-code");
-        gp2gpMessengerService.sendContinueMessage(parsedMessage);
+        when(ehrTransferData.getSourceGP()).thenReturn("source-gp");
+        gp2gpMessengerService.sendContinueMessage(parsedMessage, ehrTransferData);
+        verify(gp2gpMessengerClient).sendContinueMessage(new Gp2gpMessengerContinueMessageRequestBody(conversationId,"source-gp",messageId));
     }
 
     @Test

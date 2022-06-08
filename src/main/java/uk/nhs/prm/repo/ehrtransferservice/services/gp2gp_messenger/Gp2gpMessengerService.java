@@ -37,11 +37,10 @@ public class Gp2gpMessengerService {
         }
     }
 
-    public void sendContinueMessage(ParsedMessage parsedMessage) throws HttpException, IOException, URISyntaxException, InterruptedException {
-        var conversationId = parsedMessage.getConversationId();
-        var messageId = parsedMessage.getMessageId();
-        var odsCode = parsedMessage.getOdsCode();
-        gp2gpMessengerClient.sendContinueMessage(new Gp2gpMessengerContinueMessageRequestBody(conversationId, odsCode, messageId));
+    public void sendContinueMessage(ParsedMessage parsedMessage, TransferTrackerDbEntry ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
+        var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), ehrTransferData.getSourceGP(), parsedMessage.getMessageId());
+        gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
+        log.info("Successfully sent continue message request");
     }
 
     public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) throws Exception {

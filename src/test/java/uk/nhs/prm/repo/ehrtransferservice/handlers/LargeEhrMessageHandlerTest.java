@@ -9,6 +9,7 @@ import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
@@ -28,6 +29,9 @@ class LargeEhrMessageHandlerTest {
 
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
+
+    @Mock
+    TransferTrackerDbEntry transferTrackerDbEntry;
 
     @Mock
     TransferTrackerService transferTrackerService;
@@ -66,8 +70,9 @@ class LargeEhrMessageHandlerTest {
     @Test
     public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
         when(largeEhrMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        when(transferTrackerService.getEhrTransferData(largeEhrMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
         largeEhrMessageHandler.handleMessage(largeEhrMessage);
-        verify(gp2gpMessengerService).sendContinueMessage(largeEhrMessage);
+        verify(gp2gpMessengerService).sendContinueMessage(largeEhrMessage, transferTrackerDbEntry);
     }
 
     @Test
