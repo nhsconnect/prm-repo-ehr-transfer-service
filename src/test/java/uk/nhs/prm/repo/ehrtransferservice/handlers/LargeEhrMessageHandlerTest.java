@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
@@ -35,19 +34,8 @@ class LargeEhrMessageHandlerTest {
     @Mock
     TransferTrackerService transferTrackerService;
 
-    @Mock
-    private EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
-
     @InjectMocks
     LargeEhrMessageHandler largeEhrMessageHandler;
-
-    private UUID conversationId;
-    private UUID messageId;
-
-    public LargeEhrMessageHandlerTest() {
-        conversationId = UUID.randomUUID();
-        messageId = UUID.randomUUID();
-    }
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
