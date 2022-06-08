@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
@@ -35,16 +34,11 @@ public class LargeEhrMessageHandler implements MessageHandler<LargeEhrMessage> {
         var conversationId = largeEhrMessage.getConversationId();
 
         ehrRepoService.storeMessage(largeEhrMessage);
-        log.info("Successfully stored large-ehr message in the ehr-repo-service");
+        log.info("Successfully stored large-ehr message in the ehr-repo");
 
         var ehrTransferData = transferTrackerService.getEhrTransferData(conversationId.toString());
         gp2gpMessengerService.sendContinueMessage(largeEhrMessage, ehrTransferData);
-        log.info("Successfully sent continue message request");
 
         transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
-        log.info("Updated transfer tracker dp with status : ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
-
-        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(conversationId, largeEhrMessage.getMessageId()));
-        log.info("Successfully published message to ehr-complete topic");
     }
 }

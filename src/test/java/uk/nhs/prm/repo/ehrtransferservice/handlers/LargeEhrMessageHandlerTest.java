@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
@@ -55,16 +54,6 @@ class LargeEhrMessageHandlerTest {
         when(largeEhrMessage.getConversationId()).thenReturn(UUID.randomUUID());
         largeEhrMessageHandler.handleMessage(largeEhrMessage);
         verify(ehrRepoService).storeMessage(largeEhrMessage);
-    }
-
-
-    @Test
-    public void shouldPublishLargeEhrMessageToEhrCompleteTopic() throws Exception {
-        var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
-        when(largeEhrMessage.getConversationId()).thenReturn(conversationId);
-        when(largeEhrMessage.getMessageId()).thenReturn(messageId);
-        largeEhrMessageHandler.handleMessage(largeEhrMessage);
-        verify(ehrCompleteMessagePublisher).sendMessage(ehrCompleteEvent);
     }
 
     @Test
