@@ -47,18 +47,18 @@ resource "aws_sns_topic_subscription" "large_ehr_observability_topic" {
   endpoint             = aws_sqs_queue.large_ehr_observability.arn
 }
 
-resource "aws_sns_topic_subscription" "attachments_topic" {
+resource "aws_sns_topic_subscription" "large_message_fragments_topic" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.attachments.arn
-  endpoint             = aws_sqs_queue.attachments.arn
+  topic_arn            = aws_sns_topic.large_message_fragments.arn
+  endpoint             = aws_sqs_queue.large_message_fragments.arn
 }
 
-resource "aws_sns_topic_subscription" "attachments_observability_topic" {
+resource "aws_sns_topic_subscription" "large_message_fragments_observability_topic" {
   protocol             = "sqs"
   raw_message_delivery = true
-  topic_arn            = aws_sns_topic.attachments.arn
-  endpoint             = aws_sqs_queue.attachments_observability.arn
+  topic_arn            = aws_sns_topic.large_message_fragments.arn
+  endpoint             = aws_sqs_queue.large_message_fragments_observability.arn
 }
 
 resource "aws_sns_topic_subscription" "positive_acks_observability_topic" {

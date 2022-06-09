@@ -11,12 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
+//import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeMessageFragmentsListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
@@ -41,6 +39,7 @@ public class SqsListenerSpringConfiguration {
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
     private final S3PointerMessageHandler s3PointerMessageHandler;
+    /*private final LargeMessageFragmentsHandler largeMessageFragmentsHandler;*/
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -50,6 +49,9 @@ public class SqsListenerSpringConfiguration {
 
     @Value("${aws.largeEhrQueueName}")
     private String largeEhrQueueName;
+
+   /* @Value("${aws.largeMessageFragmentsQueueName}")
+    private String largeMessageFragmentsQueueName;*/
 
     @Value("${aws.ehrCompleteQueueName}")
     private String ehrCompleteQueueName;
@@ -103,6 +105,19 @@ public class SqsListenerSpringConfiguration {
 
         return session;
     }
+
+   /* @Bean
+    public Session createLargeEhrFragmentsQueueListener(SQSConnection connection) throws JMSException {
+        Session session = getSession(connection);
+
+        log.info("ehr small queue name : {}", largeMessageFragmentsQueueName);
+        var largeEhrFragmentsConsumer = session.createConsumer(session.createQueue(largeMessageFragmentsQueueName));
+        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, parser, largeMessageFragmentsHandler));
+
+        connection.start();
+
+        return session;
+    }*/
 
     @Bean
     public Session createEhrCompleteQueueListener(SQSConnection connection) throws JMSException {

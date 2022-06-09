@@ -41,8 +41,8 @@ public class ParserBrokerIntegrationTest {
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
 
-    @Value("${aws.attachmentsQueueName}")
-    private String attachmentsQueueName;
+    @Value("${aws.largeMessageFragmentsQueueName}")
+    private String largeMessageFragmentsQueueName;
 
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
@@ -63,7 +63,7 @@ public class ParserBrokerIntegrationTest {
 
     @AfterEach
     public void tearDown() {
-        purgeQueue(attachmentsQueueName);
+        purgeQueue(largeMessageFragmentsQueueName);
         purgeQueue(smallEhrQueueName);
         purgeQueue(smallEhrObservabilityQueueName);
         purgeQueue(largeEhrQueueName);
@@ -83,7 +83,8 @@ public class ParserBrokerIntegrationTest {
         });
         sleep(5000);
 
-        var attachmentsQueueUrl = sqs.getQueueUrl(attachmentsQueueName).getQueueUrl();
+        var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsQueueName).getQueueUrl();
+        System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(attachmentsQueueUrl);
@@ -142,6 +143,7 @@ public class ParserBrokerIntegrationTest {
                 = new ReceiveMessageRequest().withQueueUrl(queueUrl)
                 .withMessageAttributeNames("All");
         var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        System.out.println("messages in checkMessageInRelatedQueue: " + messages);
         assertThat(messages).hasSize(1);
         return messages;
     }

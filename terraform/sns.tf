@@ -34,13 +34,13 @@ resource "aws_sns_topic" "large_ehr" {
   }
 }
 
-resource "aws_sns_topic" "attachments" {
-  name = "${var.environment}-${var.component_name}-attachments-sns-topic"
-  kms_master_key_id = aws_kms_key.attachments.id
+resource "aws_sns_topic" "large_message_fragments" {
+  name = "${var.environment}-${var.component_name}-large-message-fragments-sns-topic"
+  kms_master_key_id = aws_kms_key.large_message_fragments.id
   sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
 
   tags = {
-    Name = "${var.environment}-${var.component_name}-attachments-sns-topic"
+    Name = "${var.environment}-${var.component_name}-large-message-fragments-sns-topic"
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

@@ -253,7 +253,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
     resources = [
       aws_sns_topic.parsing_dlq.arn,
       aws_sns_topic.positive_acks.arn,
-      aws_sns_topic.attachments.arn,
+      aws_sns_topic.large_message_fragments.arn,
       aws_sns_topic.large_ehr.arn,
       aws_sns_topic.small_ehr.arn,
       aws_sns_topic.negative_acks.arn,
@@ -263,14 +263,14 @@ data "aws_iam_policy_document" "sns_policy_doc" {
   }
 }
 
-resource "aws_sqs_queue_policy" "attachments" {
-  queue_url = aws_sqs_queue.attachments.id
-  policy    = data.aws_iam_policy_document.attachments_policy_doc.json
+resource "aws_sqs_queue_policy" "large_message_fragments" {
+  queue_url = aws_sqs_queue.large_message_fragments.id
+  policy    = data.aws_iam_policy_document.large_message_fragments_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "attachments_observability" {
-  queue_url = aws_sqs_queue.attachments_observability.id
-  policy    = data.aws_iam_policy_document.attachments_policy_doc.json
+resource "aws_sqs_queue_policy" "large_message_fragments_observability" {
+  queue_url = aws_sqs_queue.large_message_fragments_observability.id
+  policy    = data.aws_iam_policy_document.large_message_fragments_policy_doc.json
 }
 
 
@@ -334,7 +334,7 @@ resource "aws_sqs_queue_policy" "transfer_complete_observability" {
   policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
 }
 
-data "aws_iam_policy_document" "attachments_policy_doc" {
+data "aws_iam_policy_document" "large_message_fragments_policy_doc" {
   statement {
 
     effect = "Allow"
@@ -349,13 +349,13 @@ data "aws_iam_policy_document" "attachments_policy_doc" {
     }
 
     resources = [
-      aws_sqs_queue.attachments.arn,
-      aws_sqs_queue.attachments_observability.arn
+      aws_sqs_queue.large_message_fragments.arn,
+      aws_sqs_queue.large_message_fragments_observability.arn
     ]
 
     condition {
       test     = "ArnEquals"
-      values   = [aws_sns_topic.attachments.arn]
+      values   = [aws_sns_topic.large_message_fragments.arn]
       variable = "aws:SourceArn"
     }
   }

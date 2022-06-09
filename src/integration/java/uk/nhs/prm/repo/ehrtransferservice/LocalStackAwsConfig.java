@@ -68,8 +68,8 @@ public class LocalStackAwsConfig {
     @Value("${aws.sqsLargeMessageBucketName}")
     private String sqsLargeMessageBucketName;
 
-    @Value("${aws.attachmentsQueueName}")
-    private String attachmentsQueueName;
+    @Value("${aws.largeMessageFragmentsQueueName}")
+    private String largeMessageFragmentsQueueName;
 
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
@@ -234,8 +234,8 @@ public class LocalStackAwsConfig {
     private void setUpQueueAndTopics() {
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
-        var attachmentQueue = amazonSQSAsync.createQueue(attachmentsQueueName);
-        var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_attachments_topic").build());
+        var attachmentQueue = amazonSQSAsync.createQueue(largeMessageFragmentsQueueName);
+        var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_message_fragments_topic").build());
         createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentQueue.getQueueUrl()));
 
         var smallEhrQueue = amazonSQSAsync.createQueue(smallEhrQueueName);

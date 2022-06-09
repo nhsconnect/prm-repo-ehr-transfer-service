@@ -8,8 +8,8 @@ locals {
   small_ehr_observability_queue_name = "${var.environment}-${var.component_name}-small-ehr-observability"
   large_ehr_queue_name = "${var.environment}-${var.component_name}-large-ehr"
   large_ehr_observability_queue_name = "${var.environment}-${var.component_name}-large-ehr-observability"
-  attachments_queue_name = "${var.environment}-${var.component_name}-attachments"
-  attachments_observability_queue_name = "${var.environment}-${var.component_name}-attachments-observability"
+  large_message_fragments_queue_name = "${var.environment}-${var.component_name}-large-message-fragments"
+  large_message_fragments_observability_queue_name = "${var.environment}-${var.component_name}-large-message-fragments-observability"
   positive_acks_observability_queue_name = "${var.environment}-${var.component_name}-positive-acknowledgements-observability"
   parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
   ehr_complete_queue_name = "${var.environment}-${var.component_name}-ehr-complete"
@@ -118,29 +118,29 @@ resource "aws_sqs_queue" "large_ehr_observability" {
   }
 }
 
-resource "aws_sqs_queue" "attachments" {
-  name                       = local.attachments_queue_name
+resource "aws_sqs_queue" "large_message_fragments" {
+  name                       = local.large_message_fragments_queue_name
   message_retention_seconds  = local.max_retention_period
-  kms_master_key_id          = aws_kms_key.attachments.id
+  kms_master_key_id          = aws_kms_key.large_message_fragments.id
   receive_wait_time_seconds  = 20
   visibility_timeout_seconds = 240
 
   tags = {
-    Name        = local.attachments_queue_name
+    Name        = local.large_message_fragments_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }
 }
 
-resource "aws_sqs_queue" "attachments_observability" {
-  name                       = local.attachments_observability_queue_name
+resource "aws_sqs_queue" "large_message_fragments_observability" {
+  name                       = local.large_message_fragments_observability_queue_name
   message_retention_seconds  = local.thirty_minute_retention_period
-  kms_master_key_id          = aws_kms_key.attachments.id
+  kms_master_key_id          = aws_kms_key.large_message_fragments.id
   receive_wait_time_seconds  = 20
   visibility_timeout_seconds = 240
 
   tags = {
-    Name        = local.attachments_observability_queue_name
+    Name        = local.large_message_fragments_observability_queue_name
     CreatedBy   = var.repo_name
     Environment = var.environment
   }

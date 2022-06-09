@@ -10,7 +10,7 @@ public class AttachmentMessagePublisher {
     private final String attachmentsTopicArn;
     private final MessagePublisher messagePublisher;
 
-    public AttachmentMessagePublisher(MessagePublisher messagePublisher, @Value("${aws.attachmentsTopicArn}") String attachmentsTopicArn) {
+    public AttachmentMessagePublisher(MessagePublisher messagePublisher, @Value("${aws.largeMessageFragmentsTopicArn}") String attachmentsTopicArn) {
         this.messagePublisher = messagePublisher;
         this.attachmentsTopicArn = attachmentsTopicArn;
     }
