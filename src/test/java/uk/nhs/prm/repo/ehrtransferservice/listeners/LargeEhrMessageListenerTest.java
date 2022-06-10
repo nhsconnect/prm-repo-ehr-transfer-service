@@ -17,7 +17,7 @@ import java.io.IOException;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LargeSqsMessageListenerTest {
+class LargeEhrMessageListenerTest {
 
     @Mock
     Tracer tracer;
