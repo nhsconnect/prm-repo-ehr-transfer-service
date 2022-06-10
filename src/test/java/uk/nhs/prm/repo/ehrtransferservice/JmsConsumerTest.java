@@ -4,14 +4,13 @@ import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Value;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
@@ -20,32 +19,31 @@ import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
+@ExtendWith(MockitoExtension.class)
 public class JmsConsumerTest {
-    JmsProducer jmsProducer = mock(JmsProducer.class);
-    MessageSanitizer messageSanitizer = mock(MessageSanitizer.class);
-    Parser parser = mock(Parser.class);
-    ParsingDlqPublisher parsingDlqPublisher = mock(ParsingDlqPublisher.class);
-    Broker broker = mock(Broker.class);
-    Tracer tracer = mock(Tracer.class);
+    @Mock
+    JmsProducer jmsProducer;
+    @Mock
+    MessageSanitizer messageSanitizer;
+    @Mock
+    Parser parser;
+    @Mock
+    ParsingDlqPublisher parsingDlqPublisher;
+    @Mock
+    Broker broker;
+    @Mock
+    Tracer tracer;
+    @InjectMocks
+    JmsConsumer jmsConsumer;
 
-    List<MessageHandler> handlerList = new ArrayList();
     String messageContent = "test";
 
-    @Value("${activemq.unhandledQueue}")
-    String unhandledQueue;
-    @Value("${activemq.inboundQueue}")
-    String inboundQueue;
-
-    JmsConsumer jmsConsumer = new JmsConsumer(jmsProducer, unhandledQueue, inboundQueue, messageSanitizer, parser, broker, tracer, parsingDlqPublisher, handlerList);
-
-    private void jmsConsumerTestFactory() throws JMSException {
+    private void verifySentToParsingDlq() throws JMSException {
         String message = messageContent;
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
@@ -62,7 +60,6 @@ public class JmsConsumerTest {
         var conversationId = UUID.randomUUID();
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(parsedMessage.getRawMessage()).thenReturn("test-message");
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
@@ -71,18 +68,18 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldSetTraceId() throws JMSException, IOException {
+    void shouldSetTraceIdAndConversationIdWhenParsed() throws JMSException, IOException {
         ActiveMQBytesMessage message = new ActiveMQBytesMessage();
         message.reset();
         var conversationId = UUID.randomUUID();
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(parsedMessage.getRawMessage()).thenReturn("test-message");
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message);
         verify(tracer).setMDCContextFromMhsInbound(null);
+        verify(tracer).handleConversationId(conversationId.toString());
     }
 
     @Test
@@ -92,7 +89,6 @@ public class JmsConsumerTest {
         var conversationId = UUID.randomUUID();
         var parsedMessage = mock(ParsedMessage.class);
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(parsedMessage.getRawMessage()).thenReturn("test-message");
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
@@ -100,42 +96,45 @@ public class JmsConsumerTest {
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
-
-    @ParameterizedTest
-    @CsvSource({
-            "RCMR_IN0UK0",
-            ","
-    })
-    void shouldPutMessageWithInvalidInteractionIdOnUnhandledQueue(String interactionId) throws IOException, JMSException {
+    @Test
+    void shouldPutMessageWithNoInteractionIdOnDLQ() throws JMSException, IOException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-        when(parsedMessage.getInteractionId()).thenReturn(interactionId);
-        when(parsedMessage.getRawMessage()).thenReturn(messageContent);
+        when(parser.parse(any())).thenReturn(parsedMessage);
+        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        when(parsedMessage.getInteractionId()).thenReturn(null);
 
-        jmsConsumerTestFactory();
+        verifySentToParsingDlq();
     }
 
     @Test
-    void shouldPutMessageWithoutSoapHeaderOnUnhandledQueue() throws IOException, JMSException {
+    void shouldPutMessageWithEmptyInteractionIdOnDLQ() throws JMSException, IOException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getSoapEnvelope()).thenReturn(new SOAPEnvelope());
-        when(parsedMessage.getRawMessage()).thenReturn(messageContent);
+        when(parser.parse(any())).thenReturn(parsedMessage);
+        when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        when(parsedMessage.getInteractionId()).thenReturn("   ");
 
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-        jmsConsumerTestFactory();
+        verifySentToParsingDlq();
+    }
+
+    @Test
+    void shouldPutMessageWithoutSoapHeaderOnDLQ() throws IOException, JMSException {
+        ParsedMessage parsedMessage = mock(ParsedMessage.class);
+
+        when(parser.parse(any())).thenReturn(parsedMessage);
+        verifySentToParsingDlq();
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws JMSException, IOException {
         IOException expectedError = new IOException("failed to parse message");
         when(parser.parse(Mockito.any())).thenThrow(expectedError);
-        jmsConsumerTestFactory();
+        verifySentToParsingDlq();
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenSanitizingFails() throws JMSException {
         RuntimeException expectedError = new RuntimeException("failed to sanitize message");
         when(messageSanitizer.sanitize(Mockito.any())).thenThrow(expectedError);
-        jmsConsumerTestFactory();
+        verifySentToParsingDlq();
     }
 }
