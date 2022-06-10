@@ -63,7 +63,7 @@ public class S3PointerHandlerTest {
 
     @Test
     void shouldReadLargeMessageContentFromS3() throws IOException {
-        ParsedMessage parsedMessage = s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage());
+        ParsedMessage parsedMessage = s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage());
         assertThat(parsedMessage.getInteractionId()).isEqualTo("RCMR_IN030000UK06");
     }
 

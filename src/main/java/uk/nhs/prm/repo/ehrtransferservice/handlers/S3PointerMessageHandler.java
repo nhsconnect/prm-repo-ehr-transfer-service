@@ -9,7 +9,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.EhrExtractMessageWrapper;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
 
@@ -32,22 +32,22 @@ public class S3PointerMessageHandler {
         this.s3PointerMessageParser = s3PointerMessageParser;
     }
 
-    public LargeEhrMessage getLargeMessage(S3PointerMessage sqsMessagePayload) throws IOException {
+    public LargeSqsMessage getLargeSqsMessage(S3PointerMessage sqsMessagePayload) throws IOException {
         var ehrMessageInputStream =
                 s3Client.getObject(GetObjectRequest.builder().bucket(sqsMessagePayload.getS3BucketName()).key(sqsMessagePayload.getS3Key()).build());
         return parse(getS3MessageContentAsString(ehrMessageInputStream));
     }
 
-    public LargeEhrMessage getLargeMessage(String sqsMessagePayload) throws IOException {
-        return getLargeMessage(s3PointerMessageParser.parse(sqsMessagePayload));
+    public LargeSqsMessage getLargeSqsMessage(String sqsMessagePayload) throws IOException {
+        return getLargeSqsMessage(s3PointerMessageParser.parse(sqsMessagePayload));
     }
 
-    private LargeEhrMessage parse(String s3Message) throws JsonProcessingException {
+    private LargeSqsMessage parse(String s3Message) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
         var mhsJsonMessage = new ObjectMapper().readValue(s3Message, MhsJsonMessage.class);
         var envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
         var message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
-        return new LargeEhrMessage(envelope, message, s3Message);
+        return new LargeSqsMessage(envelope, message, s3Message);
     }
 
     private String getS3MessageContentAsString(InputStream ehrMessageInputStream) {

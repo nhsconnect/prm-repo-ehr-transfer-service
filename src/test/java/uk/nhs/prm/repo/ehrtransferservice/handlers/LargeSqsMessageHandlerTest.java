@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
-import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
@@ -17,13 +17,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LargeEhrMessageHandlerTest {
+class LargeSqsMessageHandlerTest {
 
     @Mock
     EhrRepoService ehrRepoService;
 
     @Mock
-    LargeEhrMessage largeEhrMessage;
+    LargeSqsMessage largeSqsMessage;
 
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
@@ -39,23 +39,23 @@ class LargeEhrMessageHandlerTest {
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
-        when(largeEhrMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        largeEhrMessageHandler.handleMessage(largeEhrMessage);
-        verify(ehrRepoService).storeMessage(largeEhrMessage);
+        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        verify(ehrRepoService).storeMessage(largeSqsMessage);
     }
 
     @Test
     public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
-        when(largeEhrMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        when(transferTrackerService.getEhrTransferData(largeEhrMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
-        largeEhrMessageHandler.handleMessage(largeEhrMessage);
-        verify(gp2gpMessengerService).sendContinueMessage(largeEhrMessage, transferTrackerDbEntry);
+        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
+        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, transferTrackerDbEntry);
     }
 
     @Test
     public void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
-        when(largeEhrMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        largeEhrMessageHandler.handleMessage(largeEhrMessage);
-        verify(transferTrackerService).updateStateOfEhrTransfer(largeEhrMessage.getConversationId().toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        verify(transferTrackerService).updateStateOfEhrTransfer(largeSqsMessage.getConversationId().toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
     }
 }

@@ -41,14 +41,14 @@ class S3PointerMessageHandlerTest {
     @Test
     void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage());
+        s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
     @Test
     void shouldThrowExceptionWhenS3MessageIsNotValid() {
         mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
-        assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.getLargeMessage(getStaticS3PointerMessage()));
+        assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage()));
     }
 
     @Test
@@ -56,7 +56,7 @@ class S3PointerMessageHandlerTest {
         String payload = "Payload";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
-        s3PointerMessageHandler.getLargeMessage(payload);
+        s3PointerMessageHandler.getLargeSqsMessage(payload);
         verify(s3PointerMessageParser).parse(payload);
     }
 
@@ -83,7 +83,6 @@ class S3PointerMessageHandlerTest {
 
     @SuppressFBWarnings
     private InputStream readResourceFile(String resourceFileName) throws FileNotFoundException {
-        InputStream targetStream = new FileInputStream("src/test/resources/data/" + resourceFileName);
-        return targetStream;
+        return new FileInputStream("src/test/resources/data/" + resourceFileName);
     }
 }

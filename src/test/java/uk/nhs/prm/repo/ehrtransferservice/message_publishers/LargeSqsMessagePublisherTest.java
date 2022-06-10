@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class LargeEhrMessagePublisherTest {
+class LargeSqsMessagePublisherTest {
     @Mock
     private MessagePublisher messagePublisher;
 
