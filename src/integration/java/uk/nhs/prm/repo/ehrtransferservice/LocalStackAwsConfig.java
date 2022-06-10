@@ -71,6 +71,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.largeMessageFragmentsQueueName}")
     private String largeMessageFragmentsQueueName;
 
+    @Value("${aws.largeMessageFragmentsObservabilityQueueName}")
+    private String largeMessageFragmentsObservabilityQueueName;
+
     @Value("${aws.smallEhrQueueName}")
     private String smallEhrQueueName;
 
@@ -238,13 +241,15 @@ public class LocalStackAwsConfig {
         var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_message_fragments_topic").build());
         createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentQueue.getQueueUrl()));
 
+        var attachmentObservabilityQueue = amazonSQSAsync.createQueue(largeMessageFragmentsObservabilityQueueName);
+        createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentObservabilityQueue.getQueueUrl()));
+
         var smallEhrQueue = amazonSQSAsync.createQueue(smallEhrQueueName);
         var smallEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
         createSnsTestReceiverSubscription(smallEhrTopic, getQueueArn(smallEhrQueue.getQueueUrl()));
 
         var smallEhrObservabilityQueue = amazonSQSAsync.createQueue(smallEhrObservabilityQueueName);
-        var smallEhrObservabilityTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());
-        createSnsTestReceiverSubscription(smallEhrObservabilityTopic, getQueueArn(smallEhrObservabilityQueue.getQueueUrl()));
+        createSnsTestReceiverSubscription(smallEhrTopic, getQueueArn(smallEhrObservabilityQueue.getQueueUrl()));
 
         var largeEhrQueue = amazonSQSAsync.createQueue(largeEhrQueueName);
         var largeEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_ehr_topic").build());

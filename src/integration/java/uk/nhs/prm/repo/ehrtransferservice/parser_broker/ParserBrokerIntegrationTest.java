@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertTrue;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -41,11 +41,8 @@ public class ParserBrokerIntegrationTest {
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
 
-    @Value("${aws.largeMessageFragmentsQueueName}")
-    private String largeMessageFragmentsQueueName;
-
-    @Value("${aws.smallEhrQueueName}")
-    private String smallEhrQueueName;
+    @Value("${aws.largeMessageFragmentsObservabilityQueueName}")
+    private String largeMessageFragmentsObservabilityQueueName;
 
     @Value("${aws.smallEhrObservabilityQueueName}")
     private String smallEhrObservabilityQueueName;
@@ -63,8 +60,7 @@ public class ParserBrokerIntegrationTest {
 
     @AfterEach
     public void tearDown() {
-        purgeQueue(largeMessageFragmentsQueueName);
-        purgeQueue(smallEhrQueueName);
+        purgeQueue(largeMessageFragmentsObservabilityQueueName);
         purgeQueue(smallEhrObservabilityQueueName);
         purgeQueue(largeEhrQueueName);
         purgeQueue(parsingDlqQueueName);
@@ -72,7 +68,7 @@ public class ParserBrokerIntegrationTest {
     }
 
     @Test
-    void shouldPublishAttachmentToAttachmentTopic() throws IOException, InterruptedException {
+    void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException, InterruptedException {
         var attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
         var attachmentSanitized = dataLoader.getDataAsString("COPC_IN000001UK01Sanitized");
 
@@ -83,14 +79,14 @@ public class ParserBrokerIntegrationTest {
         });
         sleep(5000);
 
-        var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsQueueName).getQueueUrl();
+        var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
         System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(attachmentsQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(attachmentSanitized));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(attachmentSanitized));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
     }
 
@@ -110,9 +106,9 @@ public class ParserBrokerIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-            assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
     }
 
@@ -131,7 +127,7 @@ public class ParserBrokerIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(parsingDqlQueueUrl);
-            assertTrue(receivedMessageHolder.get(0).getBody().contains(wrongMessage));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(wrongMessage));
         });
     }
 
