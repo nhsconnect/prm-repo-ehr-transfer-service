@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
+@Disabled("WIP")
 public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
     @Autowired
@@ -46,7 +47,6 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     private String transferTrackerDbTableName;
 
     @Test
-    @Disabled("WIP")
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() {
 
         amazonSQSAsync.createQueue(nackInternalQueueName);
