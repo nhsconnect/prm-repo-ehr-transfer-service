@@ -185,6 +185,10 @@ case "${command}" in
       configure_local_envs
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
+  test_integration_shell)
+    configure_local_envs
+    dojo -c Dojofile-itest
+    ;;
   _test_coverage)
       gradle jacocoTestCoverageVerification
       ;;
@@ -207,6 +211,10 @@ case "${command}" in
   test_all)
     configure_local_envs
     dojo -c Dojofile-itest "./tasks _test_all"
+    ;;
+  test_all_shell)
+    configure_local_envs
+    dojo -c Dojofile-itest
     ;;
   _dep)
       gradle dependencyCheckAnalyze
