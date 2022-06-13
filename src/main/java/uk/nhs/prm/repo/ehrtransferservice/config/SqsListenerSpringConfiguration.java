@@ -11,10 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeMessageFragmentsListener;
@@ -42,6 +39,7 @@ public class SqsListenerSpringConfiguration {
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
     private final S3PointerMessageHandler s3PointerMessageHandler;
+    private final LargeMessageFragmentHandler largeMessageFragmentHandler;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -114,7 +112,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", largeMessageFragmentsQueueName);
         var largeEhrFragmentsConsumer = session.createConsumer(session.createQueue(largeMessageFragmentsQueueName));
-        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, s3PointerMessageHandler));
+        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, s3PointerMessageHandler, largeMessageFragmentHandler));
 
         connection.start();
 
