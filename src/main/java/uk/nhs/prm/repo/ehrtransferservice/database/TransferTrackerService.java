@@ -20,7 +20,13 @@ public class TransferTrackerService {
     public void createEhrTransfer(RepoIncomingEvent incomingEvent, String status) {
         try {
             TransferTrackerDbEntry transferTrackerDbEntry =
-                    new TransferTrackerDbEntry(incomingEvent.getConversationId(), incomingEvent.getNhsNumber(), incomingEvent.getSourceGp(), incomingEvent.getNemsMessageId(), incomingEvent.getNemsEventLastUpdated(), status, getTimeNow());
+                    new TransferTrackerDbEntry(incomingEvent.getConversationId(),
+                            incomingEvent.getNhsNumber(),
+                            incomingEvent.getSourceGp(),
+                            incomingEvent.getNemsMessageId(),
+                            incomingEvent.getNemsEventLastUpdated(),
+                            status,
+                            getTimeNow());
             transferTrackerDb.save(transferTrackerDbEntry);
             log.info("Recorded initial Repo Incoming event in Transfer Tracker DB with status: " + status);
         } catch (Exception e) {
