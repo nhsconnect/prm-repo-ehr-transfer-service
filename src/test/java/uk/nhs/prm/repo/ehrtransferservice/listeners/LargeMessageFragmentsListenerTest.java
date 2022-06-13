@@ -29,7 +29,7 @@ class LargeMessageFragmentsListenerTest {
     LargeMessageFragmentHandler largeMessageFragmentHandler;
 
 
-    private final String payload = "payload";
+    private static final String payload = "payload";
 
     @InjectMocks
     LargeMessageFragmentsListener largeMessageFragmentsListener;
