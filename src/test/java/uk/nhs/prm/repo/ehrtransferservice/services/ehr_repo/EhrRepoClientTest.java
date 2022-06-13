@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,12 +10,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
+import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
@@ -22,6 +25,7 @@ import java.util.UUID;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -111,7 +115,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldConfirmMessageStoredInEhrRepo() throws IOException, URISyntaxException, HttpException, InterruptedException {
+    public void shouldConfirmMessageStoredInEhrRepo() throws Exception {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
@@ -121,13 +125,15 @@ public class EhrRepoClientTest {
         String interactionId = "RCMR_IN030000UK06";
         String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[\"" + attachmentId + "\"]}}}";
 
+        //TODO: Refactor the below json body
+        String responseBody = "{\"healthRecordStatus\":\"complete\"}";
         // Mock request
         wireMock.stubFor(post(urlEqualTo("/messages"))
                 .withHeader("Authorization", equalTo("secret"))
                 .withHeader("traceId", equalTo(String.valueOf(traceId)))
                 .willReturn(aResponse()
                         .withStatus(201)
-                        .withHeader("Content-Type", "application/json")));
+                        .withHeader("Content-Type", "application/json").withBody(responseBody)));
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
 
@@ -137,13 +143,15 @@ public class EhrRepoClientTest {
         ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper, null);
 
         // Store
-        ehrRepoClient.confirmMessageStored(parsedMessage);
+        var response = ehrRepoClient.confirmMessageStored(parsedMessage);
 
         verify(postRequestedFor(urlMatching("/messages"))
                 .withRequestBody(equalToJson((requestBody)))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret"))
                 .withHeader("traceId", matching(String.valueOf(traceId))));
+        assertEquals("complete", response.getHealthRecordStatus());
+
     }
 
     private EhrExtractMessageWrapper getMessageContent(String nhsNumber) {
