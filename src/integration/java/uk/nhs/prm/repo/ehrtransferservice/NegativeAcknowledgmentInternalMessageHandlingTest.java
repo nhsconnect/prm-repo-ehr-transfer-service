@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     @Autowired
     private DynamoDbClient dbClient;
 
+    @Autowired
+    private AmazonSQSAsync amazonSQSAsync;
+
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
@@ -42,7 +46,10 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     private String transferTrackerDbTableName;
 
     @Test
+    @Disabled("WIP")
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() {
+
+        amazonSQSAsync.createQueue(nackInternalQueueName);
         UUID transferConversationId = createTransferRecord();
 
         String internalNackMessage = new Gp2gpNackBuilder()

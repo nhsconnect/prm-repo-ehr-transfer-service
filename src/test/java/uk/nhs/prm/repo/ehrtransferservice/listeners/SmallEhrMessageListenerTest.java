@@ -7,13 +7,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
-import javax.jms.JMSException;
-import java.io.IOException;
-
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SmallEhrMessageListenerTest {
@@ -24,6 +22,9 @@ class SmallEhrMessageListenerTest {
     @Mock
     Parser parser;
 
+    @Mock
+    SmallEhrMessageHandler smallEhrMessageHandler;
+
     @InjectMocks
     SmallEhrMessageListener smallEhrMessageListener;
 
@@ -32,12 +33,44 @@ class SmallEhrMessageListenerTest {
     }
 
     @Test
-    void shouldParseSmallEhrMessage() throws JMSException, IOException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+    void shouldPassParsedMessageToHandlerAndAcknowledgeIt() throws Exception {
+        var message = spy(new SQSTextMessage("payload"));
+        var parsedMessage = new StubParsedMessage();
+        when(parser.parse("payload")).thenReturn(parsedMessage);
 
         smallEhrMessageListener.onMessage(message);
-        verify(parser).parse(payload);
+
+        verify(parser).parse("payload");
         verify(tracer).setMDCContextFromSqs(message);
+        verify(message, times(1)).acknowledge();
+        verify(smallEhrMessageHandler).handleMessage(parsedMessage);
+    }
+
+    @Test
+    void shouldNotAcknowledgeMessageWhenAnExceptionOccursInParsing() throws Exception {
+        var message = spy(new SQSTextMessage("bleuch"));
+
+        when(parser.parse(anyString())).thenThrow(new IllegalArgumentException());
+
+        smallEhrMessageListener.onMessage(message);
+
+        verify(message, never()).acknowledge();
+    }
+
+    @Test
+    void shouldNotAcknowledgeMessageWhenAnExceptionOccursInHandling() throws Exception {
+        var message = spy(new SQSTextMessage("boom"));
+
+        doThrow(new IllegalArgumentException()).when(smallEhrMessageHandler).handleMessage(any());
+
+        smallEhrMessageListener.onMessage(message);
+
+        verify(message, never()).acknowledge();
+    }
+
+    class StubParsedMessage extends ParsedMessage {
+        public StubParsedMessage() {
+            super(null, null, null);
+        }
     }
 }
