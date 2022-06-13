@@ -137,6 +137,11 @@ resource "aws_kms_key" "transfer_tracker_dynamodb_kms_key" {
   }
 }
 
+resource "aws_kms_alias" "transfer_tracker_dynamodb_encryption" {
+  name          = "alias/transfer-tracker-dynamodb-encryption-kms-key"
+  target_key_id = aws_kms_key.transfer_tracker_dynamodb_kms_key.id
+}
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"
