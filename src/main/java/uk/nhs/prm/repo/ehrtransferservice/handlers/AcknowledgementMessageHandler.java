@@ -13,12 +13,12 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 
 @Service
 @Slf4j
-public class ApplicationAcknowledgementMessageHandler implements MessageHandler {
+public class AcknowledgementMessageHandler implements MessageHandler {
 
     private final JmsProducer jmsProducer;
     private String unhandledQueue;
 
-    public ApplicationAcknowledgementMessageHandler(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
+    public AcknowledgementMessageHandler(JmsProducer jmsProducer, @Value("${activemq.unhandledQueue}") String unhandledQueue) {
         this.jmsProducer = jmsProducer;
         this.unhandledQueue = unhandledQueue;
     }

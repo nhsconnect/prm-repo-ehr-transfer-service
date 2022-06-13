@@ -22,14 +22,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @Tag("unit")
-public class ApplicationAcknowledgementMessageHandlerTest {
+public class AcknowledgementMessageHandlerTest {
     @Mock
     JmsProducer jmsProducer;
 
     @Value("${activemq.unhandledQueue}")
     String unhandledQueue;
     @InjectMocks
-    ApplicationAcknowledgementMessageHandler applicationAcknowledgementMessageHandler;
+    AcknowledgementMessageHandler acknowledgementMessageHandler;
     private AutoCloseable closeable;
 
     @BeforeEach
@@ -52,13 +52,13 @@ public class ApplicationAcknowledgementMessageHandlerTest {
 
     @Test
     public void shouldReturnCorrectInteractionId() {
-        assertThat(applicationAcknowledgementMessageHandler.getInteractionId(), equalTo("MCCI_IN010000UK13"));
+        assertThat(acknowledgementMessageHandler.getInteractionId(), equalTo("MCCI_IN010000UK13"));
     }
 
     @Test
     public void shouldSendToUnhandledQueue() {
         ParsedMessage parsedMessage = createParsedMessage();
-        applicationAcknowledgementMessageHandler.handleMessage(parsedMessage);
+        acknowledgementMessageHandler.handleMessage(parsedMessage);
         verify(jmsProducer, times(1)).sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
     }
 }
