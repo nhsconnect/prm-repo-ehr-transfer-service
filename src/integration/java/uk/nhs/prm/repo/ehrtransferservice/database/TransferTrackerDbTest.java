@@ -40,6 +40,7 @@ public class TransferTrackerDbTest {
     String nemsEventLastUpdated = "Last updated";
     String state = "state";
     String dateTime = "2017-11-01T15:00:33+00:00";
+    String messageId = "message Id";
 
 
     @Value("${aws.transferTrackerDbTableName}")
@@ -47,7 +48,7 @@ public class TransferTrackerDbTest {
 
     @BeforeEach
     public void setUp() {
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, dateTime));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, dateTime, messageId));
     }
 
     @AfterEach
@@ -67,7 +68,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldDoInitialUpdateOfRecord() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, messageId));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);

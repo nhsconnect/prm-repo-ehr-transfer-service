@@ -26,13 +26,18 @@ public class TransferTrackerService {
                             incomingEvent.getNemsMessageId(),
                             incomingEvent.getNemsEventLastUpdated(),
                             status,
-                            getTimeNow());
+                            getTimeNow(), getLargeEhrCoreMessageId());
             transferTrackerDb.save(transferTrackerDbEntry);
             log.info("Recorded initial Repo Incoming event in Transfer Tracker DB with status: " + status);
         } catch (Exception e) {
             log.error("Error encountered while recording Repo Incoming event in Transfer tracker db: " + e.getMessage());
             throw new TransferTrackerDbException("Error encountered while recording Repo Incoming event in Transfer tracker db", e);
         }
+    }
+
+    private String getLargeEhrCoreMessageId() {
+        String largeEhrCoreMessageId = ""; //This is a placeholder for the messageId from the LargeEhrCoreQueue
+        return largeEhrCoreMessageId;
     }
 
     public void updateStateOfEhrTransfer(String conversationId, String status) {

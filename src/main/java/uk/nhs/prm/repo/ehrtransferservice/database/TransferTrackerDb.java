@@ -37,6 +37,7 @@ public class TransferTrackerDb {
         item.put("nems_event_last_updated", AttributeValue.builder().s(transferTrackerDbEntry.getNemsEventLastUpdated()).build());
         item.put("date_time", AttributeValue.builder().s(transferTrackerDbEntry.getDateTime()).build());
         item.put("state", AttributeValue.builder().s(transferTrackerDbEntry.getState()).build());
+        item.put("message_id", AttributeValue.builder().s(transferTrackerDbEntry.getMessageId()).build());
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
@@ -73,6 +74,7 @@ public class TransferTrackerDb {
         var nemsEventLastUpdated = itemResponse.item().get("nems_event_last_updated").s();
         var dateTime = itemResponse.item().get("date_time").s();
         var state = itemResponse.item().get("state").s();
-        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime);
+        var messageId = itemResponse.item().get("message_id").s();
+        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, messageId);
     }
 }

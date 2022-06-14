@@ -68,7 +68,7 @@ class TransferTrackerServiceTest {
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "");
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "", "");
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
         transferTrackerService.getEhrTransferData(conversationId);
 

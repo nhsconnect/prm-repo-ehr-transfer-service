@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;

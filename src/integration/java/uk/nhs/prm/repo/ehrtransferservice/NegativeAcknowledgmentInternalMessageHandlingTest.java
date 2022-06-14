@@ -73,7 +73,7 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
                         UUID.randomUUID().toString(),
                         trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
                         "great status",
-                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings());
+                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(), UUID.randomUUID().toString());
         transferTrackerDb.save(transferTrackerDbEntry);
         return conversationId;
     }
