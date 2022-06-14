@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeMessageFragmentsListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
@@ -40,6 +37,7 @@ public class SqsListenerSpringConfiguration {
     private final Parser parser;
     private final S3PointerMessageHandler s3PointerMessageHandler;
     private final LargeMessageFragmentHandler largeMessageFragmentHandler;
+    private final NegativeAcknowledgementHandler negativeAcknowledgementHandler;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -55,6 +53,9 @@ public class SqsListenerSpringConfiguration {
 
     @Value("${aws.ehrCompleteQueueName}")
     private String ehrCompleteQueueName;
+
+    @Value("${aws.nackQueueName}")
+    private String negativeAckQueueName;
 
     @Bean
     public AmazonSQSAsync amazonSQSAsync() {
@@ -126,6 +127,19 @@ public class SqsListenerSpringConfiguration {
         log.info("ehr complete queue name : {}", ehrCompleteQueueName);
         var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
         ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, ehrCompleteParser, ehrCompleteHandler));
+
+        connection.start();
+
+        return session;
+    }
+
+    @Bean
+    public Session createNegativeAckQueueListener(SQSConnection connection) throws JMSException {
+        Session session = getSession(connection);
+
+        log.info("nack queue name : {}", negativeAckQueueName);
+        var ehrCompleteConsumer = session.createConsumer(session.createQueue(negativeAckQueueName));
+        ehrCompleteConsumer.setMessageListener(new NegativeAcknowledgementListener(tracer, parser, negativeAcknowledgementHandler));
 
         connection.start();
 

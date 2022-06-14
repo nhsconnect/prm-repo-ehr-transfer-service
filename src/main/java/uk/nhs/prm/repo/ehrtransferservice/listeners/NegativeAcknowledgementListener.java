@@ -2,8 +2,9 @@ package uk.nhs.prm.repo.ehrtransferservice.listeners;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
+import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -11,16 +12,22 @@ import javax.jms.TextMessage;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class NegativeAcknowledgementListener implements MessageListener {
 
+    private final Tracer tracer;
+    private final Parser parser;
     private final NegativeAcknowledgementHandler handler;
 
     @Override
     public void onMessage(Message message) {
         try {
-            handler.handleMessage( ((TextMessage) message).getText());
+            tracer.setMDCContextFromSqs(message);
+            log.info("RECEIVED: Message from negative acknowledge queue");
+            String payload = ((TextMessage) message).getText();
+            var parsedMessage = parser.parse(payload);
+            handler.handleMessage(parsedMessage);
             message.acknowledge();
+            log.info("ACKNOWLEDGED: Message from negative acknowledgement queue");
         } catch (Exception e) {
             log.error("Error while processing negative acknowledgement", e);
         }

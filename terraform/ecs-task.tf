@@ -24,6 +24,7 @@ locals {
     { name = "SMALL_EHR_QUEUE_NAME", value = aws_sqs_queue.small_ehr.name },
     { name = "SMALL_EHR_OBSERVABILITY_QUEUE_NAME", value = aws_sqs_queue.small_ehr_observability.name },
     { name = "LARGE_EHR_QUEUE_NAME", value = aws_sqs_queue.large_ehr.name },
+    { name = "NEGATIVE_ACKS_QUEUE_NAME", value = aws_sqs_queue.negative_acks.name },
     { name = "LARGE_MESSAGE_FRAGMENTS_QUEUE_NAME", value = aws_sqs_queue.large_message_fragments.name },
     { name = "EHR_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.ehr_complete.name },
     { name = "TRANSFER_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.transfer_complete.name },
