@@ -49,7 +49,6 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     @Test
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() {
 
-        amazonSQSAsync.createQueue(nackInternalQueueName);
         UUID transferConversationId = createTransferRecord();
 
         String internalNackMessage = new Gp2gpNackBuilder()

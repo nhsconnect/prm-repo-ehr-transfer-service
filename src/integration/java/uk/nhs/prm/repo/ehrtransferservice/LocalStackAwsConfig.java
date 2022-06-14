@@ -92,6 +92,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.ehrCompleteQueueName}")
     private String ehrCompleteQueueName;
 
+    @Value("${aws.nackQueueName}")
+    private String nackInternalQueueName;
+
     @Value("${activemq.amqEndpoint1}")
     private String amqEndpoint1;
 
@@ -266,6 +269,8 @@ public class LocalStackAwsConfig {
         var ehrCompleteQueue = amazonSQSAsync.createQueue(ehrCompleteQueueName);
         var ehrCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_ehr_complete_topic").build());
         createSnsTestReceiverSubscription(ehrCompleteTopic, getQueueArn(ehrCompleteQueue.getQueueUrl()));
+
+        amazonSQSAsync.createQueue(nackInternalQueueName);
     }
 
     private void setupS3Bucket() {
