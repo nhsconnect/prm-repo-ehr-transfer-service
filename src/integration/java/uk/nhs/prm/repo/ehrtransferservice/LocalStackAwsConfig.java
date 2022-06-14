@@ -147,17 +147,7 @@ public class LocalStackAwsConfig {
         return S3Client.builder()
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return "FAKE";
-                    }
-
-                    @Override
-                    public String secretAccessKey() {
-                        return "FAKE";
-                    }
-                }))
+                .credentialsProvider(stubbedCredentialsProvider())
                 .build();
     }
 
@@ -196,17 +186,7 @@ public class LocalStackAwsConfig {
         return SnsClient.builder()
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return "FAKE";
-                    }
-
-                    @Override
-                    public String secretAccessKey() {
-                        return "FAKE";
-                    }
-                }))
+                .credentialsProvider(stubbedCredentialsProvider())
                 .build();
     }
 
@@ -216,17 +196,7 @@ public class LocalStackAwsConfig {
                 .endpointOverride(URI.create(localstackUrl))
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(
-                        StaticCredentialsProvider.create(new AwsCredentials() {
-                            @Override
-                            public String accessKeyId() {
-                                return "FAKE";
-                            }
-
-                            @Override
-                            public String secretAccessKey() {
-                                return "FAKE";
-                            }
-                        }))
+                        stubbedCredentialsProvider())
                 .build();
     }
 
@@ -347,6 +317,20 @@ public class LocalStackAwsConfig {
     private String getQueueArn(String queueUrl) {
         var queueAttributes = amazonSQSAsync.getQueueAttributes(queueUrl, List.of("QueueArn"));
         return queueAttributes.getAttributes().get("QueueArn");
+    }
+
+    private static StaticCredentialsProvider stubbedCredentialsProvider() {
+        return StaticCredentialsProvider.create(new AwsCredentials() {
+            @Override
+            public String accessKeyId() {
+                return "FAKE";
+            }
+
+            @Override
+            public String secretAccessKey() {
+                return "FAKE";
+            }
+        });
     }
 }
 

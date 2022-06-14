@@ -3,4 +3,6 @@ fileignoreconfig:
   checksum: e41d7bb3997c5fcf860112c17d8d184783dc432ff69bb894473724508b48996f
 - filename: Dojofile
   checksum: 2c1682b4e1385eb608c9059d14daad9fc004f3f66fe78f5854ae68a6aff3cba3
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/FailureSanitized/envelope.xml
+  checksum: 792c1f117773b6b7eeb22cd3513144a0c160fcc7b2dc685457c8ac35e46ae9cd
 version: ""
