@@ -108,7 +108,8 @@ data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
       aws_sqs_queue.ehr_complete.arn,
       aws_sqs_queue.transfer_complete.arn,
       aws_sqs_queue.large_ehr.arn,
-      aws_sqs_queue.large_message_fragments.arn
+      aws_sqs_queue.large_message_fragments.arn,
+      aws_sqs_queue.negative_acks.arn
     ]
   }
 }
