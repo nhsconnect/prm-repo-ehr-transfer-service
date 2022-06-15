@@ -95,6 +95,10 @@ public class ParserTest {
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
+        var rawMessage = parsedMessage.getRawMessage();
+
+        System.out.println(rawMessage);
+
         assertThat(parsedMessage.getReasons().size(), equalTo(2));
         assertThat(parsedMessage.getReasons().get(1), equalTo("Update Failed - invalid GP Registration data supplied"));
     }
