@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,16 +38,20 @@ class LargeEhrMessageHandlerTest {
     @InjectMocks
     LargeEhrMessageHandler largeEhrMessageHandler;
 
+    @BeforeEach
+    public void setUp() throws Exception {
+        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
+        when(largeSqsMessage.getMessageId()).thenReturn(UUID.randomUUID());
+    }
+
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
-        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
         largeEhrMessageHandler.handleMessage(largeSqsMessage);
         verify(ehrRepoService).storeMessage(largeSqsMessage);
     }
 
     @Test
     public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
-        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
         largeEhrMessageHandler.handleMessage(largeSqsMessage);
         verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, transferTrackerDbEntry);
@@ -54,8 +59,13 @@ class LargeEhrMessageHandlerTest {
 
     @Test
     public void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
-        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
         largeEhrMessageHandler.handleMessage(largeSqsMessage);
         verify(transferTrackerService).updateStateOfEhrTransfer(largeSqsMessage.getConversationId().toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+    }
+
+    @Test
+    public void shouldCallTransferTrackerDbToUpdateWithLargeEhrCoreMessageId() throws Exception {
+        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        verify(transferTrackerService).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
     }
 }

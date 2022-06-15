@@ -37,7 +37,7 @@ public class TransferTrackerDb {
         item.put("nems_event_last_updated", AttributeValue.builder().s(transferTrackerDbEntry.getNemsEventLastUpdated()).build());
         item.put("date_time", AttributeValue.builder().s(transferTrackerDbEntry.getDateTime()).build());
         item.put("state", AttributeValue.builder().s(transferTrackerDbEntry.getState()).build());
-        item.put("message_id", AttributeValue.builder().s(transferTrackerDbEntry.getMessageId()).build());
+        item.put("large_ehr_core_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getLargeEhrCoreMessageId()).build());
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
@@ -63,6 +63,22 @@ public class TransferTrackerDb {
                 .build());
     }
 
+    public void updateLargeEhrCoreMessageId(String conversationId, String largeEhrCoreMessageId) {
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
+
+        Map<String, AttributeValueUpdate> updates = new HashMap<>();
+        updates.put("large_ehr_core_message_id", AttributeValueUpdate.builder()
+                .value(AttributeValue.builder().s(largeEhrCoreMessageId).build())
+                .build());
+
+        dynamoDbClient.updateItem(UpdateItemRequest.builder()
+                .tableName(config.transferTrackerDbTableName())
+                .key(key)
+                .attributeUpdates(updates)
+                .build());
+    }
+
     private TransferTrackerDbEntry fromDbItem(GetItemResponse itemResponse) {
         if (!itemResponse.hasItem()) {
             return null;
@@ -74,7 +90,7 @@ public class TransferTrackerDb {
         var nemsEventLastUpdated = itemResponse.item().get("nems_event_last_updated").s();
         var dateTime = itemResponse.item().get("date_time").s();
         var state = itemResponse.item().get("state").s();
-        var messageId = itemResponse.item().get("message_id").s();
-        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, messageId);
+        var largeEhrCoreMessageId = itemResponse.item().get("large_ehr_core_message_id").s();
+        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId);
     }
 }

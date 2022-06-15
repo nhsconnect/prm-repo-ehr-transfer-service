@@ -59,6 +59,16 @@ public class TransferTrackerService {
         return ehrData;
     }
 
+    public void updateLargeEhrCoreMessageId(String conversationId, String messageId) {
+        try {
+            transferTrackerDb.updateLargeEhrCoreMessageId(conversationId, messageId);
+            log.info("Updated large EHR core message ID in DB");
+        } catch (Exception e) {
+            log.error("Failed to update large EHR core message ID in DB: " + e.getMessage());
+            throw new TransferTrackerDbException("Failed to update large EHR core message ID in DB: ", e);
+        }
+    }
+
     private String getTimeNow() {
         return ZonedDateTime.now(ZoneOffset.ofHours(0)).toString();
     }

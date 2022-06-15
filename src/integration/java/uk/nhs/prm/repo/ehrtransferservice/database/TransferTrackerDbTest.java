@@ -40,7 +40,7 @@ public class TransferTrackerDbTest {
     String nemsEventLastUpdated = "Last updated";
     String state = "state";
     String dateTime = "2017-11-01T15:00:33+00:00";
-    String messageId = "message Id";
+    String largeEhrCoreMessageId = "large ehr core message Id";
 
 
     @Value("${aws.transferTrackerDbTableName}")
@@ -48,7 +48,7 @@ public class TransferTrackerDbTest {
 
     @BeforeEach
     public void setUp() {
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, dateTime, messageId));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId));
     }
 
     @AfterEach
@@ -68,7 +68,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldDoInitialUpdateOfRecord() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, messageId));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, largeEhrCoreMessageId));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
@@ -91,5 +91,15 @@ public class TransferTrackerDbTest {
         assertThat(transferTrackerDbData.getState()).isEqualTo("ACTION:EHR_REQUEST_SENT");
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
         assertThat(transferTrackerDbData.getDateTime()).isEqualTo(newTimestamp);
+    }
+
+    @Test
+    void shouldUpdateOnlyLargeEhrCoreMessageId() {
+        String updatedLargeEhrCoreMessageId = "updated-large-ehr-core-message-id";
+        transferTrackerDb.updateLargeEhrCoreMessageId(conversationId, updatedLargeEhrCoreMessageId);
+
+        var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
+        assertThat(transferTrackerDbData.getLargeEhrCoreMessageId()).isEqualTo(updatedLargeEhrCoreMessageId);
+        assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
     }
 }

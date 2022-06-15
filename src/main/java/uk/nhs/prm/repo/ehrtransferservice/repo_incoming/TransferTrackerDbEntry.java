@@ -11,9 +11,9 @@ public class TransferTrackerDbEntry {
     String nemsEventLastUpdated;
     String state;
     String dateTime;
-    String messageId;
+    String largeEhrCoreMessageId;
 
-    public TransferTrackerDbEntry(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String nemsEventLastUpdated, String state, String dateTime, String messageId) {
+    public TransferTrackerDbEntry(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String nemsEventLastUpdated, String state, String dateTime, String largeEhrCoreMessageId) {
         this.conversationId = conversationId;
         this.nhsNumber = nhsNumber;
         this.sourceGP = sourceGP;
@@ -21,7 +21,7 @@ public class TransferTrackerDbEntry {
         this.nemsEventLastUpdated = nemsEventLastUpdated;
         this.state = state;
         this.dateTime = dateTime;
-        this.messageId = messageId;
+        this.largeEhrCoreMessageId = largeEhrCoreMessageId;
 
     }
 }
