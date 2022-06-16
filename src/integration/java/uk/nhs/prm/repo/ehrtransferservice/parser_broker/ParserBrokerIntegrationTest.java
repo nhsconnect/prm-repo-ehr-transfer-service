@@ -77,7 +77,6 @@ public class ParserBrokerIntegrationTest {
             bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
             return bytesMessage;
         });
-        sleep(5000);
 
         var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
         System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
@@ -100,7 +99,6 @@ public class ParserBrokerIntegrationTest {
             bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
             return bytesMessage;
         });
-        sleep(5000);
 
         var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
@@ -121,7 +119,6 @@ public class ParserBrokerIntegrationTest {
             bytesMessage.writeBytes(wrongMessage.getBytes(StandardCharsets.UTF_8));
             return bytesMessage;
         });
-        sleep(5000);
 
         var parsingDqlQueueUrl = sqs.getQueueUrl(parsingDlqQueueName).getQueueUrl();
 
