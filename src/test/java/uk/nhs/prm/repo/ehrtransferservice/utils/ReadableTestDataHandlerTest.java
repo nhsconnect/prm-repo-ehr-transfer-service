@@ -47,10 +47,8 @@ class ReadableTestDataHandlerTest {
     
     @MethodSource("testDataFilesAndNames")
     @ParameterizedTest
-    public void shouldBeAbleToConvertAndReadMessagesBackFromReadableFormatToBeIdenticalToOriginals(String original, String interactionId, String variant) throws Exception {
+    public void shouldBeAbleToReadMessagesFromReadableFormatToBeIdenticalToOriginals(String original, String interactionId, String variant) throws Exception {
         var unreadableMessage = rawLoader.getDataAsString(original);
-
-        readableHandler.splitMessage(original);
 
         var messageFromReadableLoader = readableHandler.readMessage(interactionId, variant);
 
