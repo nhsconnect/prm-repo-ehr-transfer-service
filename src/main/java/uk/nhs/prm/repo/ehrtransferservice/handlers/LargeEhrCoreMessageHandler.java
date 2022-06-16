@@ -9,13 +9,13 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 
 @Service
 @Slf4j
-public class LargeEhrMessageHandler implements MessageHandler<LargeSqsMessage> {
+public class LargeEhrCoreMessageHandler implements MessageHandler<LargeSqsMessage> {
 
     private final EhrRepoService ehrRepoService;
     private final Gp2gpMessengerService gp2gpMessengerService;
     private final TransferTrackerService transferTrackerService;
 
-    public LargeEhrMessageHandler(EhrRepoService ehrRepoService, Gp2gpMessengerService gp2gpMessengerService, TransferTrackerService transferTrackerService) {
+    public LargeEhrCoreMessageHandler(EhrRepoService ehrRepoService, Gp2gpMessengerService gp2gpMessengerService, TransferTrackerService transferTrackerService) {
         this.ehrRepoService = ehrRepoService;
         this.gp2gpMessengerService = gp2gpMessengerService;
         this.transferTrackerService = transferTrackerService;

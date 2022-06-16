@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class LargeEhrMessageHandlerTest {
+class LargeEhrCoreMessageHandlerTest {
 
     @Mock
     EhrRepoService ehrRepoService;
@@ -36,7 +36,7 @@ class LargeEhrMessageHandlerTest {
     TransferTrackerService transferTrackerService;
 
     @InjectMocks
-    LargeEhrMessageHandler largeEhrMessageHandler;
+    LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -46,26 +46,26 @@ class LargeEhrMessageHandlerTest {
 
     @Test
     public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
-        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(ehrRepoService).storeMessage(largeSqsMessage);
     }
 
     @Test
     public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
         when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
-        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, transferTrackerDbEntry);
     }
 
     @Test
     public void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
-        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(transferTrackerService).updateStateOfEhrTransfer(largeSqsMessage.getConversationId().toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
     }
 
     @Test
     public void shouldCallTransferTrackerDbToUpdateWithLargeEhrCoreMessageId() throws Exception {
-        largeEhrMessageHandler.handleMessage(largeSqsMessage);
+        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(transferTrackerService).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
     }
 }

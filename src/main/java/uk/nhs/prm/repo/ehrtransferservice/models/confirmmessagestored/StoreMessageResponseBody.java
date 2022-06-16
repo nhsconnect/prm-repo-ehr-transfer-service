@@ -1,12 +1,12 @@
 package uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 public class StoreMessageResponseBody{
 
     public String healthRecordStatus;

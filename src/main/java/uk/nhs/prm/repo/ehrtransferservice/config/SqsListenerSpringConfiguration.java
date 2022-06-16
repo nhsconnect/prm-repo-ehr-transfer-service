@@ -11,8 +11,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeMessageFragmentsListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.NegativeAcknowledgementListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
@@ -31,7 +40,7 @@ public class SqsListenerSpringConfiguration {
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser repoIncomingEventParser;
     private final SmallEhrMessageHandler smallEhrMessageHandler;
-    private final LargeEhrMessageHandler largeEhrMessageHandler;
+    private final LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
     private final EhrCompleteHandler ehrCompleteHandler;
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
@@ -100,7 +109,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", largeEhrQueueName);
         var largeEhrConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
-        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer, s3PointerMessageHandler, largeEhrMessageHandler));
+        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer, s3PointerMessageHandler, largeEhrCoreMessageHandler));
 
         connection.start();
 

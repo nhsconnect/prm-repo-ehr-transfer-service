@@ -3,7 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.listeners;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 
@@ -18,7 +18,7 @@ import java.io.IOException;
 public class LargeEhrMessageListener implements MessageListener {
     private final Tracer tracer;
     private final S3PointerMessageHandler s3PointerMessageHandler;
-    private final LargeEhrMessageHandler largeEhrMessageHandler;
+    private final LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
     @Override
     public void onMessage(Message message) {
@@ -26,7 +26,7 @@ public class LargeEhrMessageListener implements MessageListener {
             tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from large-ehr queue");
             var largeEhrMessage = getLargeEhrMessage(message);
-            largeEhrMessageHandler.handleMessage(largeEhrMessage);
+            largeEhrCoreMessageHandler.handleMessage(largeEhrMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from large-ehr queue");
         } catch (Exception e) {
