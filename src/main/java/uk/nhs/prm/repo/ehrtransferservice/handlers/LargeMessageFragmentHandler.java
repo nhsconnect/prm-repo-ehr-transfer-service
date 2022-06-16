@@ -26,8 +26,8 @@ public class LargeMessageFragmentHandler implements MessageHandler<LargeSqsMessa
 
     @Override
     public void handleMessage(LargeSqsMessage largeSqsMessage) throws Exception {
-        var transferTrackerTrData = transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString());
-        var largeMessageFragments = new LargeMessageFragments(largeSqsMessage, transferTrackerTrData.getNhsNumber());
+        //var transferTrackerTrData = transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString());
+        var largeMessageFragments = new LargeMessageFragments(largeSqsMessage);
         ehrRepoService.storeMessage(largeMessageFragments);
     }
 }
