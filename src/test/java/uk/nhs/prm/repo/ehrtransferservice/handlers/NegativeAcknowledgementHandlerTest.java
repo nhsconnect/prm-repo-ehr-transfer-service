@@ -28,21 +28,18 @@ public class NegativeAcknowledgementHandlerTest {
     private final UUID conversationId = UUID.randomUUID();
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailed(){
+    void shouldUpdateDbRecordAsTransferFailed() {
         negativeAcknowledgementHandler.handleMessage(createParsedMessage());
+
         verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
                 "ACTION:EHR_TRANSFER_FAILED:${nack-error-here}");
-
     }
 
-    ParsedMessage createParsedMessage(){
+    private ParsedMessage createParsedMessage() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
-        envelope.header.messageHeader.conversationId= conversationId;
+        envelope.header.messageHeader.conversationId = conversationId;
         return new ParsedMessage(envelope, null, null);
     }
-
-
-
 }

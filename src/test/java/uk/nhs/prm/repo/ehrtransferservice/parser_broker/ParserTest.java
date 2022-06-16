@@ -87,27 +87,6 @@ public class ParserTest {
     }
 
     @Test
-    public void shouldExtractErrorMessageFromAcknowledgementFromTheReasonsWhichShouldOnlyExistIfItIsAFailure() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "FailureSanitized");
-        ParsedMessage parsedMessage = parser.parse(messageAsString);
-
-        var rawMessage = parsedMessage.getRawMessage();
-
-        System.out.println(rawMessage);
-
-        assertThat(parsedMessage.getReasons().size(), equalTo(2));
-        assertThat(parsedMessage.getReasons().get(1), equalTo("Update Failed - invalid GP Registration data supplied"));
-    }
-
-    @Test
-    public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "Empty");
-        ParsedMessage parsedMessage = parser.parse(messageAsString);
-
-        assertThat(parsedMessage.getReasons().size(), is(0));
-    }
-
-    @Test
     public void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
         String messageAsString = readableReader.readMessage("RCMR_IN030000UK06", "SanitizedWithUnexpectedBackslash");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
