@@ -3,4 +3,10 @@ fileignoreconfig:
   checksum: e41d7bb3997c5fcf860112c17d8d184783dc432ff69bb894473724508b48996f
 - filename: Dojofile
   checksum: 2c1682b4e1385eb608c9059d14daad9fc004f3f66fe78f5854ae68a6aff3cba3
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/FailureSanitized/envelope.xml
+  checksum: 792c1f117773b6b7eeb22cd3513144a0c160fcc7b2dc685457c8ac35e46ae9cd
+- filename: src/test/resources/data/COPC_IN000001UK01
+  checksum: b1c1385bf3f9f0fb18f7a0cf1692834a95a99472e48ba5c67fe83ee8352f1571
+- filename: src/test/resources/data/COPC_IN000001UK01Sanitized
+  checksum: cea39f29314e8b22654804b47fd46c0df563558193d3cfd89112f5fd982eb23a
 version: ""
