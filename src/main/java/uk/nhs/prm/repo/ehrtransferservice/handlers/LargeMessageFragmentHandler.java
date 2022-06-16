@@ -2,6 +2,8 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeMessageFragments;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
@@ -10,9 +12,11 @@ import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 public class LargeMessageFragmentHandler implements MessageHandler<LargeSqsMessage> {
 
     private final EhrRepoService ehrRepoService;
+    private final TransferTrackerService transferTrackerService;
 
-    public LargeMessageFragmentHandler(EhrRepoService ehrRepoService) {
+    public LargeMessageFragmentHandler(EhrRepoService ehrRepoService, TransferTrackerService transferTrackerService) {
         this.ehrRepoService = ehrRepoService;
+        this.transferTrackerService = transferTrackerService;
     }
 
     @Override
@@ -22,6 +26,8 @@ public class LargeMessageFragmentHandler implements MessageHandler<LargeSqsMessa
 
     @Override
     public void handleMessage(LargeSqsMessage largeSqsMessage) throws Exception {
-        ehrRepoService.storeMessage(largeSqsMessage);
+        var transferTrackerTrData = transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString());
+        var largeMessageFragments = new LargeMessageFragments(largeSqsMessage, transferTrackerTrData.getNhsNumber());
+        ehrRepoService.storeMessage(largeMessageFragments);
     }
 }
