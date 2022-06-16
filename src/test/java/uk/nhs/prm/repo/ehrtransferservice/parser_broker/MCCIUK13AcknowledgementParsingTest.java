@@ -30,7 +30,7 @@ public class MCCIUK13AcknowledgementParsingTest {
 
     @Test
     public void shouldExtractReasonStringsFromTheReasonsFor_AE_TypeFailure() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailureSanitized");
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getReasons().size(), equalTo(2));
@@ -39,7 +39,7 @@ public class MCCIUK13AcknowledgementParsingTest {
 
     @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AE_TypeFailure() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailureSanitized");
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
         var parsedMessage = (Acknowlegement) parser.parse(messageAsString);
 
         assertThat(parsedMessage.getFailureDetails().size(), equalTo(2));
