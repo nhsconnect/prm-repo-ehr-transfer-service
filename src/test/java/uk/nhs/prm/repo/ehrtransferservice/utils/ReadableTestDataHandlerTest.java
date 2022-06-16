@@ -27,73 +27,21 @@ class ReadableTestDataHandlerTest {
 
     @Test
     public void splitMessageShouldCreateReadableXmlEnvelopeFromRawMessage_soThatItCanBeUsedToMakeTestDataReadable() throws Exception {
-        readableHandler.splitMessage("MCCI_IN010000UK13FailureSanitized");
+        readableHandler.splitMessage("readabletestdataXReadableTestDataHandlerTestData");
 
-        var readableEnvelope = rawLoader.getDataAsString("readable/MCCI_IN010000UK13/FailureSanitized/envelope.xml");
+        var readableEnvelope = rawLoader.getDataAsString("readable/readabletestdataX/ReadableTestDataHandlerTestData/envelope.xml");
         assertThat(readableEnvelope).contains("</soap:Envelope>");
 
-        var readableContent = rawLoader.getDataAsString("readable/MCCI_IN010000UK13/FailureSanitized/payload.xml");
+        var readableContent = rawLoader.getDataAsString("readable/readabletestdataX/ReadableTestDataHandlerTestData/payload.xml");
         assertThat(readableContent).contains("<hl7:qualifier code=\"ER\"/>");
     }
 
     @Test
     public void readMessageShouldCreateMessageBodyFromReadablePartsThatIsIdenticalToTheUnreadableOriginal() throws Exception {
-        var unreadableMessage = rawLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
+        var unreadableMessage = rawLoader.getDataAsString("readabletestdataXReadableTestDataHandlerTestData");
 
-        var messageFromReadableLoader = readableHandler.readMessage("MCCI_IN010000UK13", "FailureSanitized");
-
-        assertThat(messageFromReadableLoader).isEqualTo(unreadableMessage);
-    }
-    
-    @MethodSource("testDataFilesAndNames")
-    @ParameterizedTest
-    public void shouldBeAbleToReadMessagesFromReadableFormatToBeIdenticalToOriginals(String original, String interactionId, String variant) throws Exception {
-        var unreadableMessage = rawLoader.getDataAsString(original);
-
-        var messageFromReadableLoader = readableHandler.readMessage(interactionId, variant);
+        var messageFromReadableLoader = readableHandler.readMessage("readabletestdataX", "ReadableTestDataHandlerTestData");
 
         assertThat(messageFromReadableLoader).isEqualTo(unreadableMessage);
-    }
-
-    private static Stream<Arguments> testDataFilesAndNames() {
-        return Stream.of(
-                Arguments.of("MCCI_IN010000UK13FailureSanitized", "MCCI_IN010000UK13", "FailureSanitized"),
-                Arguments.of("MCCI_IN010000UK13Empty", "MCCI_IN010000UK13", "Empty"),
-                Arguments.of("PRPA_IN000202UK01Sanitized", "PRPA_IN000202UK01", "Sanitized"),
-                Arguments.of("RCMR_IN010000UK05Sanitized", "RCMR_IN010000UK05", "Sanitized"),
-                Arguments.of("RCMR_IN030000UK06Sanitized", "RCMR_IN030000UK06", "Sanitized"),
-                Arguments.of("RCMR_IN030000UK06SanitizedWithUnexpectedBackslash", "RCMR_IN030000UK06", "SanitizedWithUnexpectedBackslash"),
-                Arguments.of("RCMR_IN030000UK06WithMidSanitized", "RCMR_IN030000UK06", "WithMidSanitized")
-        );
-    }
-
-    private static String prettyPrint(Document doc) {
-        return transform(doc, xmlTransformer -> xmlTransformer.setOutputProperty(OutputKeys.INDENT, "yes"));
-    }
-
-    private static String stripWhitespace(Document doc) {
-        return transform(doc, xmlTransformer -> xmlTransformer.setOutputProperty(OutputKeys.INDENT, "no"));
-    }
-
-    private static String transform(Document doc, Consumer<Transformer> configurer) {
-        var outputStream = new ByteArrayOutputStream();
-
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        try {
-            final Transformer transformer = transformerFactory.newTransformer();
-
-            configurer.accept(transformer);
-
-            transformer.transform(new DOMSource(doc), new StreamResult(outputStream));
-            return outputStream.toString();
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private static void configureForPrettyPrint(Transformer transformer) {
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
     }
 }

@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.utils.ReadableTestDataHandler;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
@@ -21,34 +22,30 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @Tag("unit")
 public class ParserTest {
 
-    private final Parser parser;
-    private final TestDataLoader loader;
-
-    public ParserTest() {
-        parser = new Parser();
-        loader = new TestDataLoader();
-    }
+    private final Parser parser = new Parser();
+    private final TestDataLoader rawLoader = new TestDataLoader();
+    private final ReadableTestDataHandler readableReader = new ReadableTestDataHandler();
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized, RCMR_IN010000UK05",
-            "RCMR_IN030000UK06Sanitized, RCMR_IN030000UK06",
-            "PRPA_IN000202UK01Sanitized, PRPA_IN000202UK01"
+            "RCMR_IN010000UK05, Sanitized",
+            "RCMR_IN030000UK06, Sanitized",
+            "PRPA_IN000202UK01, Sanitized"
     })
-    public void shouldExtractActionNameFromSanitizedMessage(String fileName, String expectedInteractionId) throws IOException {
-        String messageAsString = loader.getDataAsString(fileName);
+    public void shouldExtractActionNameFromSanitizedMessage(String interactionId, String variant) throws IOException {
+        String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getInteractionId(), equalTo(expectedInteractionId));
+        assertThat(parsedMessage.getInteractionId(), equalTo(interactionId));
     }
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN030000UK06WithMidSanitized, true",
-            "RCMR_IN030000UK06Sanitized, false"
+            "RCMR_IN030000UK06, WithMidSanitized, true",
+            "RCMR_IN030000UK06, Sanitized, false"
     })
-    public void shouldCheckIfMessageIsLarge(String fileName, boolean isLargeMessage) throws IOException {
-        String messageAsString = loader.getDataAsString(fileName);
+    public void shouldCheckIfMessageIsLarge(String interactionId, String variant, boolean isLargeMessage) throws IOException {
+        String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.isLargeMessage(), equalTo(isLargeMessage));
@@ -56,12 +53,12 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized, 17a757f2-f4d2-444e-a246-9cb77bef7f22",
-            "RCMR_IN030000UK06Sanitized, ff27abc3-9730-40f7-ba82-382152e6b90a",
-            "PRPA_IN000202UK01Sanitized, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
+            "RCMR_IN010000UK05, Sanitized, 17a757f2-f4d2-444e-a246-9cb77bef7f22",
+            "RCMR_IN030000UK06, Sanitized, ff27abc3-9730-40f7-ba82-382152e6b90a",
+            "PRPA_IN000202UK01, Sanitized, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
     })
-    public void shouldExtractConversationIdFromSanitizedMessage(String fileName, UUID expectedConversationId) throws IOException {
-        String messageAsString = loader.getDataAsString(fileName);
+    public void shouldExtractConversationIdFromSanitizedMessage(String interactionId, String variant, UUID expectedConversationId) throws IOException {
+        String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getConversationId(), equalTo(expectedConversationId));
@@ -69,12 +66,12 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05Sanitized, C445C720-B0EB-4E36-AF8A-48CD1CA5DE4F",
-            "RCMR_IN030000UK06Sanitized, 1C66BB0E-811E-4956-8F9C-33424695B75F",
-            "PRPA_IN000202UK01Sanitized, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
+            "RCMR_IN010000UK05, Sanitized, C445C720-B0EB-4E36-AF8A-48CD1CA5DE4F",
+            "RCMR_IN030000UK06, Sanitized, 1C66BB0E-811E-4956-8F9C-33424695B75F",
+            "PRPA_IN000202UK01, Sanitized, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
     })
-    public void shouldExtractMessageIdFromSanitizedMessage(String fileName, UUID expectedMessageId) throws IOException {
-        String messageAsString = loader.getDataAsString(fileName);
+    public void shouldExtractMessageIdFromSanitizedMessage(String interactionId, String variant, UUID expectedMessageId) throws IOException {
+        String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getMessageId(), equalTo(expectedMessageId));
@@ -83,7 +80,7 @@ public class ParserTest {
     @Test
     public void shouldExtractNhsNumberFromEhrExtract() throws IOException {
         String fileName = "RCMR_IN030000UK06Sanitized";
-        String messageAsString = loader.getDataAsString(fileName);
+        String messageAsString = rawLoader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9692842304"));
@@ -91,8 +88,7 @@ public class ParserTest {
 
     @Test
     public void shouldExtractErrorMessageFromAcknowledgementFromTheReasonsWhichShouldOnlyExistIfItIsAFailure() throws IOException {
-        String fileName = "MCCI_IN010000UK13FailureSanitized";
-        String messageAsString = loader.getDataAsString(fileName);
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "FailureSanitized");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         var rawMessage = parsedMessage.getRawMessage();
@@ -105,8 +101,7 @@ public class ParserTest {
 
     @Test
     public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException {
-        String fileName = "MCCI_IN010000UK13Empty";
-        String messageAsString = loader.getDataAsString(fileName);
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "Empty");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getReasons().size(), is(0));
@@ -114,8 +109,7 @@ public class ParserTest {
 
     @Test
     public void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
-        String fileName = "RCMR_IN030000UK06SanitizedWithUnexpectedBackslash";
-        String messageAsString = loader.getDataAsString(fileName);
+        String messageAsString = readableReader.readMessage("RCMR_IN030000UK06", "SanitizedWithUnexpectedBackslash");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9692\\842304"));
@@ -130,7 +124,7 @@ public class ParserTest {
             "RCMR_IN030000UK06WithIncorrectInteractionId"
     })
     void shouldThrowJsonParseExceptionWhenCannotParseMessage(String fileName) throws IOException {
-        String messageAsString = loader.getDataAsString(fileName);
+        String messageAsString = rawLoader.getDataAsString(fileName);
 
         Exception expected = assertThrows(JsonParseException.class, () ->
                 parser.parse(messageAsString)

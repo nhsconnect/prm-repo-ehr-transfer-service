@@ -2,13 +2,11 @@ package uk.nhs.prm.repo.ehrtransferservice.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.util.ResourceUtils;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -99,14 +97,12 @@ public class ReadableTestDataHandler {
     }
 
     private Path getPath(String path) {
-        Path readableDir = null;
         try {
-            readableDir = ResourceUtils.getFile("classpath:" + path).toPath();
+            return ResourceUtils.getFile("classpath:" + path).toPath();
         }
         catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return readableDir;
     }
 
     private String asJson(HashMap<String, Object> mhsMessageData) {
