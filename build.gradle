@@ -123,6 +123,7 @@ jacocoTestCoverageVerification {
 }
 
 spotbugsMain {
+    ignoreFailures = true
     reports {
         html {
             enabled = true
