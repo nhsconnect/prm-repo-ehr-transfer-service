@@ -9,4 +9,22 @@ fileignoreconfig:
   checksum: b1c1385bf3f9f0fb18f7a0cf1692834a95a99472e48ba5c67fe83ee8352f1571
 - filename: src/test/resources/data/COPC_IN000001UK01Sanitized
   checksum: cea39f29314e8b22654804b47fd46c0df563558193d3cfd89112f5fd982eb23a
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/Empty/envelope.xml
+  checksum: ef3ce8c52e1120391d99561cce70f52ade35bb224969bd7122ce503941e09c98
+- filename: src/test/resources/data/readable/PRPA_IN000202UK01/Sanitized/envelope.xml
+  checksum: 33545201333a25ee6010ca472f0d684ebb9a23eea219ba0f2e542b7dda0d8798
+- filename: src/test/resources/data/readable/RCMR_IN010000UK05/Sanitized/envelope.xml
+  checksum: d811f4989b8bb4765e9fcdca642bc0c5353726a62d0ce1ce2770efda52d449f9
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/envelope.xml
+  checksum: 8ff899dfa3d9cee9be3ab3f2cc74186d86a77e4c3a7fbab8c06b99e9e2936e54
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/envelope.xml
+  checksum: 513f156dc525554702b1e18ad663ae91bd886c2b72449cea3d67bd1fa202587c
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/envelope.xml
+  checksum: f0adfa998306863de715cf8a9ed6205a8b3b0743dfbf557156827da47a4f0bad
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/payload.xml
+  checksum: a4311ab583b4aeb9110b4ce4a0c764f576ab77dec84482fbfde0936ee2c0d000
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/payload.xml
+  checksum: f1dd989967a9402b46ddc9641ea5943265a262232e6ae82941ddcc4713cdd31f
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/payload.xml
+  checksum: 8ac9323b25ab5f86d81fbbb02f4986c972d54b65718d561d90902bc4878d2afa
 version: ""
