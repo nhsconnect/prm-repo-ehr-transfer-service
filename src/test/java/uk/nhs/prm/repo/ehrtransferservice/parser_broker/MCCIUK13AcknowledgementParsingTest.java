@@ -56,8 +56,8 @@ public class MCCIUK13AcknowledgementParsingTest {
     }
 
     @Test
-    public void shouldNotFailWhenFailedToExtractMessageFromAcknowledgement() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "Empty");
+    public void shouldNotFailWhenFailedToExtractErrorMessageFromNegativeAcknowledgement() throws IOException {
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getReasons().size(), is(0));
