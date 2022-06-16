@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
 
 @Component
@@ -21,6 +22,7 @@ public class Broker {
     private final NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
     private final ParsingDlqPublisher parsingDlqPublisher;
+    private final EhrRequestMessageHandler ehrRequestMessageHandler;
 
     public void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
         final var interactionId = parsedMessage.getInteractionId();
@@ -51,6 +53,8 @@ public class Broker {
                 break;
             case EHR_REQUEST_INTERACTION_ID:
                 log.info("Message Type: EHR REQUEST - Not currently handled until Repo OUT");
+                //below is potentially added temporarily for testing
+                ehrRequestMessageHandler.handleMessage(parsedMessage);
                 break;
             default:
                 log.warn("Unknown Interaction ID: " + interactionId);
