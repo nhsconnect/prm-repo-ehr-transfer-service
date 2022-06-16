@@ -90,7 +90,7 @@ public class ParserTest {
     }
 
     @Test
-    public void shouldExtractErrorMessageFromAcknowledgement() throws IOException {
+    public void shouldExtractErrorMessageFromAcknowledgementFromTheReasonsWhichShouldOnlyExistIfItIsAFailure() throws IOException {
         String fileName = "MCCI_IN010000UK13FailureSanitized";
         String messageAsString = loader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
