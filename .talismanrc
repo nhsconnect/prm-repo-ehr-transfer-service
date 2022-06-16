@@ -3,28 +3,30 @@ fileignoreconfig:
   checksum: e41d7bb3997c5fcf860112c17d8d184783dc432ff69bb894473724508b48996f
 - filename: Dojofile
   checksum: 2c1682b4e1385eb608c9059d14daad9fc004f3f66fe78f5854ae68a6aff3cba3
-- filename: src/test/resources/data/readable/MCCI_IN010000UK13/FailureSanitized/envelope.xml
-  checksum: 792c1f117773b6b7eeb22cd3513144a0c160fcc7b2dc685457c8ac35e46ae9cd
 - filename: src/test/resources/data/COPC_IN000001UK01
   checksum: b1c1385bf3f9f0fb18f7a0cf1692834a95a99472e48ba5c67fe83ee8352f1571
 - filename: src/test/resources/data/COPC_IN000001UK01Sanitized
   checksum: cea39f29314e8b22654804b47fd46c0df563558193d3cfd89112f5fd982eb23a
-- filename: src/test/resources/data/readable/MCCI_IN010000UK13/Empty/envelope.xml
-  checksum: ef3ce8c52e1120391d99561cce70f52ade35bb224969bd7122ce503941e09c98
-- filename: src/test/resources/data/readable/PRPA_IN000202UK01/Sanitized/envelope.xml
-  checksum: 33545201333a25ee6010ca472f0d684ebb9a23eea219ba0f2e542b7dda0d8798
-- filename: src/test/resources/data/readable/RCMR_IN010000UK05/Sanitized/envelope.xml
-  checksum: d811f4989b8bb4765e9fcdca642bc0c5353726a62d0ce1ce2770efda52d449f9
-- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/envelope.xml
-  checksum: 8ff899dfa3d9cee9be3ab3f2cc74186d86a77e4c3a7fbab8c06b99e9e2936e54
-- filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/envelope.xml
-  checksum: 513f156dc525554702b1e18ad663ae91bd886c2b72449cea3d67bd1fa202587c
-- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/envelope.xml
-  checksum: f0adfa998306863de715cf8a9ed6205a8b3b0743dfbf557156827da47a4f0bad
-- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/payload.xml
-  checksum: a4311ab583b4aeb9110b4ce4a0c764f576ab77dec84482fbfde0936ee2c0d000
-- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/payload.xml
-  checksum: f1dd989967a9402b46ddc9641ea5943265a262232e6ae82941ddcc4713cdd31f
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/FailureSanitized/envelope.xml
+  checksum: c46d326d5232c3a7ce5aca767529c2c8134ee0875adee343ec5c1893eae79935
 - filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/payload.xml
-  checksum: 8ac9323b25ab5f86d81fbbb02f4986c972d54b65718d561d90902bc4878d2afa
+  checksum: 39a3780863effdf2675fe29d29ed71cde2651e29f90008391b0e04a7c068b145
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/Empty/envelope.xml
+  checksum: 133321f7ab87d9a5f78a1040915e7c85036330aeba3e1d08de3e7542d42e4ef6
+- filename: src/test/resources/data/readable/PRPA_IN000202UK01/Sanitized/envelope.xml
+  checksum: eded72aa39199748285d0a08ee17987ef2eb7613716d374157d2b36ae08f8f3d
+- filename: src/test/resources/data/readable/RCMR_IN010000UK05/Sanitized/envelope.xml
+  checksum: addec1a41cdf8a1196d48389f204c693f93efb9ba3e642dd010ee9031bc4e5d0
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/envelope.xml
+  checksum: cbb6e6aa92f6e0ec20599d170d957717dbad8947a366ba59e26fba52cc9cc015
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/envelope.xml
+  checksum: 6fc07a4108463ba5360657b61ea6bb3c6bc1a6e7c16622ea9bbb2173d76a3454
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/envelope.xml
+  checksum: d003b13d6ca7071fd1ba5dfe64853188d70b66a86e509a5e9fb2bf3aaef1aef5
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/Sanitized/payload.xml
+  checksum: 8e169e1bd34dabc9c28abc4cbea5701df8d76002fbbd32346b3e557263f4e85f
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/WithMidSanitized/payload.xml
+  checksum: 35664050136650b5cfd2d5e2007896958efb944cd3e494bc0618f402de39c69c
+- filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/payload.xml
+  checksum: 39a3780863effdf2675fe29d29ed71cde2651e29f90008391b0e04a7c068b145
 version: ""
