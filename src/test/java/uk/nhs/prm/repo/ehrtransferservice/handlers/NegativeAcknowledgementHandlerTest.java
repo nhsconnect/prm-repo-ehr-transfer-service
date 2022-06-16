@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 
 import java.util.UUID;
 
@@ -29,17 +29,17 @@ public class NegativeAcknowledgementHandlerTest {
 
     @Test
     void shouldUpdateDbRecordAsTransferFailed() {
-        negativeAcknowledgementHandler.handleMessage(createParsedMessage());
+        negativeAcknowledgementHandler.handleMessage(createAcknowledgement());
 
         verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
                 "ACTION:EHR_TRANSFER_FAILED:${nack-error-here}");
     }
 
-    private ParsedMessage createParsedMessage() {
+    private Acknowlegement createAcknowledgement() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
         envelope.header.messageHeader.conversationId = conversationId;
-        return new ParsedMessage(envelope, null, null);
+        return new Acknowlegement(envelope, null, null);
     }
 }

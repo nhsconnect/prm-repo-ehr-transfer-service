@@ -29,4 +29,6 @@ fileignoreconfig:
   checksum: 35664050136650b5cfd2d5e2007896958efb944cd3e494bc0618f402de39c69c
 - filename: src/test/resources/data/readable/RCMR_IN030000UK06/SanitizedWithUnexpectedBackslash/payload.xml
   checksum: 39a3780863effdf2675fe29d29ed71cde2651e29f90008391b0e04a7c068b145
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/AR_TypeFailure/envelope.xml
+  checksum: 052b84042cc8b9ea32e2687a4253665feb0f732373b542b0d9df4d41249f86de
 version: ""

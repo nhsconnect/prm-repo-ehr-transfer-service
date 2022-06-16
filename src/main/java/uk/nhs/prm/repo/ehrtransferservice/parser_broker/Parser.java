@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 
 import java.io.IOException;
 
@@ -29,7 +30,7 @@ public class Parser {
                 break;
             case "MCCI_IN010000UK13":
                 message = xmlMapper.readValue(mhsJsonMessage.payload, AcknowledgementMessageWrapper.class);
-                break;
+                return new Acknowlegement(envelope, message, contentAsString);
             case "COPC_IN000001UK01":
                 log.info("COPC message received in Parser");
             default:

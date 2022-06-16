@@ -7,9 +7,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -35,7 +40,7 @@ class NegativeAcknowledgementListenerTest {
     @Test
     void shouldPassMessageToHandlerAndAcknowledgeIt() throws Exception {
         var message = spy(new SQSTextMessage("payload"));
-        var parsedMessage = new StubParsedMessage();
+        var parsedMessage = new StubAcknowledgement();
         when(parser.parse("payload")).thenReturn(parsedMessage);
 
         listener.onMessage(message);
@@ -68,9 +73,13 @@ class NegativeAcknowledgementListenerTest {
         verify(message, never()).acknowledge();
     }
 
-    class StubParsedMessage extends ParsedMessage {
-        public StubParsedMessage() {
+    public static class StubAcknowledgement extends Acknowlegement {
+        public StubAcknowledgement() {
             super(null, null, null);
+        }
+
+        public List<FailureDetail> getFailureDetails() {
+            return new ArrayList<>();
         }
     }
 

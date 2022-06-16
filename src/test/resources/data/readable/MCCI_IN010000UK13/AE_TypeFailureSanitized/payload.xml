@@ -33,7 +33,7 @@
         <hl7:reason typeCode="RSON">
             <hl7:justifyingDetectedIssueEvent classCode="ALRT" moodCode="EVN">
                 <hl7:code code="15" codeSystem="2.16.840.1.113883.2.1.3.2.4.17.42" displayName="Update Failed">
-                    <hl7:qualifier code="ER"/>
+                    <hl7:qualifier code="WG"/>
                 </hl7:code>
             </hl7:justifyingDetectedIssueEvent>
         </hl7:reason>

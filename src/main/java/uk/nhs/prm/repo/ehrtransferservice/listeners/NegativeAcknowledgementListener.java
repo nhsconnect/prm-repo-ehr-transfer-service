@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
 import javax.jms.Message;
@@ -24,7 +25,7 @@ public class NegativeAcknowledgementListener implements MessageListener {
             tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from negative acknowledge queue");
             String payload = ((TextMessage) message).getText();
-            var parsedMessage = parser.parse(payload);
+            var parsedMessage = (Acknowlegement) parser.parse(payload);
             handler.handleMessage(parsedMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from negative acknowledgement queue");
