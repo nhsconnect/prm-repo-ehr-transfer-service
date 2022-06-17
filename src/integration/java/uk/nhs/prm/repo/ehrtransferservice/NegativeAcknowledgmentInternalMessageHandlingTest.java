@@ -61,7 +61,7 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
         var transferState = fetchTransferState(transferConversationId);
 
-        assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:06_WELL_THAT_WENT_WRONG");
+        assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:06");
     }
 
     private UUID createTransferRecord() {
