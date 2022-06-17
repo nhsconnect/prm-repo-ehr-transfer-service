@@ -33,18 +33,24 @@ public class LargeMessageFragmentHandler implements MessageHandler<LargeSqsMessa
 
     @Override
     public void handleMessage(LargeSqsMessage largeSqsMessage) throws Exception {
-        UUID conversationId = largeSqsMessage.getConversationId();
-        var transferTrackerData = transferTrackerService.getEhrTransferData(conversationId.toString());
-        var largeMessageFragments = new LargeMessageFragments(largeSqsMessage);
-        var storedMessage = ehrRepoService.storeMessage(largeMessageFragments);
-        if (isStoredMessageComplete(storedMessage)) {
-            publishToEhrCompleteQueue(conversationId, transferTrackerData.getLargeEhrCoreMessageId());
+        if (isStoredMessageComplete(storeLargeMessageFragments(largeSqsMessage))) {
+            log.info("Successfully stored all fragments of large ehr message in the ehr-repo-service");
+            publishToEhrCompleteQueue(largeSqsMessage.getConversationId());
         }
     }
 
-    private void publishToEhrCompleteQueue(UUID conversationId, String messageId) {
-        var ehrCompleteEvent = new EhrCompleteEvent(conversationId, UUID.fromString(messageId));
+    private StoreMessageResponseBody storeLargeMessageFragments(LargeSqsMessage largeSqsMessage) throws Exception {
+        var largeMessageFragments = new LargeMessageFragments(largeSqsMessage);
+        var storedMessage = ehrRepoService.storeMessage(largeMessageFragments);
+        log.info("Successfully stored one fragment of large ehr message in the ehr-repo-service");
+        return storedMessage;
+    }
+
+    private void publishToEhrCompleteQueue(UUID conversationId) {
+        var transferTrackerData = transferTrackerService.getEhrTransferData(conversationId.toString());
+        var ehrCompleteEvent = new EhrCompleteEvent(conversationId, UUID.fromString(transferTrackerData.getLargeEhrCoreMessageId()));
         ehrCompleteMessagePublisher.sendMessage(ehrCompleteEvent);
+        log.info("Published all of the large ehr fragments messages to ehr-complete topic");
     }
 
     private boolean isStoredMessageComplete(StoreMessageResponseBody storedMessage) {

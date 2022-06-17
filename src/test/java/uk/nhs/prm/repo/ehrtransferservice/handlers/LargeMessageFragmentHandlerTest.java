@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -45,17 +44,9 @@ class LargeMessageFragmentHandlerTest {
     private UUID conversationId;
     private UUID messageId;
 
-    @BeforeEach
-    void setUp() {
-        conversationId = UUID.randomUUID();
-        messageId = UUID.randomUUID();
-
-        when(largeSqsMessage.getConversationId()).thenReturn(conversationId);
-        when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(getTransferTrackerDbEntry());
-    }
-
     @Test
     void shouldCallEhrRepoServiceToStoreTheMessage() throws Exception {
+        setUp();
         when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResponseBody("complete"));
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
         verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
@@ -64,6 +55,7 @@ class LargeMessageFragmentHandlerTest {
 
     @Test
     void shouldCallTransferTrackerDBServiceWithTheConversationId() throws Exception {
+        setUp();
         when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResponseBody("complete"));
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
         verify(transferTrackerService).getEhrTransferData(largeSqsMessage.getConversationId().toString());
@@ -71,6 +63,7 @@ class LargeMessageFragmentHandlerTest {
 
     @Test
     void shouldPostMessageToEhrCompleteQueueIfStoredResponseStatusIsComplete() throws Exception {
+        setUp();
         var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
 
         when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResponseBody("complete"));
@@ -81,14 +74,21 @@ class LargeMessageFragmentHandlerTest {
 
     @Test
     void shouldNotPostMessageToEhrCompleteQueueIfStoredResponseStatusIsNotEqualToComplete() throws Exception {
-        var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
         when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResponseBody("not complete"));
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
 
-        verify(ehrCompleteMessagePublisher, times(0)).sendMessage(ehrCompleteEvent);
+        verify(ehrCompleteMessagePublisher, times(0)).sendMessage(any());
     }
 
     private TransferTrackerDbEntry getTransferTrackerDbEntry() {
         return new TransferTrackerDbEntry(conversationId.toString(),"some-nhs-number","some-source-gp","some-nems-message-id","last-updated","some-state","some-date",messageId.toString());
+    }
+
+    void setUp() {
+        conversationId = UUID.randomUUID();
+        messageId = UUID.randomUUID();
+
+        when(largeSqsMessage.getConversationId()).thenReturn(conversationId);
+        when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(getTransferTrackerDbEntry());
     }
 }
