@@ -11,17 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.EhrCompleteMessageListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeEhrMessageListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.LargeMessageFragmentsListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.NegativeAcknowledgementListener;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.SmallEhrMessageListener;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
@@ -116,7 +107,7 @@ public class SqsListenerSpringConfiguration {
         return session;
     }
 
-   @Bean
+    @Bean
     public Session createLargeEhrFragmentsQueueListener(SQSConnection connection) throws JMSException {
         Session session = getSession(connection);
 
@@ -147,8 +138,8 @@ public class SqsListenerSpringConfiguration {
         Session session = getSession(connection);
 
         log.info("nack queue name : {}", negativeAckQueueName);
-        var ehrCompleteConsumer = session.createConsumer(session.createQueue(negativeAckQueueName));
-        ehrCompleteConsumer.setMessageListener(new NegativeAcknowledgementListener(tracer, parser, negativeAcknowledgementHandler));
+        var nackConsumer = session.createConsumer(session.createQueue(negativeAckQueueName));
+        nackConsumer.setMessageListener(new NegativeAcknowledgementListener(tracer, parser, negativeAcknowledgementHandler));
 
         connection.start();
 

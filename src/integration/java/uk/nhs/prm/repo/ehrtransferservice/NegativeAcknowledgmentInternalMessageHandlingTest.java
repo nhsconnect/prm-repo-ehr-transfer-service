@@ -2,6 +2,8 @@ package uk.nhs.prm.repo.ehrtransferservice;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
+import com.amazonaws.services.sqs.model.PurgeQueueRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,14 +13,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
+import java.io.IOException;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest()
@@ -34,38 +38,35 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     @Autowired
     private AmazonSQSAsync sqs;
 
-    @Autowired
-    private DynamoDbClient dbClient;
-
-    @Autowired
-    private AmazonSQSAsync amazonSQSAsync;
-
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
-    @Value("${aws.transferTrackerDbTableName}")
-    private String transferTrackerDbTableName;
+    @Value("aws.transferCompleteQueueName")
+    private String transferCompleteQueue;
+
+    private final TestDataLoader dataLoader = new TestDataLoader();
+
+    @AfterEach
+    public void tearDown() {
+        purgeQueue(nackInternalQueueName);
+        purgeQueue(transferCompleteQueue);
+    }
 
     @Test
-    public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() {
-
+    public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException, InterruptedException {
+        var attachment = dataLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
         UUID transferConversationId = createTransferRecord();
 
-        String internalNackMessage = new Gp2gpNackBuilder()
-                .withConversationId(transferConversationId)
-                .withErrorCode("06")
-                .withErrorDisplayText("Well that went wrong.")
-                .build();
-
-        sendMessage(internalNackMessage, nackInternalQueueName);
+        sendMessage(attachment, nackInternalQueueName);
 
         var transferState = fetchTransferState(transferConversationId);
 
-        assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:06");
+        assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:15");
+
     }
 
     private UUID createTransferRecord() {
-        var conversationId = UUID.randomUUID();
+        var conversationId = UUID.fromString("13962cb7-6d46-4986-bdb4-3201bb25f1f7");
         TransferTrackerDbEntry transferTrackerDbEntry =
                 new TransferTrackerDbEntry(conversationId.toString(),
                         "0123456789",
@@ -89,5 +90,10 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
     private TransferTrackerDbEntry fetchTransferState(UUID conversationId) {
         return transferTrackerDb.getByConversationId(conversationId.toString());
+    }
+
+    private void purgeQueue(String queueName) {
+        var queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
     }
 }

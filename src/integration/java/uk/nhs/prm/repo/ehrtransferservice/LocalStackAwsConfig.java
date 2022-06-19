@@ -95,6 +95,9 @@ public class LocalStackAwsConfig {
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
+    @Value("aws.transferCompleteQueueName")
+    private String transferCompleteQueue;
+
     @Value("${activemq.amqEndpoint1}")
     private String amqEndpoint1;
 
@@ -271,6 +274,7 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(ehrCompleteTopic, getQueueArn(ehrCompleteQueue.getQueueUrl()));
 
         amazonSQSAsync.createQueue(nackInternalQueueName);
+        amazonSQSAsync.createQueue(transferCompleteQueue);
     }
 
     private void setupS3Bucket() {
