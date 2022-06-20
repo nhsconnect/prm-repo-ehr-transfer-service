@@ -270,7 +270,9 @@ public class LocalStackAwsConfig {
         var ehrCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_ehr_complete_topic").build());
         createSnsTestReceiverSubscription(ehrCompleteTopic, getQueueArn(ehrCompleteQueue.getQueueUrl()));
 
-        amazonSQSAsync.createQueue(nackInternalQueueName);
+        var nackTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_negative_acks_topic").build());
+        var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
+        createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
     }
 
     private void setupS3Bucket() {

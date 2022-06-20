@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -18,12 +20,15 @@ import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -36,6 +41,12 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
     @Autowired
     private AmazonSQSAsync sqs;
+
+    @Autowired
+    JmsTemplate jmsTemplate;
+
+    @Value("${activemq.inboundQueue}")
+    private String inboundQueue;
 
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
@@ -52,13 +63,16 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
         var attachment = dataLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
         UUID transferConversationId = createTransferRecord();
 
-        sendMessage(attachment, nackInternalQueueName);
+        jmsTemplate.send(inboundQueue, session -> {
+            var bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
+            return bytesMessage;
+        });
 
-        sleep(1000);
-
-        var transferState = fetchTransferState(transferConversationId);
-
-        assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:15");
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var transferState = fetchTransferState(transferConversationId);
+            assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:15");
+        });
 
     }
 
