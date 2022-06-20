@@ -7,7 +7,6 @@ import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -19,11 +18,36 @@ public class AcknowledgementMessageWrapper extends MessageContent {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Acknowledgement {
-        public AcknowledgementDetail acknowledgementDetail;
+        @JacksonXmlElementWrapper(useWrapping = false)
+        public List<AcknowledgementDetail> acknowledgementDetail;
 
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class AcknowledgementDetail {
+            public String typeCode;
+            public AcknowledgementDetailCode code;
 
+            @JsonIgnoreProperties(ignoreUnknown = true)
+            public static class AcknowledgementDetailCode {
+                public String displayName;
+                public String code;
+                public String codeSystem;
+            }
+
+            public String getDisplayName() {
+                return code == null ? null : code.displayName;
+            }
+
+            public String getCode() {
+                return code == null ? null : code.code;
+            }
+
+            public String getCodeSystem() {
+                return code == null ? null : code.codeSystem;
+            }
+
+            public String getTypeCode() {
+                return typeCode;
+            }
         }
     }
 
@@ -38,11 +62,26 @@ public class AcknowledgementMessageWrapper extends MessageContent {
     }
 
     public List<FailureDetail> getFailureDetails() {
-        return reasons().map(r -> new FailureDetail(r)).collect(toList());
+        List<FailureDetail> failureDetailList = new ArrayList<>();
+
+        acknowledgementDetails().forEach(ad -> failureDetailList.add(new FailureDetail(ad)));
+        reasons().forEach(reason -> failureDetailList.add(new FailureDetail(reason)));
+
+        return failureDetailList;
     }
 
-    private Stream<ControlActEvent.Reason> reasons() {
+    public Stream<ControlActEvent.Reason> reasons() {
+        if (controlActEvent == null) {
+            return Stream.empty();
+        }
         return controlActEvent.reason.stream();
+    }
+
+    public Stream<Acknowledgement.AcknowledgementDetail> acknowledgementDetails() {
+        if (acknowledgement.acknowledgementDetail == null) {
+            return Stream.empty();
+        }
+        return acknowledgement.acknowledgementDetail.stream();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

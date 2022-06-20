@@ -1,7 +1,8 @@
 package uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -111,6 +112,38 @@ class AcknowledgementMessageWrapperTest {
         reason.justifyingDetectedIssueEvent.code = null;
 
         assertThat(reason.getQualifier()).isNull();
+    }
+
+    @Test
+    public void reasonsShouldBeEmptyWhenThereIsNoControlActElementThen(){
+        var wrapper = new AcknowledgementMessageWrapper();
+        wrapper.controlActEvent = null;
+
+        assertThat(wrapper.reasons()).isEmpty();
+    }
+
+    @Test
+    public void acknowledgementDetailsShouldBeEmptyWhenThereIsNoAcknowledgementDetailsInAcknowledgement(){
+        var wrapper = new AcknowledgementMessageWrapper();
+        wrapper.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
+        wrapper.acknowledgement.acknowledgementDetail = null;
+
+        assertThat(wrapper.acknowledgementDetails()).isEmpty();
+    }
+
+    @Test
+    public void acknowledgementDetailPropertiesReturnNullWhenCodeElementIsMissing(){
+        var wrapper = new AcknowledgementMessageWrapper();
+        wrapper.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
+
+        var detail = new AcknowledgementMessageWrapper.Acknowledgement.AcknowledgementDetail();
+        wrapper.acknowledgement.acknowledgementDetail = List.of(detail);
+
+        detail.code = null;
+
+        assertThat(detail.getDisplayName()).isNull();
+        assertThat(detail.getCode()).isNull();
+        assertThat(detail.getCodeSystem()).isNull();
     }
 
     private AcknowledgementMessageWrapper.ControlActEvent.Reason.JustifyingDetectedIssueEvent.Code anEventCode() {

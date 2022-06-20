@@ -3,7 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-@Disabled("WIP")
 public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
     @Autowired
@@ -41,15 +40,11 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
-    @Value("aws.transferCompleteQueueName")
-    private String transferCompleteQueue;
-
     private final TestDataLoader dataLoader = new TestDataLoader();
 
-    @AfterEach
+    @BeforeEach
     public void tearDown() {
         purgeQueue(nackInternalQueueName);
-        purgeQueue(transferCompleteQueue);
     }
 
     @Test
@@ -58,6 +53,8 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
         UUID transferConversationId = createTransferRecord();
 
         sendMessage(attachment, nackInternalQueueName);
+
+        sleep(1000);
 
         var transferState = fetchTransferState(transferConversationId);
 

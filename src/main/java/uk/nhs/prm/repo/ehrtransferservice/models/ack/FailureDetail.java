@@ -19,10 +19,10 @@ public class FailureDetail {
     }
 
     public FailureDetail(AcknowledgementMessageWrapper.Acknowledgement.AcknowledgementDetail detail) {
-        displayName = null;
-        code = null;
-        codeSystem = null;
-        level = null;
+        displayName = detail.getDisplayName();
+        code = detail.getCode();
+        codeSystem = detail.getCodeSystem();
+        level = FailureLevel.parse(detail.getTypeCode());
     }
 
     public String displayName() {

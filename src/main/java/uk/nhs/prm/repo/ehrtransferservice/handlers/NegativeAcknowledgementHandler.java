@@ -7,9 +7,13 @@ import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
+import java.util.List;
 import java.util.UUID;
+
+import static net.logstash.logback.argument.StructuredArguments.v;
 
 @Service
 @RequiredArgsConstructor
@@ -27,10 +31,18 @@ public class NegativeAcknowledgementHandler {
     }
 
     private String createState(Acknowlegement acknowlegement) {
-        var failureDetail = acknowlegement.getFailureDetails().get(FAILURE_INDEX);
-        log.info("Failure code is: " + failureDetail.code());
-        log.info("Failure detail is: " + failureDetail.displayName());
-        return "ACTION:EHR_TRANSFER_FAILED:" + failureDetail.code();
+        String errorCode;
+        var failureDetail = acknowlegement.getFailureDetails();
+        logFailureDetail(failureDetail);
+        errorCode = failureDetail.get(FAILURE_INDEX).code();
+        return "ACTION:EHR_TRANSFER_FAILED:" + errorCode;
+    }
+
+    private void logFailureDetail(List<FailureDetail> failureDetailList) {
+        failureDetailList.forEach(f -> {
+            log.info("Error details", v("code", f.code()), v("display", f.displayName()));
+        });
+
     }
 
     private void publishTransferCompleteEvent(TransferTrackerDbEntry transferTrackerDbEntry, UUID conversationId) {

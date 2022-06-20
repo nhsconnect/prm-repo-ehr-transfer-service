@@ -13,6 +13,7 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 
 @Service
 @Slf4j
+@Deprecated
 public class AcknowledgementMessageHandler implements MessageHandler {
 
     private final JmsProducer jmsProducer;
