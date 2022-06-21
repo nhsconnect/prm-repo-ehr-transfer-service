@@ -52,8 +52,9 @@ public class Broker {
                 positiveAcknowledgementMessagePublisher.sendMessage(message, conversationId);
                 break;
             case EHR_REQUEST_INTERACTION_ID:
-                log.info("Message Type: EHR REQUEST - Not currently handled until Repo OUT");
-                //below is potentially added temporarily for testing
+                log.info("Message Type: EHR REQUEST");
+                // TODO: Handler was added here temporarily for testing-
+                //  leaving it so we can continue to test, but will need to refactor into topic/queue/handler pattern
                 ehrRequestMessageHandler.handleMessage(parsedMessage);
                 break;
             default:
