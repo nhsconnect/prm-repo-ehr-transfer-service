@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,6 +52,7 @@ class LargeEhrCoreMessageHandlerTest {
     }
 
     @Test
+    @Disabled
     public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
         when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
