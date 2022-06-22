@@ -162,7 +162,7 @@ resource "aws_sqs_queue" "positive_acks_observability" {
 
 resource "aws_sqs_queue" "parsing_dlq" {
   name                       = local.parsing_dlq_name
-  message_retention_seconds  = local.thirty_minute_retention_period
+  message_retention_seconds  = local.max_retention_period
   kms_master_key_id          = aws_kms_key.parsing_dlq.id
   receive_wait_time_seconds  = 20
   visibility_timeout_seconds = 240
