@@ -59,6 +59,7 @@ public class LocalStackAwsConfig {
     @Autowired
     private SnsClient snsClient;
 
+
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
 
@@ -109,6 +110,14 @@ public class LocalStackAwsConfig {
 
     @Value("${activemq.randomOption}")
     private String randomOption;
+
+    @Value("${aws.transferCompleteTopicArn}")
+    private String transferCompleteTopicArn;
+
+    @Value("${aws.transferCompleteQueueName}")
+    private String transferCompleteQueueName;
+
+
 
     @Bean
     public JmsListenerContainerFactory<?> myFactory(ConnectionFactory connectionFactory,
@@ -273,6 +282,10 @@ public class LocalStackAwsConfig {
         var nackTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_negative_acks_topic").build());
         var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
+
+        var transferCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
+        var transferCompleteQueue = amazonSQSAsync.createQueue(transferCompleteQueueName);
+        createSnsTestReceiverSubscription(transferCompleteTopic, getQueueArn(transferCompleteQueue.getQueueUrl()));
     }
 
     private void setupS3Bucket() {
