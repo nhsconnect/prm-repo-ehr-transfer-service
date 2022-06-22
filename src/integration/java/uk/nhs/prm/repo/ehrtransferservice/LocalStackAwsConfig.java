@@ -22,6 +22,7 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
@@ -116,7 +117,6 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.transferCompleteQueueName}")
     private String transferCompleteQueueName;
-
 
 
     @Bean
