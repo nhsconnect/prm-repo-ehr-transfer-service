@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -32,6 +33,8 @@ import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
@@ -40,6 +43,7 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 import javax.annotation.PostConstruct;
 import javax.jms.ConnectionFactory;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
@@ -118,6 +122,13 @@ public class LocalStackAwsConfig {
     private String transferCompleteQueueName;
 
 
+    @Bean
+    public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) throws URISyntaxException {
+        return SqsClient.builder()
+                .credentialsProvider((()-> AwsBasicCredentials.create("FAKE", "FAKE")))
+                .endpointOverride(new URI(localstackUrl))
+                .build();
+    }
 
     @Bean
     public JmsListenerContainerFactory<?> myFactory(ConnectionFactory connectionFactory,
@@ -173,6 +184,7 @@ public class LocalStackAwsConfig {
     private String failoverUrl() {
         return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
     }
+
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -283,9 +295,7 @@ public class LocalStackAwsConfig {
         var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
-        var transferCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
-        var transferCompleteQueue = amazonSQSAsync.createQueue(transferCompleteQueueName);
-        createSnsTestReceiverSubscription(transferCompleteTopic, getQueueArn(transferCompleteQueue.getQueueUrl()));
+        amazonSQSAsync.createQueue(transferCompleteQueueName);
     }
 
     private void setupS3Bucket() {
