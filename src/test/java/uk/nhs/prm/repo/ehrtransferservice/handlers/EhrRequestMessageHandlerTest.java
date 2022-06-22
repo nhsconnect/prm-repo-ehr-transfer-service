@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 
 @Tag("unit")
@@ -37,31 +35,24 @@ public class EhrRequestMessageHandlerTest {
     @InjectMocks
     EhrRequestMessageHandler ehrRequestMessageHandler;
     private AutoCloseable closeable;
-    private UUID conversationId;
-    private String ehrRequestMessageId;
-    private String nhsNumber = "1234567890";
-    private String odsCode = "A12345";
 
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        conversationId = UUID.randomUUID();
-        ehrRequestMessageId = UUID.randomUUID().toString();
+        UUID conversationId = UUID.randomUUID();
+        String ehrRequestMessageId = UUID.randomUUID().toString();
 
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getEhrRequestId()).thenReturn(ehrRequestMessageId);
+        String nhsNumber = "1234567890";
         when(parsedMessage.getNhsNumber()).thenReturn(nhsNumber);
+        String odsCode = "A12345";
         when(parsedMessage.getOdsCode()).thenReturn(odsCode);
     }
 
     @AfterEach
     void tearDown() throws Exception {
         closeable.close();
-    }
-
-    @Test
-    public void shouldReturnCorrectInteractionId() {
-        assertThat(ehrRequestMessageHandler.getInteractionId(), equalTo("RCMR_IN010000UK05"));
     }
 
     @Test

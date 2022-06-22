@@ -9,19 +9,14 @@ import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
 @Service
 @Slf4j
-public class SmallEhrMessageHandler implements MessageHandler {
+public class SmallEhrMessageHandler implements MessageHandler<ParsedMessage> {
 
-    private EhrRepoService ehrRepoService;
-    private EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
+    private final EhrRepoService ehrRepoService;
+    private final EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
 
     public SmallEhrMessageHandler(EhrRepoService ehrRepoService, EhrCompleteMessagePublisher ehrCompleteMessagePublisher) {
         this.ehrRepoService = ehrRepoService;
         this.ehrCompleteMessagePublisher = ehrCompleteMessagePublisher;
-    }
-
-    @Override
-    public String getInteractionId() {
-        return null;
     }
 
     @Override

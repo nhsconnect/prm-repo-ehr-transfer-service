@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -21,16 +22,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class S3PointerMessageHandler {
-
-
-    private S3Client s3Client;
-    private S3PointerMessageParser s3PointerMessageParser;
-
-    public S3PointerMessageHandler(S3Client s3Client, S3PointerMessageParser s3PointerMessageParser) {
-        this.s3Client = s3Client;
-        this.s3PointerMessageParser = s3PointerMessageParser;
-    }
+    private final S3Client s3Client;
+    private final S3PointerMessageParser s3PointerMessageParser;
 
     public LargeSqsMessage getLargeSqsMessage(S3PointerMessage sqsMessagePayload) throws IOException {
         var ehrMessageInputStream =

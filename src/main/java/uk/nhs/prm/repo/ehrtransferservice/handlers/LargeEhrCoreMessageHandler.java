@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
@@ -9,22 +10,12 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class LargeEhrCoreMessageHandler implements MessageHandler<LargeSqsMessage> {
 
     private final EhrRepoService ehrRepoService;
     private final Gp2gpMessengerService gp2gpMessengerService;
     private final TransferTrackerService transferTrackerService;
-
-    public LargeEhrCoreMessageHandler(EhrRepoService ehrRepoService, Gp2gpMessengerService gp2gpMessengerService, TransferTrackerService transferTrackerService) {
-        this.ehrRepoService = ehrRepoService;
-        this.gp2gpMessengerService = gp2gpMessengerService;
-        this.transferTrackerService = transferTrackerService;
-    }
-
-    @Override
-    public String getInteractionId() {
-        return null;
-    }
 
     @Override
     public void handleMessage(LargeSqsMessage largeSqsMessage) throws Exception {
