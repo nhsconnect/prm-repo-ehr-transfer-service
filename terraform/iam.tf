@@ -596,3 +596,24 @@ data "aws_iam_policy_document" "repo_incoming_topic_access_to_queue" {
     }
   }
 }
+
+data "aws_iam_policy_document" "cloudwatch_metrics_policy_doc" {
+  statement {
+    actions = [
+      "cloudwatch:PutMetricData",
+      "cloudwatch:GetMetricData"
+    ]
+
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cloudwatch_metrics_policy" {
+  name   = "${var.environment}-${var.component_name}-cloudwatch-metrics"
+  policy = data.aws_iam_policy_document.cloudwatch_metrics_policy_doc.json
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
+}
