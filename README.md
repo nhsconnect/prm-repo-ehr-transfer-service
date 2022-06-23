@@ -64,15 +64,6 @@ If you need to add any new configuration items, update the `src/main/resources/a
 environment as well as add the environment variables in `./tasks` `configure_local_envariables`. Note that `test`
 directory has its own `application.properties` file used in the test suite.
 
-| Parameters          | SSM Parameter                                                             |
-|---------------------|---------------------------------------------------------------------------|
-| active-mq.broker-url| /repo/${NHS_ENVIRONMENT}/output/prm-deductions-infra/amqp-endpoint-0      |
-| active-mq.queue     | /repo/${NHS_ENVIRONMENT}/output/prm-deductions-infra/amqp-endpoint-1      |
-| active-mq.username  | /repo/${NHS_ENVIRONMENT}/user-input/mq-admin-username                     |
-| active-mq.username  | /repo/${NHS_ENVIRONMENT}/user-input/mq-app-username                       | - to access user interface
-| active-mq.password  | /repo/${NHS_ENVIRONMENT}/user-input/mq-admin-password                     |
-| active-mq.password  | /repo/${NHS_ENVIRONMENT}/user-input/mq-app-password                       |
-
 Ensure you have VPN connection set up to both `dev` and `test` environments:
 [CLICK HERE](https://gpitbjss.atlassian.net/wiki/spaces/TW/pages/1832779966/VPN+for+Deductions+Services)
 
