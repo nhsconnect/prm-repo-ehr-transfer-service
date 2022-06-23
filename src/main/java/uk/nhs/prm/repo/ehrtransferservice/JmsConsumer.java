@@ -83,16 +83,14 @@ public class JmsConsumer {
         log.info("property names: " + Collections.list(message.getPropertyNames()).stream().collect(Collectors.joining(", ")));
 
         log.info("correlation-id property: " + message.getStringProperty("correlation-id"));
-        log.info("properties.correlation-id property: " + message.getStringProperty("properties.correlation-id"));
-        log.info("JMSCorrelationID property: " + message.getStringProperty("JMSCorrelationID"));
         log.info("JMS_AMQP_NATIVE property: " + message.getStringProperty("JMS_AMQP_NATIVE"));
         log.info("message-format property: " + message.getStringProperty("message-format"));
+        log.info("JMS_AMQP_ContentType property: " + message.getStringProperty("JMS_AMQP_ContentType"));
+        log.info("JMS_AMQP_HEADER property: " + message.getStringProperty("JMS_AMQP_HEADER"));
 
-        log.info("header names: " + headers.keySet().stream().collect(Collectors.joining(", ")));
+        log.info("headers: " + headers.entrySet().stream().map(kv -> kv.getKey() + ":" + kv.getValue()).collect(Collectors.joining(", ")));
 
         log.info("correlation-id header: " + headers.get("correlation-id"));
-        log.info("properties.correlation-id header: " + headers.get("properties.correlation-id"));
-        log.info("JMSCorrelationID header: " + headers.get("JMSCorrelationID"));
         log.info("JMS_AMQP_NATIVE header: " + headers.get("JMS_AMQP_NATIVE"));
         log.info("message-format header: " + headers.get("message-format"));
     }
