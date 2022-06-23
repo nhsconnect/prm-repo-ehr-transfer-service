@@ -40,6 +40,7 @@ dependencies {
     implementation 'com.github.spotbugs:spotbugs-annotations:4.6.0'
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+    implementation 'org.apache.qpid:proton-j:0.33.10'
 
     implementation 'software.amazon.awssdk:cloudwatch:2.17.73'
     implementation 'software.amazon.awssdk:sns:2.17.73'
