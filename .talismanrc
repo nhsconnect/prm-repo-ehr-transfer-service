@@ -33,4 +33,6 @@ fileignoreconfig:
   checksum: 052b84042cc8b9ea32e2687a4253665feb0f732373b542b0d9df4d41249f86de
 - filename: src/main/java/uk/nhs/prm/repo/ehrtransferservice/JmsConsumer.java
   checksum: 1de7b706a3df968fc8e384f2ed170ff78e235c84af1b341e2604528f9d48cc89
+- filename: src/test/resources/data/readable/MCCI_IN010000UK13/AE_TypeFailure_ExtraQualifierFields/envelope.xml
+  checksum: 26834f783a7a12b334e82b2d74ac53358dc7dce0d94121c6b5183ae655378a5a
 version: ""

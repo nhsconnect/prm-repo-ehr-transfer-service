@@ -3,16 +3,15 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
 import uk.nhs.prm.repo.ehrtransferservice.utils.ReadableTestDataHandler;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
 
 @Tag("unit")
 public class MCCIUK13AcknowledgementParsingTest {
@@ -28,6 +27,14 @@ public class MCCIUK13AcknowledgementParsingTest {
 
         assertThat(parsedMessage.getReasons().size()).isEqualTo(2);
         assertThat(parsedMessage.getReasons().get(1)).isEqualTo("Update Failed - invalid GP Registration data supplied");
+    }
+
+    @Test
+    public void shouldNotFailToParseWhenFailedToExtractErrorMessageFromNegativeAcknowledgement() throws IOException {
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
+        ParsedMessage parsedMessage = parser.parse(messageAsString);
+
+        assertThat(parsedMessage.getReasons()).isEmpty();
     }
 
     @Test
@@ -51,6 +58,14 @@ public class MCCIUK13AcknowledgementParsingTest {
     }
 
     @Test
+    public void shouldNotFailToParseWhenReasonQualifierHasSomeExtraFieldsOnIt() throws IOException {
+        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure_ExtraQualifierFields");
+        var parsed = (Acknowlegement) parser.parse(messageAsString);
+
+        assertThat(parsed.getFailureDetails().get(0).level()).isEqualTo(FailureLevel.WARNING);
+    }
+
+    @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AR_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AR_TypeFailure");
         var parsedAcknowledgement = (Acknowlegement) parser.parse(messageAsString);
@@ -68,13 +83,5 @@ public class MCCIUK13AcknowledgementParsingTest {
         assertThat(secondReasonFailure.displayName()).isEqualTo("Made up warning for testing");
         assertThat(secondReasonFailure.code()).isEqualTo("2");
         assertThat(secondReasonFailure.level()).isEqualTo(FailureLevel.WARNING);
-    }
-
-    @Test
-    public void shouldNotFailWhenFailedToExtractErrorMessageFromNegativeAcknowledgement() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
-        ParsedMessage parsedMessage = parser.parse(messageAsString);
-
-        assertThat(parsedMessage.getReasons()).isEmpty();
     }
 }

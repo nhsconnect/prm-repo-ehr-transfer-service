@@ -142,6 +142,7 @@ public class AcknowledgementMessageWrapper extends MessageContent {
                     public String codeSystem;
                     public Qualifier qualifier;
 
+                    @JsonIgnoreProperties(ignoreUnknown = true)
                     public static class Qualifier {
                         public String code;
                     }
