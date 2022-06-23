@@ -46,3 +46,6 @@ out/
 
 # Imported utilities
 /utils/*
+
+# other
+/local-samples/
