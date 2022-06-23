@@ -1,7 +1,8 @@
-package uk.nhs.prm.repo.ehrtransferservice.models;
+package uk.nhs.prm.repo.ehrtransferservice.models.ack;
 
 
 import org.junit.jupiter.api.Test;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

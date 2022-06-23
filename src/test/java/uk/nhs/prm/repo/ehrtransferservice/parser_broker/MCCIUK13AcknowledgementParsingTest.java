@@ -3,18 +3,16 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.models.FailureLevel;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 import uk.nhs.prm.repo.ehrtransferservice.utils.ReadableTestDataHandler;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 public class MCCIUK13AcknowledgementParsingTest {
@@ -28,44 +26,48 @@ public class MCCIUK13AcknowledgementParsingTest {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getReasons().size(), equalTo(2));
-        assertThat(parsedMessage.getReasons().get(1), equalTo("Update Failed - invalid GP Registration data supplied"));
+        assertThat(parsedMessage.getReasons().size()).isEqualTo(2);
+        assertThat(parsedMessage.getReasons().get(1)).isEqualTo("Update Failed - invalid GP Registration data supplied");
     }
 
     @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AE_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
-        var parsedMessage = (Acknowlegement) parser.parse(messageAsString);
+        var parsedAcknowledgement = (Acknowlegement) parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getFailureDetails().size(), equalTo(2));
-        var firstReasonFailure = parsedMessage.getFailureDetails().get(0);
-        assertThat(firstReasonFailure.displayName(), equalTo("Update Failed"));
-        assertThat(firstReasonFailure.code(), equalTo("15"));
-        assertThat(firstReasonFailure.codeSystem(), equalTo("2.16.840.1.113883.2.1.3.2.4.17.42"));
-        assertThat(firstReasonFailure.level(), equalTo(FailureLevel.WARNING));
+        assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AE);
 
-        var secondReasonFailure = parsedMessage.getFailureDetails().get(1);
-        assertThat(secondReasonFailure.displayName(), equalTo("Update Failed - invalid GP Registration data supplied"));
-        assertThat(secondReasonFailure.code(), equalTo("IU058"));
-        assertThat(secondReasonFailure.level(), equalTo(FailureLevel.ERROR));
+        assertThat(parsedAcknowledgement.getFailureDetails().size()).isEqualTo(2);
+        var firstReasonFailure = parsedAcknowledgement.getFailureDetails().get(0);
+        assertThat(firstReasonFailure.displayName()).isEqualTo("Update Failed");
+        assertThat(firstReasonFailure.code()).isEqualTo("15");
+        assertThat(firstReasonFailure.codeSystem()).isEqualTo("2.16.840.1.113883.2.1.3.2.4.17.42");
+        assertThat(firstReasonFailure.level()).isEqualTo(FailureLevel.WARNING);
+
+        var secondReasonFailure = parsedAcknowledgement.getFailureDetails().get(1);
+        assertThat(secondReasonFailure.displayName()).isEqualTo("Update Failed - invalid GP Registration data supplied");
+        assertThat(secondReasonFailure.code()).isEqualTo("IU058");
+        assertThat(secondReasonFailure.level()).isEqualTo(FailureLevel.ERROR);
     }
 
     @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AR_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AR_TypeFailure");
-        var parsedMessage = (Acknowlegement) parser.parse(messageAsString);
+        var parsedAcknowledgement = (Acknowlegement) parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getFailureDetails().size(), equalTo(2));
-        var firstReasonFailure = parsedMessage.getFailureDetails().get(0);
-        assertThat(firstReasonFailure.displayName(), equalTo("Access denied"));
-        assertThat(firstReasonFailure.code(), equalTo("1"));
-        assertThat(firstReasonFailure.codeSystem(), equalTo("2.16.840.1.113883.2.1.3.2.4.17.32"));
-        assertThat(firstReasonFailure.level(), equalTo(FailureLevel.ERROR));
+        assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AR);
 
-        var secondReasonFailure = parsedMessage.getFailureDetails().get(1);
-        assertThat(secondReasonFailure.displayName(), equalTo("Made up warning for testing"));
-        assertThat(secondReasonFailure.code(), equalTo("2"));
-        assertThat(secondReasonFailure.level(), equalTo(FailureLevel.WARNING));
+        assertThat(parsedAcknowledgement.getFailureDetails().size()).isEqualTo(2);
+        var firstReasonFailure = parsedAcknowledgement.getFailureDetails().get(0);
+        assertThat(firstReasonFailure.displayName()).isEqualTo("Access denied");
+        assertThat(firstReasonFailure.code()).isEqualTo("1");
+        assertThat(firstReasonFailure.codeSystem()).isEqualTo("2.16.840.1.113883.2.1.3.2.4.17.32");
+        assertThat(firstReasonFailure.level()).isEqualTo(FailureLevel.ERROR);
+
+        var secondReasonFailure = parsedAcknowledgement.getFailureDetails().get(1);
+        assertThat(secondReasonFailure.displayName()).isEqualTo("Made up warning for testing");
+        assertThat(secondReasonFailure.code()).isEqualTo("2");
+        assertThat(secondReasonFailure.level()).isEqualTo(FailureLevel.WARNING);
     }
 
     @Test
@@ -73,6 +75,6 @@ public class MCCIUK13AcknowledgementParsingTest {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getReasons().size(), is(0));
+        assertThat(parsedMessage.getReasons()).isEmpty();
     }
 }

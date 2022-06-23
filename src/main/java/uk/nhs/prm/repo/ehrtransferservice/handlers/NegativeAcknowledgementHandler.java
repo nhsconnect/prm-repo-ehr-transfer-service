@@ -7,10 +7,8 @@ import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
-import java.util.List;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
@@ -26,23 +24,13 @@ public class NegativeAcknowledgementHandler {
 
     public void handleMessage(Acknowlegement acknowlegement) throws Exception {
         var conversationId = acknowlegement.getConversationId();
+        logFailureDetail(acknowlegement);
         transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), createState(acknowlegement));
         publishTransferCompleteEvent(transferTrackerService.getEhrTransferData(conversationId.toString()), conversationId);
     }
 
     private String createState(Acknowlegement acknowlegement) {
-        String errorCode;
-        var failureDetail = acknowlegement.getFailureDetails();
-        logFailureDetail(failureDetail);
-        errorCode = failureDetail.get(FAILURE_INDEX).code();
-        return "ACTION:EHR_TRANSFER_FAILED:" + errorCode;
-    }
-
-    private void logFailureDetail(List<FailureDetail> failureDetailList) {
-        failureDetailList.forEach(f -> {
-            log.info("Error details", v("code", f.code()), v("display", f.displayName()));
-        });
-
+        return "ACTION:EHR_TRANSFER_FAILED:" + acknowlegement.getFailureDetails().get(FAILURE_INDEX).code();
     }
 
     private void publishTransferCompleteEvent(TransferTrackerDbEntry transferTrackerDbEntry, UUID conversationId) {
@@ -55,5 +43,15 @@ public class NegativeAcknowledgementHandler {
 
         transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
 
+    }
+
+    private void logFailureDetail(Acknowlegement acknowlegement) {
+        acknowlegement.getFailureDetails().forEach(detail ->
+                log.info("Negative acknowledgement details",
+                        v("acknowledgementTypeCode", acknowlegement.getTypeCode()),
+                        v("code", detail.code()),
+                        v("displayName", detail.displayName()),
+                        v("level", detail.level()),
+                        v("codeSystem", detail.codeSystem())));
     }
 }

@@ -16,8 +16,11 @@ public class Acknowlegement extends ParsedMessage {
         return acknowledgementContent().getFailureDetails();
     }
 
+    public AcknowledgementTypeCode getTypeCode() {
+        return acknowledgementContent().getTypeCode();
+    }
+
     private AcknowledgementMessageWrapper acknowledgementContent() {
         return (AcknowledgementMessageWrapper) getMessageContent();
     }
-
 }

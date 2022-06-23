@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.models;
+package uk.nhs.prm.repo.ehrtransferservice.models.ack;
 
 // Used to model multiple NHS HL7 specific types - e.g.:
 // - https://data.developer.nhs.uk/dms/mim/6.3.01/Vocabulary/DetectedIssueQualifier.htm

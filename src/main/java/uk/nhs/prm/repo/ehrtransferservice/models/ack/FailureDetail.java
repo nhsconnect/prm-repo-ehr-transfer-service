@@ -2,7 +2,6 @@ package uk.nhs.prm.repo.ehrtransferservice.models.ack;
 
 import lombok.AllArgsConstructor;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.AcknowledgementMessageWrapper;
-import uk.nhs.prm.repo.ehrtransferservice.models.FailureLevel;
 
 @AllArgsConstructor
 public class FailureDetail {

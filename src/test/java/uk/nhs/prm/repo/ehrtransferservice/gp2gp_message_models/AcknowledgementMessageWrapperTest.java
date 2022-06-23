@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models;
 
 import org.junit.jupiter.api.Test;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 
 import java.util.List;
 
@@ -8,6 +9,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 class AcknowledgementMessageWrapperTest {
+    @Test
+    public void getTypeCodeShouldReturnedTheEnumeratedAcknowledgementTypeCode() {
+        var acknowledgementMessage = new AcknowledgementMessageWrapper();
+        acknowledgementMessage.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
+        acknowledgementMessage.acknowledgement.typeCode = "AE";
+
+        assertThat(acknowledgementMessage.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AE);
+    }
+
+    @Test
+    public void getTypeCodeShouldHandleMissingTypeCode() {
+        var acknowledgementMessage = new AcknowledgementMessageWrapper();
+        acknowledgementMessage.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
+        acknowledgementMessage.acknowledgement.typeCode = null;
+
+        assertThat(acknowledgementMessage.getTypeCode()).isEqualTo(AcknowledgementTypeCode.UNKNOWN);
+    }
 
     @Test
     public void getErrorDisplayNameFromReasonShouldReturnItsCodeDisplayName() {

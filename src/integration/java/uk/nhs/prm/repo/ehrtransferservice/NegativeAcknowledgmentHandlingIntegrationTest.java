@@ -3,9 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +32,7 @@ import static org.awaitility.Awaitility.await;
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-public class NegativeAcknowledgmentInternalMessageHandlingTest {
+public class NegativeAcknowledgmentHandlingIntegrationTest {
 
     @Autowired
     TransferTrackerDb transferTrackerDb;
@@ -60,14 +58,10 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
 
     @Test
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException, InterruptedException {
-        var attachment = dataLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
+        var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
         UUID transferConversationId = createTransferRecord();
 
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
+        sendToQueue(negativeAck, inboundQueue);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var transferState = fetchTransferState(transferConversationId);
@@ -88,6 +82,14 @@ public class NegativeAcknowledgmentInternalMessageHandlingTest {
                         trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(), UUID.randomUUID().toString());
         transferTrackerDb.save(transferTrackerDbEntry);
         return conversationId;
+    }
+
+    private void sendToQueue(String negativeAck, String queueName) {
+        jmsTemplate.send(queueName, session -> {
+            var bytesMessage = session.createBytesMessage();
+            bytesMessage.writeBytes(negativeAck.getBytes(StandardCharsets.UTF_8));
+            return bytesMessage;
+        });
     }
 
     private String trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings() {

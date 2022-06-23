@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 
 import java.util.ArrayList;
@@ -16,10 +17,15 @@ public class AcknowledgementMessageWrapper extends MessageContent {
 
     public Acknowledgement acknowledgement;
 
+    public AcknowledgementTypeCode getTypeCode() {
+        return AcknowledgementTypeCode.parse(acknowledgement.typeCode);
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Acknowledgement {
         @JacksonXmlElementWrapper(useWrapping = false)
         public List<AcknowledgementDetail> acknowledgementDetail;
+        public String typeCode;
 
         @JsonIgnoreProperties(ignoreUnknown = true)
         public static class AcknowledgementDetail {
