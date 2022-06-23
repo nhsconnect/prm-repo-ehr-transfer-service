@@ -44,7 +44,7 @@ public class MetricPublisher {
         PutMetricDataRequest request =
                 PutMetricDataRequest
                         .builder()
-                        .namespace("EHRTransferService")
+                        .namespace("EhrTransferService")
                         .metricData(datum)
                         .build();
 
