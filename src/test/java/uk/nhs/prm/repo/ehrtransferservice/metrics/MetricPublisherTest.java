@@ -42,7 +42,7 @@ class MetricPublisherTest {
         PutMetricDataRequest putMetricDataRequest = putRequestCaptor.getValue();
         Dimension environmentDimension = putMetricDataRequest.metricData().get(0).dimensions().get(0);
 
-        assertThat(putMetricDataRequest.namespace()).isEqualTo("EHRTransferService");
+        assertThat(putMetricDataRequest.namespace()).isEqualTo("EhrTransferService");
         assertThat(environmentDimension.name()).isEqualTo("Environment");
         assertThat(environmentDimension.value()).isEqualTo("local");
     }
