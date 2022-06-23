@@ -48,11 +48,14 @@ public class JmsConsumer {
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } catch (Exception e) {
             log.error("Failed to process message - sending to dlq", e);
+            log.error("Message content: " + rawMessage);
             parsingDlqPublisher.sendMessage(rawMessage);
         }
     }
 
     private String getRawMessage(Message message) throws JMSException {
+        log.info("Class of inbound message: " + message.getClass().getName());
+        log.info("Correlation id: " + message.getJMSCorrelationID());
         if (message instanceof BytesMessage) {
             log.info("Received BytesMessage from MQ");
             var bytesMessage = (BytesMessage) message;
