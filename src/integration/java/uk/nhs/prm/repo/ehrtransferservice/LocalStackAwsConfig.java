@@ -295,6 +295,7 @@ public class LocalStackAwsConfig {
         var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
+        snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
         amazonSQSAsync.createQueue(transferCompleteQueueName);
     }
 
