@@ -19,6 +19,7 @@ import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -49,7 +50,7 @@ public class JmsConsumerTest {
         bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
         bytesMessage.reset();
 
-        jmsConsumer.onMessage(bytesMessage);
+        jmsConsumer.onMessage(bytesMessage, new HashMap<>());
         verify(parsingDlqPublisher).sendMessage(message);
     }
 
@@ -63,7 +64,7 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message);
+        jmsConsumer.onMessage(message, new HashMap<>());
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
@@ -77,7 +78,7 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message);
+        jmsConsumer.onMessage(message, new HashMap<>());
         verify(tracer).setMDCContextFromMhsInbound(null);
         verify(tracer).handleConversationId(conversationId.toString());
     }
@@ -92,7 +93,7 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message);
+        jmsConsumer.onMessage(message, new HashMap<>());
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 

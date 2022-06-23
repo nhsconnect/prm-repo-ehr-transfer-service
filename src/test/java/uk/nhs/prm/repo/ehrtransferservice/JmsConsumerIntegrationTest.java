@@ -16,6 +16,7 @@ import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import javax.jms.JMSException;
 import java.io.IOException;
+import java.util.HashMap;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -71,7 +72,7 @@ public class JmsConsumerIntegrationTest {
         String message = dataLoader.getDataAsString(fileName);
 
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage(bytes);
-        jmsConsumer.onMessage(bytesMessage);
+        jmsConsumer.onMessage(bytesMessage, new HashMap<>());
         verify(parsingDlqPublisher, times(1)).sendMessage(message);
     }
 }
