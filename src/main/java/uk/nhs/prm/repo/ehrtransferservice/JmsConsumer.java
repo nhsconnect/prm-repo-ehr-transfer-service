@@ -69,7 +69,7 @@ public class JmsConsumer {
             var bytesMessage = (BytesMessage) message;
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
-            attemptAqmpDecode(contentAsBytes);
+            attemptAmqpDecode(contentAsBytes);
             return new String(contentAsBytes, StandardCharsets.UTF_8);
         }
         log.info("Received TextMessage from MQ");
@@ -78,7 +78,7 @@ public class JmsConsumer {
         return textMessage.getText();
     }
 
-    private void attemptAqmpDecode(byte[] contentAsBytes) {
+    private void attemptAmqpDecode(byte[] contentAsBytes) {
         var byteBuffer = ReadableBuffer.ByteBufferReader.wrap(contentAsBytes);
         var amqpMessage = org.apache.qpid.proton.message.Message.Factory.create();
         try {
