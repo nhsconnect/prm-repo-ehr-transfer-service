@@ -55,12 +55,12 @@ resource "aws_security_group_rule" "ehr-transfer-service-to-mq" {
 }
 
 data "aws_ssm_parameter" "service-to-repo-to-gp-sg-id" {
-  count = var.environment == "dev" ? 1 : 0
+  count = var.environment == "prod" ? 0 : 1
   name  = "/repo/${var.environment}/output/prm-deductions-repo-to-gp/service-to-repo-to-gp-sg-id"
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-repo-to-gp" {
-  count                    = var.environment == "dev" ? 1 : 0
+  count                    = var.environment == "prod" ? 0 : 1
   type                     = "ingress"
   protocol                 = "TCP"
   from_port                = 443
