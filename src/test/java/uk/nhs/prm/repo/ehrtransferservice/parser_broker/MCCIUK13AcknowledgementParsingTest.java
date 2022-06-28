@@ -21,20 +21,11 @@ public class MCCIUK13AcknowledgementParsingTest {
     private final ReadableTestDataHandler readableReader = new ReadableTestDataHandler();
 
     @Test
-    public void shouldExtractReasonStringsFromTheReasonsFor_AE_TypeFailure() throws IOException {
-        String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
-        ParsedMessage parsedMessage = parser.parse(messageAsString);
-
-        assertThat(parsedMessage.getReasons().size()).isEqualTo(2);
-        assertThat(parsedMessage.getReasons().get(1)).isEqualTo("Update Failed - invalid GP Registration data supplied");
-    }
-
-    @Test
-    public void shouldNotFailToParseWhenFailedToExtractErrorMessageFromNegativeAcknowledgement() throws IOException {
+    public void shouldNotFailToParseWhenFailedToExtractFailureDetailsFromNegativeAcknowledgement() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
-        ParsedMessage parsedMessage = parser.parse(messageAsString);
+        var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
-        assertThat(parsedMessage.getReasons()).isEmpty();
+        assertThat(parsedAcknowledgement.getFailureDetails()).isEmpty();
     }
 
     @Test

@@ -60,13 +60,6 @@ public class AcknowledgementMessageWrapper extends MessageContent {
     @JacksonXmlProperty(localName = "ControlActEvent")
     public ControlActEvent controlActEvent;
 
-    public List<String> getReasons() {
-        if (controlActEvent.reason != null) {
-            return reasons().map(r -> r.getErrorDisplayName()).collect(toList());
-        }
-        return new ArrayList<>();
-    }
-
     public List<FailureDetail> getFailureDetails() {
         List<FailureDetail> failureDetailList = new ArrayList<>();
 
@@ -77,7 +70,7 @@ public class AcknowledgementMessageWrapper extends MessageContent {
     }
 
     public Stream<ControlActEvent.Reason> reasons() {
-        if (controlActEvent == null) {
+        if (controlActEvent == null || controlActEvent.reason == null) {
             return Stream.empty();
         }
         return controlActEvent.reason.stream();
