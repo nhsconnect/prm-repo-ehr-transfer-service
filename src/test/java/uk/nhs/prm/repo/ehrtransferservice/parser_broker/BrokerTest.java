@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 
 import java.util.UUID;
 
@@ -32,7 +33,11 @@ public class BrokerTest {
     Broker broker;
 
     private ParsedMessage getMockParsedMessage(String interactionId, String rawMessage, UUID conversationId) {
-        var parsedMessage = mock(ParsedMessage.class);
+        return getMockParsedMessage(interactionId, rawMessage, conversationId, ParsedMessage.class);
+    }
+
+    private <T extends ParsedMessage> T getMockParsedMessage(String interactionId, String rawMessage, UUID conversationId, Class<T> messageClass) {
+        var parsedMessage = mock(messageClass);
         when(parsedMessage.getInteractionId()).thenReturn(interactionId);
         when(parsedMessage.getRawMessage()).thenReturn(rawMessage);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
@@ -77,10 +82,10 @@ public class BrokerTest {
     public void shouldSendNegativeAcknowledgementToNegativeAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var rawMessage = "nack";
-        var parsedMessage = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId);
-        when(parsedMessage.isNegativeAcknowledgement()).thenReturn(true);
+        var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId, Acknowledgement.class);
+        when(acknowledgement.isNegativeAcknowledgement()).thenReturn(true);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+        broker.sendMessageToCorrespondingTopicPublisher(acknowledgement);
 
         verify(negativeAcknowledgementMessagePublisher).sendMessage("nack", conversationId);
     }
@@ -89,9 +94,9 @@ public class BrokerTest {
     public void shouldSendPositiveAcknowledgementToPositiveAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var rawMessage = "positive-ack";
-        var parsedMessage = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId);
+        var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", rawMessage, conversationId, Acknowledgement.class);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+        broker.sendMessageToCorrespondingTopicPublisher(acknowledgement);
 
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
     }

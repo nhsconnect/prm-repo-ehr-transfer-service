@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
 import java.util.UUID;
@@ -22,15 +22,15 @@ public class NegativeAcknowledgementHandler {
     private final TransferTrackerService transferTrackerService;
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
-    public void handleMessage(Acknowlegement acknowlegement) throws Exception {
-        var conversationId = acknowlegement.getConversationId();
-        logFailureDetail(acknowlegement);
-        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), createState(acknowlegement));
+    public void handleMessage(Acknowledgement acknowledgement) throws Exception {
+        var conversationId = acknowledgement.getConversationId();
+        logFailureDetail(acknowledgement);
+        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), createState(acknowledgement));
         publishTransferCompleteEvent(transferTrackerService.getEhrTransferData(conversationId.toString()), conversationId);
     }
 
-    private String createState(Acknowlegement acknowlegement) {
-        return "ACTION:EHR_TRANSFER_FAILED:" + acknowlegement.getFailureDetails().get(FAILURE_INDEX).code();
+    private String createState(Acknowledgement acknowledgement) {
+        return "ACTION:EHR_TRANSFER_FAILED:" + acknowledgement.getFailureDetails().get(FAILURE_INDEX).code();
     }
 
     private void publishTransferCompleteEvent(TransferTrackerDbEntry transferTrackerDbEntry, UUID conversationId) {
@@ -45,10 +45,10 @@ public class NegativeAcknowledgementHandler {
 
     }
 
-    private void logFailureDetail(Acknowlegement acknowlegement) {
-        acknowlegement.getFailureDetails().forEach(detail ->
+    private void logFailureDetail(Acknowledgement acknowledgement) {
+        acknowledgement.getFailureDetails().forEach(detail ->
                 log.info("Negative acknowledgement details",
-                        v("acknowledgementTypeCode", acknowlegement.getTypeCode()),
+                        v("acknowledgementTypeCode", acknowledgement.getTypeCode()),
                         v("code", detail.code()),
                         v("displayName", detail.displayName()),
                         v("level", detail.level()),

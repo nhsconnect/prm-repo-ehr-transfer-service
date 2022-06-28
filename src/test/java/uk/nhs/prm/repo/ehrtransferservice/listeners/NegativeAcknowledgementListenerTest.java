@@ -7,9 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
 
@@ -73,7 +72,7 @@ class NegativeAcknowledgementListenerTest {
         verify(message, never()).acknowledge();
     }
 
-    public static class StubAcknowledgement extends Acknowlegement {
+    public static class StubAcknowledgement extends Acknowledgement {
         public StubAcknowledgement() {
             super(null, null, null);
         }

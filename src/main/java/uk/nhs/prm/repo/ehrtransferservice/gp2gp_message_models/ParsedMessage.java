@@ -120,11 +120,4 @@ public class ParsedMessage {
         return new ArrayList<>();
     }
 
-    public boolean isNegativeAcknowledgement() {
-        if (messageContent instanceof AcknowledgementMessageWrapper) {
-            return getReasons() != null && getReasons().size() > 0;
-        }
-        return false;
-    }
-
 }

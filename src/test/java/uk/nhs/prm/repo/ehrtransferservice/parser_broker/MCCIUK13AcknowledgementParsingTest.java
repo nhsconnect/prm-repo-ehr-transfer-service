@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
 import uk.nhs.prm.repo.ehrtransferservice.utils.ReadableTestDataHandler;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
@@ -40,7 +40,7 @@ public class MCCIUK13AcknowledgementParsingTest {
     @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AE_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
-        var parsedAcknowledgement = (Acknowlegement) parser.parse(messageAsString);
+        var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
         assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AE);
 
@@ -60,7 +60,7 @@ public class MCCIUK13AcknowledgementParsingTest {
     @Test
     public void shouldNotFailToParseWhenReasonQualifierHasSomeExtraFieldsOnIt() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure_ExtraQualifierFields");
-        var parsed = (Acknowlegement) parser.parse(messageAsString);
+        var parsed = (Acknowledgement) parser.parse(messageAsString);
 
         assertThat(parsed.getFailureDetails().get(0).level()).isEqualTo(FailureLevel.WARNING);
     }
@@ -68,7 +68,7 @@ public class MCCIUK13AcknowledgementParsingTest {
     @Test
     public void shouldExtractFailureDetailsFromTheReasonsFor_AR_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AR_TypeFailure");
-        var parsedAcknowledgement = (Acknowlegement) parser.parse(messageAsString);
+        var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
         assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AR);
 

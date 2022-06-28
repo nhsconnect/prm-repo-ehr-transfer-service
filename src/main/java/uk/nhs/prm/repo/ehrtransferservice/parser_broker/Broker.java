@@ -3,9 +3,11 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.AcknowledgementMessageWrapper;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 
 @Component
 @RequiredArgsConstructor
@@ -43,7 +45,8 @@ public class Broker {
                 attachmentMessagePublisher.sendMessage(message, conversationId);
                 break;
             case ACKNOWLEDGEMENT_INTERACTION_ID:
-                if (parsedMessage.isNegativeAcknowledgement()) {
+                var acknowledgement = (Acknowledgement) parsedMessage;
+                if (acknowledgement.isNegativeAcknowledgement()) {
                     log.info("Message Type: NEGATIVE ACKNOWLEDGEMENT");
                     negativeAcknowledgementMessagePublisher.sendMessage(message, conversationId);
                     break;

@@ -12,7 +12,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowlegement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -69,7 +69,7 @@ public class NegativeAcknowledgementHandlerTest {
         return Collections.singletonList(failureDetail);
     }
 
-    private Acknowlegement createAcknowledgement() {
+    private Acknowledgement createAcknowledgement() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
@@ -77,7 +77,7 @@ public class NegativeAcknowledgementHandlerTest {
         return new StubAcknowledgement(envelope, createFailureList());
     }
 
-    public static class StubAcknowledgement extends Acknowlegement {
+    public static class StubAcknowledgement extends Acknowledgement {
         private final List<FailureDetail> failures;
 
         public StubAcknowledgement(SOAPEnvelope envelope, List<FailureDetail> failures) {
