@@ -25,6 +25,6 @@ public class Acknowledgement extends ParsedMessage {
     }
 
     public boolean isNegativeAcknowledgement() {
-        return getReasons() != null && getReasons().size() > 0;
+        return getTypeCode() != AcknowledgementTypeCode.AA;
     }
 }
