@@ -2,12 +2,10 @@ package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
 import uk.nhs.prm.repo.ehrtransferservice.utils.ReadableTestDataHandler;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
 
@@ -17,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MCCIUK13AcknowledgementParsingTest {
 
     private final Parser parser = new Parser();
-    private final TestDataLoader rawLoader = new TestDataLoader();
     private final ReadableTestDataHandler readableReader = new ReadableTestDataHandler();
 
     @Test
