@@ -17,10 +17,8 @@ import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
@@ -40,7 +38,7 @@ public class NegativeAcknowledgementHandlerTest {
     private final UUID conversationId = UUID.randomUUID();
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailure() throws Exception {
+    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailureDetails() throws Exception {
         TransferTrackerDbEntry transferTrackerDbEntry =
                 new TransferTrackerDbEntry(conversationId.toString(),
                         "1234567890",
@@ -59,21 +57,54 @@ public class NegativeAcknowledgementHandlerTest {
 
         when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);
 
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(createFailureList("06", "09")));
+        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, failureDetailsList("06", "09")));
 
         verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
                 "ACTION:EHR_TRANSFER_FAILED:06");
+
         verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
     }
 
+    @Test
+    void shouldUpdateDbRecordAsTransferFailedUsingUnknownErrorCodeIfThereAreNoFailureDetails() throws Exception {
+        TransferTrackerDbEntry transferTrackerDbEntry =
+                new TransferTrackerDbEntry(conversationId.toString(),
+                        "1234567890",
+                        "sourceGP",
+                        "someNemsMessageId",
+                        "yesterday",
+                        "FAILED",
+                        null,
+                        null);
 
-    private List<FailureDetail> createFailureList(String... failureCodes) {
+        TransferCompleteEvent transferCompleteEvent =
+                new TransferCompleteEvent("yesterday",
+                        "sourceGP",
+                        "SUSPENSION",
+                        "someNemsMessageId",
+                        "1234567890");
+
+        when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);
+
+        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, noFailureDetails()));
+
+        verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
+                "ACTION:EHR_TRANSFER_FAILED:UNKNOWN_ERROR");
+        verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
+    }
+
+    private List<FailureDetail> noFailureDetails() {
+        return failureDetailsList();
+    }
+
+
+    private List<FailureDetail> failureDetailsList(String... failureCodes) {
         List<String> failureCodeList = Arrays.asList(failureCodes);
 
         return failureCodeList.stream().map(code -> new FailureDetail(null, code, null, null)).collect(toList());
     }
 
-    private Acknowledgement createAcknowledgement(List<FailureDetail> failureList) {
+    private Acknowledgement createAcknowledgement(UUID conversationId, List<FailureDetail> failureList) {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
