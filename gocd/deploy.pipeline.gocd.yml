@@ -36,7 +36,7 @@ common:
 
 pipelines:
   'ehr-transfer-service.dev':
-    group: deductions
+    group: repository
     label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
@@ -72,7 +72,7 @@ pipelines:
             deploy: *deploy
 
   'ehr-transfer-service.test':
-    group: deductions
+    group: repository
     label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
@@ -111,7 +111,7 @@ pipelines:
             deploy: *deploy
 
   'ehr-transfer-service.pre-prod':
-    group: deductions
+    group: repository
     label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
@@ -150,7 +150,7 @@ pipelines:
             deploy: *deploy
 
   'ehr-transfer-service.prod':
-    group: deductions
+    group: repository
     label_template: "${COUNT}-${git[:8]}"
     materials:
       git:

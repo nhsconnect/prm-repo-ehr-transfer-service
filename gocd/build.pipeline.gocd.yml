@@ -1,7 +1,7 @@
 format_version: 4
 pipelines:
   'ehr-transfer-service':
-    group: deductions
+    group: repository
     label_template: "${COUNT}-${git[:8]}"
     materials:
       git:
