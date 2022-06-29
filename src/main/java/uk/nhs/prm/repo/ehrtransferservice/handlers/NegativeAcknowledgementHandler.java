@@ -18,7 +18,7 @@ import static net.logstash.logback.argument.StructuredArguments.v;
 @Slf4j
 public class NegativeAcknowledgementHandler {
 
-    public static final int FAILURE_INDEX = 0;
+    public static final int FAILURE_INDEX_OF_CODE_TO_USE_IN_DB = 0;
     private final TransferTrackerService transferTrackerService;
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
@@ -30,7 +30,7 @@ public class NegativeAcknowledgementHandler {
     }
 
     private String createState(Acknowledgement acknowledgement) {
-        return "ACTION:EHR_TRANSFER_FAILED:" + acknowledgement.getFailureDetails().get(FAILURE_INDEX).code();
+        return "ACTION:EHR_TRANSFER_FAILED:" + acknowledgement.getFailureDetails().get(FAILURE_INDEX_OF_CODE_TO_USE_IN_DB).code();
     }
 
     private void publishTransferCompleteEvent(TransferTrackerDbEntry transferTrackerDbEntry, UUID conversationId) {

@@ -16,10 +16,13 @@ import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +40,7 @@ public class NegativeAcknowledgementHandlerTest {
     private final UUID conversationId = UUID.randomUUID();
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailed() throws Exception {
+    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailure() throws Exception {
         TransferTrackerDbEntry transferTrackerDbEntry =
                 new TransferTrackerDbEntry(conversationId.toString(),
                         "1234567890",
@@ -56,7 +59,7 @@ public class NegativeAcknowledgementHandlerTest {
 
         when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);
 
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement());
+        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(createFailureList("06", "09")));
 
         verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
                 "ACTION:EHR_TRANSFER_FAILED:06");
@@ -64,17 +67,18 @@ public class NegativeAcknowledgementHandlerTest {
     }
 
 
-    private List<FailureDetail> createFailureList() {
-        FailureDetail failureDetail = new FailureDetail(null, "06", null, null);
-        return Collections.singletonList(failureDetail);
+    private List<FailureDetail> createFailureList(String... failureCodes) {
+        List<String> failureCodeList = Arrays.asList(failureCodes);
+
+        return failureCodeList.stream().map(code -> new FailureDetail(null, code, null, null)).collect(toList());
     }
 
-    private Acknowledgement createAcknowledgement() {
+    private Acknowledgement createAcknowledgement(List<FailureDetail> failureList) {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
         envelope.header.messageHeader.conversationId = conversationId;
-        return new StubAcknowledgement(envelope, createFailureList());
+        return new StubAcknowledgement(envelope, failureList);
     }
 
     public static class StubAcknowledgement extends Acknowledgement {
