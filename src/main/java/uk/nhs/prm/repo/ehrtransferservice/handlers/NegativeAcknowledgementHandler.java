@@ -55,9 +55,9 @@ public class NegativeAcknowledgementHandler {
         acknowledgement.getFailureDetails().forEach(detail ->
                 log.info("Negative acknowledgement details",
                         v("acknowledgementTypeCode", acknowledgement.getTypeCode()),
-                        v("code", detail.code()),
-                        v("displayName", detail.displayName()),
-                        v("level", detail.level()),
-                        v("codeSystem", detail.codeSystem())));
+                        v("detail.code", detail.code()),
+                        v("detail.displayName", detail.displayName()),
+                        v("detail.level", detail.level()),
+                        v("detail.codeSystem", detail.codeSystem())));
     }
 }
