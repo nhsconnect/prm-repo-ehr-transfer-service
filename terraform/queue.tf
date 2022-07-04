@@ -216,6 +216,17 @@ resource "aws_sqs_queue" "transfer_complete" {
   }
 }
 
+resource "aws_ssm_parameter" "transfer_complete_queue_name" {
+  name  = "/repo/${var.environment}/output/${var.repo_name}/transfer-complete-queue-name"
+  type  = "String"
+  value = aws_sqs_queue.transfer_complete.name
+
+  tags = {
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_sqs_queue" "transfer_complete_observability" {
   name                       = local.transfer_complete_observability_queue_name
   message_retention_seconds  = local.thirty_minute_retention_period
