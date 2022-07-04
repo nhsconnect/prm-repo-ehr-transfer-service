@@ -43,7 +43,6 @@ resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
   statistic                 = "Maximum"
   treat_missing_data        = "breaching"
   period                    = "60"
-  datapoints_to_alarm       = var.service_desired_count
   dimensions = {
     "Environment" = var.environment
   }
