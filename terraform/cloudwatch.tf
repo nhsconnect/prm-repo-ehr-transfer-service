@@ -35,8 +35,8 @@ resource "aws_cloudwatch_log_metric_filter" "log_metric_filter" {
 resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
   alarm_name                = "${var.component_name}-health-metric-failure"
   comparison_operator       = "LessThanThreshold"
-  threshold                 = var.service_desired_count
-  evaluation_periods        = "3"
+  threshold                 = "1"
+  evaluation_periods        = "1"
   metric_name               = "Health"
   namespace                 = local.ehr_transfer_service_metric_namespace
   alarm_description         = "Alarm to flag failed health checks"
