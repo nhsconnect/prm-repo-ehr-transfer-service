@@ -40,7 +40,8 @@ locals {
     { name = "POSITIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.positive_acks.arn },
     { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn },
     { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn },
-    { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn }
+    { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn },
+    { name = "SPLUNK_UPLOADER_TOPIC_ARN", value = aws_sns_topic.splunk_uploader.arn }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },

@@ -93,3 +93,15 @@ resource "aws_sns_topic" "transfer_complete" {
     Environment = var.environment
   }
 }
+
+resource "aws_sns_topic" "splunk_uploader" {
+  name = "${var.environment}-${var.component_name}-splunk-uploader-sns-topic"
+  kms_master_key_id = aws_kms_key.splunk_uploader.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-splunk-uploader-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
