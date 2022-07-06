@@ -102,3 +102,10 @@ resource "aws_sns_topic_subscription" "transfer_complete_observability_topic" {
   topic_arn            = aws_sns_topic.transfer_complete.arn
   endpoint             = aws_sqs_queue.transfer_complete_observability.arn
 }
+
+resource "aws_sns_topic_subscription" "re_registration_audit" {
+  protocol             = "sqs"
+  raw_message_delivery = true
+  topic_arn            = aws_sns_topic.splunk_uploader.arn
+  endpoint             = data.aws_ssm_parameter.splunk_audit_uploader.value
+}
