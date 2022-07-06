@@ -27,7 +27,6 @@ locals {
     { name = "NEGATIVE_ACKS_QUEUE_NAME", value = aws_sqs_queue.negative_acks.name },
     { name = "LARGE_MESSAGE_FRAGMENTS_QUEUE_NAME", value = aws_sqs_queue.large_message_fragments.name },
     { name = "EHR_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.ehr_complete.name },
-    { name = "TRANSFER_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.transfer_complete.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
     { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },

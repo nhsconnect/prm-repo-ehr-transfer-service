@@ -106,7 +106,6 @@ data "aws_iam_policy_document" "sqs_ehr_transfer_service_ecs_task" {
       aws_sqs_queue.repo_incoming.arn,
       aws_sqs_queue.small_ehr.arn,
       aws_sqs_queue.ehr_complete.arn,
-      aws_sqs_queue.transfer_complete.arn,
       aws_sqs_queue.large_ehr.arn,
       aws_sqs_queue.large_message_fragments.arn,
       aws_sqs_queue.negative_acks.arn
@@ -327,15 +326,6 @@ resource "aws_sqs_queue_policy" "ehr_complete_observability" {
   policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "transfer_complete" {
-  queue_url = aws_sqs_queue.transfer_complete.id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
-}
-
-resource "aws_sqs_queue_policy" "transfer_complete_observability" {
-  queue_url = aws_sqs_queue.transfer_complete_observability.id
-  policy    = data.aws_iam_policy_document.transfer_complete_policy_doc.json
-}
 
 data "aws_iam_policy_document" "large_message_fragments_policy_doc" {
   statement {
@@ -492,31 +482,7 @@ data "aws_iam_policy_document" "ehr_complete_policy_doc" {
   }
 }
 
-data "aws_iam_policy_document" "transfer_complete_policy_doc" {
-  statement {
-    effect = "Allow"
 
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      aws_sqs_queue.transfer_complete.arn,
-      aws_sqs_queue.transfer_complete_observability.arn
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_sns_topic.transfer_complete.arn]
-      variable = "aws:SourceArn"
-    }
-  }
-}
 
 data "aws_iam_policy_document" "negative_acks_policy_doc" {
   statement {
