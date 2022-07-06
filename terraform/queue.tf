@@ -216,17 +216,6 @@ resource "aws_sqs_queue" "transfer_complete" {
   }
 }
 
-resource "aws_ssm_parameter" "transfer_complete_queue_name" {
-  name  = "/repo/${var.environment}/output/${var.repo_name}/transfer-complete-queue-name"
-  type  = "String"
-  value = aws_sqs_queue.transfer_complete.name
-
-  tags = {
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
 data "aws_sqs_queue" "splunk_audit_uploader" {
   name = data.aws_ssm_parameter.splunk_audit_uploader.value
 }
