@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,6 +21,8 @@ class RepoIncomingServiceTest {
     TransferTrackerService transferTrackerService;
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
+    @Mock
+    SplunkAuditPublisher splunkAuditPublisher;
 
     @InjectMocks
     RepoIncomingService repoIncomingService;
@@ -45,6 +49,15 @@ class RepoIncomingServiceTest {
         repoIncomingService.processIncomingEvent(incomingEvent);
 
         verify(transferTrackerService).updateStateOfEhrTransfer("conversation-id","ACTION:EHR_REQUEST_SENT");
+    }
+
+    @Test
+    void shouldSendMessageToAuditSplunkWithCorrectStatusWhenTransferToRepoIsStarted() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:TRANSFER_TO_REPO_STARTED");
+        repoIncomingService.processIncomingEvent(incomingEvent);
+
+        verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
     }
 
     @Test
