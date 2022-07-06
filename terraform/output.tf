@@ -8,3 +8,9 @@ resource "aws_ssm_parameter" "transfer_complete_kms_key" {
     Environment = var.environment
   }
 }
+
+resource "aws_ssm_parameter" "transfer_complete_topic_arn" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/-transfer-complete-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.transfer_complete.arn
+}
