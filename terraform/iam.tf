@@ -573,6 +573,11 @@ resource "aws_sqs_queue_policy" "repo_incoming" {
   policy    = data.aws_iam_policy_document.repo_incoming_topic_access_to_queue.json
 }
 
+resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
+  queue_url = data.aws_sqs_queue.splunk_audit_uploader.name
+  policy    = data.aws_iam_policy_document.splunk_uploader_sns_topic_access_to_queue.json
+}
+
 data "aws_iam_policy_document" "repo_incoming_topic_access_to_queue" {
   statement {
     effect = "Allow"

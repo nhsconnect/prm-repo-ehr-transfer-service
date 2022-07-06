@@ -65,5 +65,5 @@ data "aws_ssm_parameter" "splunk_audit_uploader_kms_key" {
 }
 
 data "aws_ssm_parameter" "splunk_audit_uploader" {
-  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-queue-arn"
+  name = "/repo/${var.environment}/output/prm-deductions-infra/splunk-audit-uploader-queue-name"
 }
