@@ -118,9 +118,6 @@ public class LocalStackAwsConfig {
     @Value("${aws.transferCompleteTopicArn}")
     private String transferCompleteTopicArn;
 
-    @Value("${aws.transferCompleteQueueName}")
-    private String transferCompleteQueueName;
-
 
     @Bean
     public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) throws URISyntaxException {
@@ -296,7 +293,6 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
         snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
-        amazonSQSAsync.createQueue(transferCompleteQueueName);
     }
 
     private void setupS3Bucket() {

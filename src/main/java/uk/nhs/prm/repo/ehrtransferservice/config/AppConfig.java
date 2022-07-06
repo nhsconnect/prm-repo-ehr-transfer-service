@@ -10,16 +10,13 @@ public class AppConfig {
 
     private final String environment;
     private final String transferTrackerDbTableName;
-    private final String transferCompleteQueue;
     private final String transferCompleteTopicArn;
 
     public AppConfig(@Value("${environment}") String environment,
                      @Value("${aws.transferTrackerDbTableName}") String transferTrackerDbTableName,
-                     @Value("${aws.transferCompleteQueueName}") String transferCompleteQueue,
                      @Value("${aws.transferCompleteTopicArn}") String transferCompleteTopicArn) {
         this.environment = environment;
         this.transferTrackerDbTableName = transferTrackerDbTableName;
-        this.transferCompleteQueue = transferCompleteQueue;
         this.transferCompleteTopicArn = transferCompleteTopicArn;
     }
 
@@ -29,10 +26,6 @@ public class AppConfig {
 
     public String transferTrackerDbTableName() {
         return transferTrackerDbTableName;
-    }
-
-    public String transferCompleteQueueName() {
-        return transferCompleteQueue;
     }
 
     public String transferCompleteSnsTopicArn() {

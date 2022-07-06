@@ -7,7 +7,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.metrics.healthprobes.HealthProbe;
 import uk.nhs.prm.repo.ehrtransferservice.metrics.healthprobes.TransferCompleteSnsHealthProbe;
-import uk.nhs.prm.repo.ehrtransferservice.metrics.healthprobes.TransferCompleteSqsHealthProbe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +17,18 @@ import static org.mockito.Mockito.*;
 class HealthCheckStatusPublisherTest {
     private MetricPublisher metricPublisher;
     private List<HealthProbe> probe = new ArrayList<>();
-    private TransferCompleteSqsHealthProbe transferCompleteSqsHealthProbe;
     private TransferCompleteSnsHealthProbe transferCompleteSnsHealthProbe;
 
     @BeforeEach
     void setUp() {
         metricPublisher = Mockito.mock(MetricPublisher.class);
-        transferCompleteSqsHealthProbe = Mockito.mock(TransferCompleteSqsHealthProbe.class);
         transferCompleteSnsHealthProbe = Mockito.mock(TransferCompleteSnsHealthProbe.class);
-        probe.add(transferCompleteSqsHealthProbe);
         probe.add(transferCompleteSnsHealthProbe);
     }
 
     @Test
     public void shouldSetHealthMetricToZeroForUnhealthyIfAnyConnectionIsUnhealthy() {
-        when(transferCompleteSqsHealthProbe.isHealthy()).thenReturn(false);
+        when(transferCompleteSnsHealthProbe.isHealthy()).thenReturn(false);
 
         HealthCheckStatusPublisher healthPublisher = new HealthCheckStatusPublisher(metricPublisher, probe);
         healthPublisher.publishHealthStatus();
@@ -42,7 +38,6 @@ class HealthCheckStatusPublisherTest {
 
     @Test
     public void shouldSetHealthMetricToOneIfAllConnectionsAreHealthy() {
-        when(transferCompleteSqsHealthProbe.isHealthy()).thenReturn(true);
         when(transferCompleteSnsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthCheckStatusPublisher healthPublisher = new HealthCheckStatusPublisher(metricPublisher, probe);
