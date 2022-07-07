@@ -14,3 +14,9 @@ resource "aws_ssm_parameter" "transfer_complete_topic_arn" {
   type  = "String"
   value = aws_sns_topic.transfer_complete.arn
 }
+
+resource "aws_ssm_parameter" "splunk_uploader_topic_arn" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/-splunk-uploader-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.splunk_uploader.arn
+}
