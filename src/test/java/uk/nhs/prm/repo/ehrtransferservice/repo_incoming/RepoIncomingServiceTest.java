@@ -61,6 +61,25 @@ class RepoIncomingServiceTest {
     }
 
     @Test
+    void shouldSendMessageToAuditSplunkWithCorrectStatusWhenEhrRequestIsSent() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:EHR_REQUEST_SENT");
+        repoIncomingService.processIncomingEvent(incomingEvent);
+
+        verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
+    }
+
+    @Test
+    void shouldNotSendEhrRequestIsSentMessageToAuditSplunkWhenGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
+        var incomingEvent = createIncomingEvent();
+        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:EHR_REQUEST_SENT");
+        doThrow(TransferTrackerDbException.class).when(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+
+        assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
+        verify(splunkAuditPublisher, never()).sendMessage(splunkAuditMessage);
+    }
+
+    @Test
     void shouldThrowErrorAndNotCallGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
         var incomingEvent = createIncomingEvent();
         doThrow(TransferTrackerDbException.class).when(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
