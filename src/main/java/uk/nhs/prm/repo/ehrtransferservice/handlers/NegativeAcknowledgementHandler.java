@@ -24,7 +24,8 @@ public class NegativeAcknowledgementHandler {
     public void handleMessage(Acknowledgement acknowledgement) throws Exception {
         var conversationId = acknowledgement.getConversationId();
         logFailureDetail(acknowledgement);
-        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), createState(acknowledgement));
+        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(),
+                transferTrackerService.getEhrTransferData(conversationId.toString()).getNemsMessageId(), createState(acknowledgement));
         publishTransferCompleteEvent(transferTrackerService.getEhrTransferData(conversationId.toString()), conversationId);
     }
 

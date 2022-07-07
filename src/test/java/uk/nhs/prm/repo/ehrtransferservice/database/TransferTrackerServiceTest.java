@@ -8,6 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -29,6 +31,8 @@ class TransferTrackerServiceTest {
     TransferTrackerService transferTrackerService;
     @Captor
     ArgumentCaptor<TransferTrackerDbEntry> trackerDbEntryArgumentCaptor;
+    @Mock
+    SplunkAuditPublisher splunkAuditPublisher;
 
     @Test
     void shouldCallDbWithExpectedValuesForInitialSaveInDb() {
@@ -53,8 +57,9 @@ class TransferTrackerServiceTest {
     }
 
     @Test
-    void shouldCallDbWithExpectedValuesToUpdateWithNewStateAndDateTime() {
-        transferTrackerService.updateStateOfEhrTransfer("conversation-id","ACTION:TRANSFER_TO_REPO_STARTED");
+    void shouldCallDbWithExpectedValuesToUpdateWithNewInputs() {
+        transferTrackerService.handleEhrTransferStateUpdate("conversation-id", "nems-message-id", "ACTION:TRANSFER_TO_REPO_STARTED");
+        verify(splunkAuditPublisher).sendMessage(new SplunkAuditMessage("conversation-id", "nems-message-id", "ACTION:TRANSFER_TO_REPO_STARTED"));
 
         verify(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
     }
@@ -63,7 +68,7 @@ class TransferTrackerServiceTest {
     void shouldThrowExceptionWhenFailsToUpdateWithNewStateAndDateTime() {
         doThrow(RuntimeException.class).when(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.updateStateOfEhrTransfer("conversation-id","ACTION:TRANSFER_TO_REPO_STARTED"));
+        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.handleEhrTransferStateUpdate("conversation-id", "some-nems", "ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
     @Test

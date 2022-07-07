@@ -23,7 +23,6 @@ public class RepoIncomingService {
         transferTrackerService.createEhrTransfer(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
         splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(),TRANSFER_TO_REPO_STARTED));
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferTrackerService.updateStateOfEhrTransfer(repoIncomingEvent.getConversationId(), EHR_REQUEST_SENT);
-        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(),EHR_REQUEST_SENT));
+        transferTrackerService.handleEhrTransferStateUpdate(repoIncomingEvent.getConversationId(), repoIncomingEvent.getNemsMessageId(), EHR_REQUEST_SENT);
     }
 }

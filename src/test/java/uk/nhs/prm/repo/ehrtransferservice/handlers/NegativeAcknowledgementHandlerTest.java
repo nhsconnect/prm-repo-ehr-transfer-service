@@ -59,8 +59,8 @@ public class NegativeAcknowledgementHandlerTest {
 
         negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, failureDetailsList("06", "09")));
 
-        verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
-                "ACTION:EHR_TRANSFER_FAILED:06");
+        verify(transferTrackerService, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
+                "someNemsMessageId" , "ACTION:EHR_TRANSFER_FAILED:06");
 
         verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
     }
@@ -88,8 +88,8 @@ public class NegativeAcknowledgementHandlerTest {
 
         negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, noFailureDetails()));
 
-        verify(transferTrackerService, times(1)).updateStateOfEhrTransfer(conversationId.toString(),
-                "ACTION:EHR_TRANSFER_FAILED:UNKNOWN_ERROR");
+        verify(transferTrackerService, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
+                "someNemsMessageId" ,"ACTION:EHR_TRANSFER_FAILED:UNKNOWN_ERROR");
         verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
     }
 

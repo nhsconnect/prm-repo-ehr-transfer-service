@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -16,6 +18,7 @@ import java.time.ZonedDateTime;
 public class TransferTrackerService {
 
     private final TransferTrackerDb transferTrackerDb;
+    private final SplunkAuditPublisher splunkAuditPublisher;
 
     public void createEhrTransfer(RepoIncomingEvent incomingEvent, String status) {
         try {
@@ -40,14 +43,20 @@ public class TransferTrackerService {
         return largeEhrCoreMessageId;
     }
 
-    public void updateStateOfEhrTransfer(String conversationId, String status) {
+    public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status) {
         try {
             transferTrackerDb.update(conversationId, status, getTimeNow());
             log.info("Updated state of EHR transfer in DB to: " + status);
+            publishAuditMessage(conversationId, nemsMessageId, status);
         } catch (Exception e) {
             log.error("Failed to update state of EHR Transfer: " + e.getMessage());
             throw new TransferTrackerDbException("Failed to update state of EHR Transfer: ", e);
         }
+    }
+
+    private void publishAuditMessage(String conversationId, String nemsMessageId, String status) {
+        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(conversationId, nemsMessageId, status));
+        log.info("Published audit message with the status of: " + status);
     }
 
     public TransferTrackerDbEntry getEhrTransferData(String conversationId) {

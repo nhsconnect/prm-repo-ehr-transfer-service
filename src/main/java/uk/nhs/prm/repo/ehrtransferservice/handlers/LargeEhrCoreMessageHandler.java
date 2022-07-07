@@ -27,7 +27,7 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<LargeSqsMessag
        var ehrTransferData = transferTrackerService.getEhrTransferData(conversationId.toString());
        gp2gpMessengerService.sendContinueMessage(largeSqsMessage, ehrTransferData);
 
-        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
         transferTrackerService.updateLargeEhrCoreMessageId(conversationId.toString(), largeSqsMessage.getMessageId().toString());
     }
 }

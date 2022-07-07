@@ -48,22 +48,13 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).updateStateOfEhrTransfer("conversation-id","ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT");
     }
 
     @Test
     void shouldSendMessageToAuditSplunkWithCorrectStatusWhenTransferToRepoIsStarted() throws Exception {
         var incomingEvent = createIncomingEvent();
         var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:TRANSFER_TO_REPO_STARTED");
-        repoIncomingService.processIncomingEvent(incomingEvent);
-
-        verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
-    }
-
-    @Test
-    void shouldSendMessageToAuditSplunkWithCorrectStatusWhenEhrRequestIsSent() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:EHR_REQUEST_SENT");
         repoIncomingService.processIncomingEvent(incomingEvent);
 
         verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
@@ -94,7 +85,7 @@ class RepoIncomingServiceTest {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
 
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(transferTrackerService, never()).updateStateOfEhrTransfer("conversation-id","ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT");
     }
 
 

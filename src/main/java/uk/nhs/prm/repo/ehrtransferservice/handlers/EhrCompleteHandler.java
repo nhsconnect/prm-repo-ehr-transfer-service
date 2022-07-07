@@ -25,7 +25,7 @@ public class EhrCompleteHandler {
         var transferCompleteEvent = createTransferCompleteEvent(ehrTransferData);
 
         gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData);
-        transferTrackerService.updateStateOfEhrTransfer(conversationId.toString(), TRANSFER_TO_REPO_COMPLETE);
+        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), TRANSFER_TO_REPO_COMPLETE);
         transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
     }
 
