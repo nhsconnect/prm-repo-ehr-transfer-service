@@ -614,3 +614,34 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
+
+resource "aws_sqs_queue_policy" "splunk_audit_uploader" {
+  queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
+  policy    = data.aws_iam_policy_document.ehr_transfer_splunk_audit_uploader_policy_doc.json
+}
+
+data "aws_iam_policy_document" "ehr_transfer_splunk_audit_uploader_policy_doc" {
+  statement {
+
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      data.aws_sqs_queue.splunk_audit_uploader.arn,
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.splunk_uploader.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
