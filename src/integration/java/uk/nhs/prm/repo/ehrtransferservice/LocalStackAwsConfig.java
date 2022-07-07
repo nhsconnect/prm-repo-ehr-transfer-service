@@ -115,8 +115,8 @@ public class LocalStackAwsConfig {
     @Value("${activemq.randomOption}")
     private String randomOption;
 
-    @Value("${aws.transferCompleteTopicArn}")
-    private String transferCompleteTopicArn;
+    @Value("${aws.splunkUploaderTopicArn}")
+    private String splunkUploaderTopicArn;
 
 
     @Bean
@@ -293,6 +293,7 @@ public class LocalStackAwsConfig {
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
         snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
+        snsClient.createTopic(CreateTopicRequest.builder().name("test_splunk_uploader_topic").build());
     }
 
     private void setupS3Bucket() {

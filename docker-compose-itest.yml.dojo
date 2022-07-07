@@ -5,25 +5,25 @@ services:
     volumes:
       - /Users/syedsadiqali:/dojo/identity:ro
       - /Users/syedsadiqali/Desktop/code/prm-repo-ehr-transfer-service:/dojo/work
-      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/00-multiline-vars.sh
-      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/01-bash-functions.sh
+      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/00-multiline-vars.sh
+      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/01-bash-functions.sh
     env_file:
-      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866
+      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463
   mq-1:
     env_file:
-      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866
+      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463
     volumes:
-      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/00-multiline-vars.sh
-      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/01-bash-functions.sh
+      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/00-multiline-vars.sh
+      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/01-bash-functions.sh
   mq-2:
     env_file:
-      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866
+      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463
     volumes:
-      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/00-multiline-vars.sh
-      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/01-bash-functions.sh
+      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/00-multiline-vars.sh
+      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/01-bash-functions.sh
   localstack:
     env_file:
-      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866
+      - /tmp/dojo-environment-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463
     volumes:
-      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/00-multiline-vars.sh
-      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-06-13_11-24-21-15461866:/etc/dojo.d/variables/01-bash-functions.sh
+      - /tmp/dojo-environment-multiline-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/00-multiline-vars.sh
+      - /tmp/dojo-environment-bash-functions-dojo-prm-repo-ehr-transfer-service-2022-07-07_10-53-48-3020463:/etc/dojo.d/variables/01-bash-functions.sh

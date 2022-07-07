@@ -87,7 +87,7 @@ class EhrRequestTest {
 
         sqs.sendMessage(queueUrl, getRepoIncomingData());
 
-        await().atMost(10,TimeUnit.SECONDS).untilAsserted(() -> {
+        await().atMost(20,TimeUnit.SECONDS).untilAsserted(() -> {
             Map<String, AttributeValue> key = new HashMap<>();
             key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
 
