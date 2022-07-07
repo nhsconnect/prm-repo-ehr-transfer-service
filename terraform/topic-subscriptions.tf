@@ -94,5 +94,5 @@ resource "aws_sns_topic_subscription" "ehr_repository_audit" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.splunk_uploader.arn
-  endpoint             = data.aws_ssm_parameter.splunk_audit_uploader.value
+  endpoint             = data.aws_sqs_queue.splunk_audit_uploader.arn
 }
