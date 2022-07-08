@@ -540,7 +540,7 @@ resource "aws_sqs_queue_policy" "repo_incoming" {
 }
 
 resource "aws_sqs_queue_policy" "splunk_audit_uploader_access_policy" {
-  queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
+  queue_url = aws_sqs_queue.ehr_transfer_service_audit_uploader.id
   policy    = data.aws_iam_policy_document.splunk_uploader_sns_topic_access_to_queue.json
 }
 
@@ -583,7 +583,7 @@ data "aws_iam_policy_document" "splunk_uploader_sns_topic_access_to_queue" {
     }
 
     resources = [
-      data.aws_ssm_parameter.splunk_audit_uploader.value
+      aws_sqs_queue.ehr_transfer_service_audit_uploader.arn
     ]
 
     condition {
@@ -613,35 +613,4 @@ resource "aws_iam_policy" "cloudwatch_metrics_policy" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
-}
-
-resource "aws_sqs_queue_policy" "splunk_audit_uploader" {
-  queue_url = data.aws_sqs_queue.splunk_audit_uploader.url
-  policy    = data.aws_iam_policy_document.ehr_transfer_splunk_audit_uploader_policy_doc.json
-}
-
-data "aws_iam_policy_document" "ehr_transfer_splunk_audit_uploader_policy_doc" {
-  statement {
-
-    effect = "Allow"
-
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      data.aws_sqs_queue.splunk_audit_uploader.arn,
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [aws_sns_topic.splunk_uploader.arn]
-      variable = "aws:SourceArn"
-    }
-  }
 }

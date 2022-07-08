@@ -90,9 +90,9 @@ resource "aws_sns_topic_subscription" "ehr_complete_observability_topic" {
 }
 
 
-resource "aws_sns_topic_subscription" "ehr_repository_audit" {
+resource "aws_sns_topic_subscription" "ehr_transfer_audit" {
   protocol             = "sqs"
   raw_message_delivery = true
   topic_arn            = aws_sns_topic.splunk_uploader.arn
-  endpoint             = data.aws_sqs_queue.splunk_audit_uploader.arn
+  endpoint             = aws_sqs_queue.ehr_transfer_service_audit_uploader.arn
 }

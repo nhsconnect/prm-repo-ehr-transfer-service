@@ -14,6 +14,8 @@ locals {
   parsing_dlq_name = "${var.environment}-${var.component_name}-parsing-dlq"
   ehr_complete_queue_name = "${var.environment}-${var.component_name}-ehr-complete"
   ehr_complete_observability_queue_name = "${var.environment}-${var.component_name}-ehr-complete-observability"
+  ehr_transfer_service_audit_queue_name = "${var.environment}-${var.component_name}-audit-uploader"
+  ehr_transfer_service_audit_dlq = "${var.environment}-${var.component_name}-audit-dlq"
   max_retention_period = 1209600
   thirty_minute_retention_period = 1800
 }
@@ -200,6 +202,31 @@ resource "aws_sqs_queue" "ehr_complete_observability" {
   }
 }
 
-data "aws_sqs_queue" "splunk_audit_uploader" {
-  name = data.aws_ssm_parameter.splunk_audit_uploader.value
+resource "aws_sqs_queue" "ehr_transfer_service_audit_uploader" {
+  name                       = local.ehr_transfer_service_audit_queue_name
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.re_registration_audit_uploader_dlq.arn
+    maxReceiveCount     = 4
+  })
+  tags = {
+    Name = local.ehr_transfer_service_audit_queue_name
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_sqs_queue" "re_registration_audit_uploader_dlq" {
+  name                       = local.ehr_transfer_service_audit_dlq
+  message_retention_seconds  = 1209600
+  kms_master_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id
+
+
+  tags = {
+    Name = local.ehr_transfer_service_audit_dlq
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
 }

@@ -142,6 +142,22 @@ resource "aws_kms_alias" "transfer_tracker_dynamodb_encryption" {
   target_key_id = aws_kms_key.transfer_tracker_dynamodb_kms_key.id
 }
 
+resource "aws_kms_key" "ehr_transfer_audit_kms_key" {
+  description = "Custom KMS Key to enable server side encryption for Transfer Tracker DB"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+
+  tags = {
+    Name        = "${var.environment}-${var.component_name}-ehr-transfer-audit-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "ehr_transfer_audit_encryption" {
+  name          = "alias/ehr-transfer-audit-encryption-kms-key"
+  target_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id
+}
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"
