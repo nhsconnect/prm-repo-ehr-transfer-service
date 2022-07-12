@@ -96,10 +96,3 @@ resource "aws_sns_topic_subscription" "ehr_transfer_audit" {
   topic_arn            = aws_sns_topic.splunk_uploader.arn
   endpoint             = aws_sqs_queue.ehr_transfer_service_audit_uploader.arn
 }
-
-resource "aws_sns_topic_subscription" "repo_incoming_observability_queue" {
-  protocol             = "sqs"
-  raw_message_delivery = true
-  topic_arn            = data.aws_ssm_parameter.repo_incoming_topic_arn.value
-  endpoint             = aws_sqs_queue.repo_incoming_observability_queue.arn
-}

@@ -614,33 +614,3 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
-
-resource "aws_sqs_queue_policy" "repo_incoming_observability" {
-  queue_url = aws_sqs_queue.repo_incoming_observability_queue.id
-  policy    = data.aws_iam_policy_document.repo_incoming_observability_topic_access_to_queue.json
-}
-
-data "aws_iam_policy_document" "repo_incoming_observability_topic_access_to_queue" {
-  statement {
-    effect = "Allow"
-
-    actions = [
-      "sqs:SendMessage"
-    ]
-
-    principals {
-      identifiers = ["sns.amazonaws.com"]
-      type        = "Service"
-    }
-
-    resources = [
-      aws_sqs_queue.repo_incoming_observability_queue.arn
-    ]
-
-    condition {
-      test     = "ArnEquals"
-      values   = [data.aws_ssm_parameter.repo_incoming_topic_arn.value]
-      variable = "aws:SourceArn"
-    }
-  }
-}
