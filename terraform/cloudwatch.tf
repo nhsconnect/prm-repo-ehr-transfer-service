@@ -47,4 +47,5 @@ resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
     "Environment" = var.environment
   }
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
