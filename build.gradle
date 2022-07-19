@@ -4,7 +4,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '4.6.0'
-    id 'org.owasp.dependencycheck' version '7.1.0.1'
+    id 'org.owasp.dependencycheck' version '7.1.1'
 }
 
 group = 'uk.nhs.prm.repo'
