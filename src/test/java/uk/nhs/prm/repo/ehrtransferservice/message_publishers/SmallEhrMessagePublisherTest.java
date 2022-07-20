@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
@@ -33,6 +34,6 @@ class SmallEhrMessagePublisherTest {
     @Test
     void shouldPublishMessageToTheSmallEhrTopic() {
         smallEhrMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(smallEhrTopicArn, "message", "conversationId", conversationId.toString());
+        verify(messagePublisher).sendMessage(smallEhrTopicArn, "message", Map.of("conversationId", conversationId.toString()));
     }
 }

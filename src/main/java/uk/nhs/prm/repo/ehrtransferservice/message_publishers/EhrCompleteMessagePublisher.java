@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 
+import java.util.Map;
+
 @Component
 public class EhrCompleteMessagePublisher {
     private final String ehrCompleteTopicArn;
@@ -15,7 +17,7 @@ public class EhrCompleteMessagePublisher {
     }
 
     public void sendMessage(EhrCompleteEvent ehrCompleteEvent) {
-        messagePublisher.sendJsonMessage(this.ehrCompleteTopicArn, ehrCompleteEvent, "conversationId", ehrCompleteEvent.getConversationId().toString());
+        messagePublisher.sendJsonMessage(this.ehrCompleteTopicArn, ehrCompleteEvent,Map.of("conversationId", ehrCompleteEvent.getConversationId().toString()));
     }
 }
 

@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
@@ -37,7 +38,7 @@ class EhrCompleteMessagePublisherTest {
     @Test
     void shouldPublishMessageToTheSmallEhrTopic() {
         ehrCompleteMessagePublisher.sendMessage(ehrCompleteEvent);
-        verify(messagePublisher).sendJsonMessage(ehrCompleteTopicArn, ehrCompleteEvent, "conversationId", conversationId.toString());
+        verify(messagePublisher).sendJsonMessage(ehrCompleteTopicArn, ehrCompleteEvent, Map.of("conversationId", conversationId.toString()));
     }
 
 }

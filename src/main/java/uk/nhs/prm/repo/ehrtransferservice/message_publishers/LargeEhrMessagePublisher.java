@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.message_publishers;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -16,7 +17,7 @@ public class LargeEhrMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.largeEhrTopicArn, message, "conversationId", conversationId.toString());
+        messagePublisher.sendMessage(this.largeEhrTopicArn, message, Map.of("conversationId", conversationId.toString()));
     }
 }
 

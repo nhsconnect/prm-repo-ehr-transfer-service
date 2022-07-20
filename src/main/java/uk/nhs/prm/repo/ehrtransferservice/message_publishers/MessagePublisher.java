@@ -20,18 +20,14 @@ public class MessagePublisher {
     private final Tracer tracer;
 
     public void sendMessage(String topicArn, String message) {
-        sendMessage(topicArn, message, null, null);
+        sendMessage(topicArn, message, null);
     }
 
-    public void sendJsonMessage(String topicArn, Object message, String attributeKey, String attributeValue) {
-        String jsonMessage = new Gson().toJson(message);
-        sendMessage(topicArn, jsonMessage, attributeKey, attributeValue);
-    }
-
-    public void sendMessage(String topicArn, String message, String attributeKey, String attributeValue) {
-        var messageAttributes = createMessageAttributes();
-        if (attributeKey != null) {
-            messageAttributes.put(attributeKey, getMessageAttributeValue(attributeValue));
+    public void sendMessage(String topicArn, String message, Map<String, String> attributes) {
+        Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
+        messageAttributes.put("traceId", getMessageAttributeValue(tracer.getTraceId()));
+        if (attributes != null && attributes.size() > 0) {
+            attributes.forEach((key, value) -> messageAttributes.put(key, getMessageAttributeValue(value)));
         }
 
         PublishRequest request = new PublishRequest()
@@ -41,13 +37,12 @@ public class MessagePublisher {
 
         var result = snsClient.publish(request);
         var topicAttributes = topicArn.split(":");
-        log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicAttributes[topicAttributes.length-1], result.getMessageId());
+        log.info("PUBLISHED: message to {} topic. Published SNS message id: {}", topicAttributes[topicAttributes.length - 1], result.getMessageId());
     }
 
-    private Map<String, MessageAttributeValue> createMessageAttributes() {
-        Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
-        messageAttributes.put("traceId", getMessageAttributeValue(tracer.getTraceId()));
-        return messageAttributes;
+    public void sendJsonMessage(String topicArn, Object message, Map<String, String> attributes) {
+        String jsonMessage = new Gson().toJson(message);
+        sendMessage(topicArn, jsonMessage, attributes);
     }
 
     private MessageAttributeValue getMessageAttributeValue(String attributeValue) {

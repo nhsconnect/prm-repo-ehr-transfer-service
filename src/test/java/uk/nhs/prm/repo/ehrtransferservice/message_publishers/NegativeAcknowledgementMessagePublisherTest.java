@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
@@ -28,6 +29,6 @@ class NegativeAcknowledgementMessagePublisherTest {
     void shouldPublishMessageToTheSmallEhrTopic() {
         var conversationId = UUID.randomUUID();
         negativeAcknowledgementMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", "conversationId", conversationId.toString());
+        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
     }
 }
