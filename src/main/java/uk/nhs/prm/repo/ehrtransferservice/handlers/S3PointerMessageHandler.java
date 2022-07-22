@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -21,6 +22,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class S3PointerMessageHandler {
@@ -35,8 +37,11 @@ public class S3PointerMessageHandler {
 
     public LargeSqsMessage getLargeSqsMessage(String sqsMessagePayload) throws IOException {
         if (isValidS3PointerMessage(sqsMessagePayload)) {
+            log.info("Going to retrieve message from s3");
             return getLargeSqsMessage(s3PointerMessageParser.parse(sqsMessagePayload));
         }
+
+        log.info("Not a message to be retrieved from s3, parsing directly");
         return parse(sqsMessagePayload);
     }
 
