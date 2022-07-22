@@ -18,7 +18,7 @@ public class S3PointerMessageParser {
             return s3PointerMessage;
         } catch (Exception e) {
             log.error("Encountered error while parsing S3PointerMessage", e);
-            throw new IllegalArgumentException("Encountered error while parsing S3PointerMessage",e);
+            throw new IllegalArgumentException("Encountered error while parsing S3PointerMessage", e);
         }
     }
 }

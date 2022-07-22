@@ -43,14 +43,14 @@ class LargeSqsMessageParserTest {
     @Test
     void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage());
+        largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
     @Test
     void shouldThrowExceptionWhenS3MessageIsNotValid() {
         mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
-        assertThrows(JsonProcessingException.class, () -> largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage()));
+        assertThrows(JsonProcessingException.class, () -> largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage()));
     }
 
     @Test
@@ -58,7 +58,7 @@ class LargeSqsMessageParserTest {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
-        largeSqsMessageParser.getLargeSqsMessage(payload);
+        largeSqsMessageParser.parse(payload);
         verify(s3PointerMessageParser).parse(payload);
     }
 
@@ -72,7 +72,7 @@ class LargeSqsMessageParserTest {
         };
 
         var payload = byteSource.asCharSource(Charsets.UTF_8).read();
-        largeSqsMessageParser.getLargeSqsMessage(payload);
+        largeSqsMessageParser.parse(payload);
         verify(s3PointerMessageParser, never()).parse(payload);
     }
 

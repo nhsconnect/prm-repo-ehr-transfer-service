@@ -60,10 +60,9 @@ public class S3PointerHandlerTest {
                 RequestBody.fromBytes(Files.readAllBytes(Paths.get("src/integration/resources/data/RCMR_IN030000UK06Sanitized"))));
     }
 
-
     @Test
     void shouldReadLargeMessageContentFromS3() throws IOException {
-        ParsedMessage parsedMessage = largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage());
+        ParsedMessage parsedMessage = largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage());
         assertThat(parsedMessage.getInteractionId()).isEqualTo("RCMR_IN030000UK06");
     }
 

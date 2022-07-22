@@ -16,7 +16,6 @@ import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -28,38 +27,40 @@ public class LargeSqsMessageParser {
     private final S3Client s3Client;
     private final S3PointerMessageParser s3PointerMessageParser;
 
-    public LargeSqsMessage getLargeSqsMessage(S3PointerMessage sqsMessagePayload) throws IOException {
-        var ehrMessageInputStream =
-                s3Client.getObject(GetObjectRequest.builder().bucket(sqsMessagePayload.getS3BucketName()).key(sqsMessagePayload.getS3Key()).build());
-        return parse(getS3MessageContentAsString(ehrMessageInputStream));
-    }
-
-    public LargeSqsMessage getLargeSqsMessage(String sqsMessagePayload) throws IOException {
+    public LargeSqsMessage parse(String sqsMessagePayload) throws IOException {
         if (isValidS3PointerMessage(sqsMessagePayload)) {
             log.info("Going to retrieve message from s3");
-            return getLargeSqsMessage(s3PointerMessageParser.parse(sqsMessagePayload));
+            return retrieveMessageFromS3(s3PointerMessageParser.parse(sqsMessagePayload));
         }
 
         log.info("Not a message to be retrieved from s3, parsing directly");
-        return parse(sqsMessagePayload);
+        return toLargeSqsMessage(sqsMessagePayload);
+    }
+
+    public LargeSqsMessage retrieveMessageFromS3(S3PointerMessage sqsMessagePayload) throws IOException {
+        var getObjectRequest = GetObjectRequest.builder()
+                .bucket(sqsMessagePayload.getS3BucketName())
+                .key(sqsMessagePayload.getS3Key()).build();
+
+        var rawMessage = new BufferedReader(
+                new InputStreamReader(s3Client.getObject(getObjectRequest), StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        return toLargeSqsMessage(rawMessage);
     }
 
     private boolean isValidS3PointerMessage(String message) {
-        return message.contains("s3BucketName") && message.contains("s3Key");
+        return message.contains(S3PointerMessage.S3_BUCKET_NAME_PROPERTY)
+                && message.contains(S3PointerMessage.S3_KEY_PROPERTY);
     }
 
-    private LargeSqsMessage parse(String s3Message) throws JsonProcessingException {
+    //TODO: same stuff duplicated from Parser.parse. Room for improvement
+    private LargeSqsMessage toLargeSqsMessage(String rawMessage) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
-        var mhsJsonMessage = new ObjectMapper().readValue(s3Message, MhsJsonMessage.class);
+        var mhsJsonMessage = new ObjectMapper().readValue(rawMessage, MhsJsonMessage.class);
         var envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
         var message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
-        return new LargeSqsMessage(envelope, message, s3Message);
-    }
-
-    private String getS3MessageContentAsString(InputStream ehrMessageInputStream) {
-        return new BufferedReader(
-                new InputStreamReader(ehrMessageInputStream, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        return new LargeSqsMessage(envelope, message, rawMessage);
     }
 }

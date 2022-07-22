@@ -44,13 +44,13 @@ class LargeMessageFragmentsListenerTest {
     @Test
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws IOException, JMSException {
         largeMessageFragmentsListener.onMessage(getSqsTextMessage());
-        verify(largeSqsMessageParser).getLargeSqsMessage(payload);
+        verify(largeSqsMessageParser).parse(payload);
     }
 
     @Test
     void shouldCallLargeMessageFragmentHandlerWithLargeSqsPayload() throws Exception {
         var largeSqsMessageMock = mock(LargeSqsMessage.class);
-        when(largeSqsMessageParser.getLargeSqsMessage(payload)).thenReturn(largeSqsMessageMock);
+        when(largeSqsMessageParser.parse(payload)).thenReturn(largeSqsMessageMock);
         largeMessageFragmentsListener.onMessage(getSqsTextMessage());
         verify(largeMessageFragmentHandler).handleMessage(largeSqsMessageMock);
     }

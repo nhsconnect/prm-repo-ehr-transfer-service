@@ -35,6 +35,6 @@ public class LargeMessageFragmentsListener implements MessageListener {
 
     private LargeSqsMessage getLargeMessageFragment(Message message) throws IOException, JMSException {
         String payload = ((TextMessage) message).getText();
-        return largeSqsMessageParser.getLargeSqsMessage(payload);
+        return largeSqsMessageParser.parse(payload);
     }
 }

@@ -36,6 +36,6 @@ public class LargeEhrMessageListener implements MessageListener {
 
     private LargeSqsMessage getLargeEhrMessage(Message message) throws IOException, JMSException {
         String payload = ((TextMessage) message).getText();
-        return largeSqsMessageParser.getLargeSqsMessage(payload);
+        return largeSqsMessageParser.parse(payload);
     }
 }
