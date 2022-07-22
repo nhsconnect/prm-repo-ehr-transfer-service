@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;

@@ -7,14 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.AcknowledgementMessageWrapper;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
-
-import java.util.ArrayList;
-import java.util.List;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import static org.mockito.Mockito.*;
 
@@ -76,10 +71,6 @@ class SmallEhrMessageListenerTest {
     class StubParsedMessage extends ParsedMessage {
         public StubParsedMessage() {
             super(null, null, null);
-        }
-
-        public List<FailureDetail> getFailureDetails() {
-            return new ArrayList<>();
         }
     }
 }

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 
 import javax.jms.JMSException;
@@ -17,7 +17,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class LargeMessageFragmentsListener implements MessageListener {
     private final Tracer tracer;
-    private final S3PointerMessageHandler s3PointerMessageHandler;
+    private final LargeSqsMessageParser largeSqsMessageParser;
     private final LargeMessageFragmentHandler largeMessageFragmentHandler;
 
     @Override
@@ -35,6 +35,6 @@ public class LargeMessageFragmentsListener implements MessageListener {
 
     private LargeSqsMessage getLargeMessageFragment(Message message) throws IOException, JMSException {
         String payload = ((TextMessage) message).getText();
-        return s3PointerMessageHandler.getLargeSqsMessage(payload);
+        return largeSqsMessageParser.getLargeSqsMessage(payload);
     }
 }

@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;

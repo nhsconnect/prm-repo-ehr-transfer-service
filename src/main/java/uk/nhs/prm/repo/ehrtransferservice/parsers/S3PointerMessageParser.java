@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;

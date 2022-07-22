@@ -12,9 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.MessageSanitizer;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import javax.jms.JMSException;
 import java.io.IOException;

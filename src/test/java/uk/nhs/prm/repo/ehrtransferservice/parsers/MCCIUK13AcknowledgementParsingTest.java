@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.parser_broker;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;

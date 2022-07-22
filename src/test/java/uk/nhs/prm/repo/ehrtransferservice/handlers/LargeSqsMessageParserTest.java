@@ -17,7 +17,8 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.S3PointerMessageParser;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,26 +31,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class S3PointerMessageHandlerTest {
+class LargeSqsMessageParserTest {
     @Mock
     private S3Client s3Client;
     @Mock
     private S3PointerMessageParser s3PointerMessageParser;
 
     @InjectMocks
-    private S3PointerMessageHandler s3PointerMessageHandler;
+    private LargeSqsMessageParser largeSqsMessageParser;
 
     @Test
     void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage());
+        largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
     @Test
     void shouldThrowExceptionWhenS3MessageIsNotValid() {
         mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
-        assertThrows(JsonProcessingException.class, () -> s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage()));
+        assertThrows(JsonProcessingException.class, () -> largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage()));
     }
 
     @Test
@@ -57,7 +58,7 @@ class S3PointerMessageHandlerTest {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
-        s3PointerMessageHandler.getLargeSqsMessage(payload);
+        largeSqsMessageParser.getLargeSqsMessage(payload);
         verify(s3PointerMessageParser).parse(payload);
     }
 
@@ -71,7 +72,7 @@ class S3PointerMessageHandlerTest {
         };
 
         var payload = byteSource.asCharSource(Charsets.UTF_8).read();
-        s3PointerMessageHandler.getLargeSqsMessage(payload);
+        largeSqsMessageParser.getLargeSqsMessage(payload);
         verify(s3PointerMessageParser, never()).parse(payload);
     }
 

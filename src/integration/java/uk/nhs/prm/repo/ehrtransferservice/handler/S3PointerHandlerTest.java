@@ -16,7 +16,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.S3PointerMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class S3PointerHandlerTest {
     private String sqsLargeMessageBucketName;
 
     @Autowired
-    private S3PointerMessageHandler  s3PointerMessageHandler;
+    private LargeSqsMessageParser largeSqsMessageParser;
 
     private static final String LARGE_MESSAGE_S3_KEY= "/large-message-key";
 
@@ -63,7 +63,7 @@ public class S3PointerHandlerTest {
 
     @Test
     void shouldReadLargeMessageContentFromS3() throws IOException {
-        ParsedMessage parsedMessage = s3PointerMessageHandler.getLargeSqsMessage(getStaticS3PointerMessage());
+        ParsedMessage parsedMessage = largeSqsMessageParser.getLargeSqsMessage(getStaticS3PointerMessage());
         assertThat(parsedMessage.getInteractionId()).isEqualTo("RCMR_IN030000UK06");
     }
 

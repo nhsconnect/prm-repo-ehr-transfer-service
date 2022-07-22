@@ -13,8 +13,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventParser;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
@@ -35,7 +36,7 @@ public class SqsListenerSpringConfiguration {
     private final EhrCompleteHandler ehrCompleteHandler;
     private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
-    private final S3PointerMessageHandler s3PointerMessageHandler;
+    private final LargeSqsMessageParser largeSqsMessageParser;
     private final LargeMessageFragmentHandler largeMessageFragmentHandler;
     private final NegativeAcknowledgementHandler negativeAcknowledgementHandler;
 
@@ -100,7 +101,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", largeEhrQueueName);
         var largeEhrConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
-        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer, s3PointerMessageHandler, largeEhrCoreMessageHandler));
+        largeEhrConsumer.setMessageListener(new LargeEhrMessageListener(tracer, largeSqsMessageParser, largeEhrCoreMessageHandler));
 
         connection.start();
 
@@ -113,7 +114,7 @@ public class SqsListenerSpringConfiguration {
 
         log.info("ehr small queue name : {}", largeMessageFragmentsQueueName);
         var largeEhrFragmentsConsumer = session.createConsumer(session.createQueue(largeMessageFragmentsQueueName));
-        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, s3PointerMessageHandler, largeMessageFragmentHandler));
+        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, largeSqsMessageParser, largeMessageFragmentHandler));
 
         connection.start();
 

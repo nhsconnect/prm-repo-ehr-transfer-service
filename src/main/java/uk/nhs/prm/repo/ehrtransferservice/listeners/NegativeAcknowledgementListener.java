@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;

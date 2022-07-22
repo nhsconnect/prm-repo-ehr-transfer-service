@@ -8,9 +8,9 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Broker;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.MessageSanitizer;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.MessageSanitizer;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;

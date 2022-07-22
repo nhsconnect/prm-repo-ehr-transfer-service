@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,5 +81,4 @@ class NegativeAcknowledgementListenerTest {
             return new ArrayList<>();
         }
     }
-
 }

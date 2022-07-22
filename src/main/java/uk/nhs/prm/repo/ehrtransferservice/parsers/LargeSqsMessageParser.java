@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.handlers;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +13,6 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MhsJsonMessage;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.S3PointerMessageParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class S3PointerMessageHandler {
+public class LargeSqsMessageParser {
     private final S3Client s3Client;
     private final S3PointerMessageParser s3PointerMessageParser;
 

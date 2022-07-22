@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrCompleteHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.parser_broker.EhrCompleteParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
 
 import javax.jms.JMSException;
 import java.util.UUID;
