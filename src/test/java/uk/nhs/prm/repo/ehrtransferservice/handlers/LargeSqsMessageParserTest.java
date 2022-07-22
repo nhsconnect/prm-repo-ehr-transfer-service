@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
+import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
@@ -58,7 +59,7 @@ class LargeSqsMessageParserTest {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
-        largeSqsMessageParser.parse(payload);
+        largeSqsMessageParser.parse(new SQSTextMessage(payload));
         verify(s3PointerMessageParser).parse(payload);
     }
 
@@ -72,7 +73,7 @@ class LargeSqsMessageParserTest {
         };
 
         var payload = byteSource.asCharSource(Charsets.UTF_8).read();
-        largeSqsMessageParser.parse(payload);
+        largeSqsMessageParser.parse(new SQSTextMessage(payload));
         verify(s3PointerMessageParser, never()).parse(payload);
     }
 

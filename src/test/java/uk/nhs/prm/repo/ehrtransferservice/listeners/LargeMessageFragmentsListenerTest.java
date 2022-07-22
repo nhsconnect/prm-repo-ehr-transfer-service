@@ -25,7 +25,6 @@ class LargeMessageFragmentsListenerTest {
     @Mock
     LargeMessageFragmentHandler largeMessageFragmentHandler;
 
-
     private static final String payload = "payload";
 
     @InjectMocks
@@ -40,15 +39,17 @@ class LargeMessageFragmentsListenerTest {
 
     @Test
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws Exception {
-        largeMessageFragmentsListener.onMessage(getSqsTextMessage());
-        verify(largeSqsMessageParser).parse(payload);
+        var message = getSqsTextMessage();
+        largeMessageFragmentsListener.onMessage(message);
+        verify(largeSqsMessageParser).parse(message);
     }
 
     @Test
     void shouldCallLargeMessageFragmentHandlerWithLargeSqsPayload() throws Exception {
+        var message = getSqsTextMessage();
         var largeSqsMessageMock = mock(LargeSqsMessage.class);
-        when(largeSqsMessageParser.parse(payload)).thenReturn(largeSqsMessageMock);
-        largeMessageFragmentsListener.onMessage(getSqsTextMessage());
+        when(largeSqsMessageParser.parse(message)).thenReturn(largeSqsMessageMock);
+        largeMessageFragmentsListener.onMessage(message);
         verify(largeMessageFragmentHandler).handleMessage(largeSqsMessageMock);
     }
 

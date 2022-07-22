@@ -23,16 +23,12 @@ public class LargeMessageFragmentsListener implements MessageListener {
         try {
             tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from Large Message Fragments queue");
-            largeMessageFragmentHandler.handleMessage(getLargeMessageFragment(message));
+            var largeEhrMessage = largeSqsMessageParser.parse(message);
+            largeMessageFragmentHandler.handleMessage(largeEhrMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from Large Message Fragments queue");
         } catch (Exception e) {
             log.error("Error while processing message from Large Message Fragments queue", e);
         }
-    }
-
-    private LargeSqsMessage getLargeMessageFragment(Message message) throws Exception {
-        String payload = ((TextMessage) message).getText();
-        return largeSqsMessageParser.parse(payload);
     }
 }

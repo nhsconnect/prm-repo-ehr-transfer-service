@@ -35,17 +35,17 @@ class LargeEhrMessageListenerTest {
 
     @Test
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws Exception {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        var message = spy(new SQSTextMessage("payload"));
         largeEhrMessageListener.onMessage(message);
-        verify(largeSqsMessageParser).parse(payload);
+        verify(largeSqsMessageParser).parse(message);
     }
 
     @Test
     void shouldCallLargeEhrMessageHandlerWithALargeMessage() throws Exception {
-        LargeSqsMessage largeSqsMessage = mock(LargeSqsMessage.class);
-        when(largeSqsMessageParser.parse(anyString())).thenReturn(largeSqsMessage);
-        largeEhrMessageListener.onMessage(getSqsTextMessage());
+        var message = getSqsTextMessage();
+        var largeSqsMessage = mock(LargeSqsMessage.class);
+        when(largeSqsMessageParser.parse(message)).thenReturn(largeSqsMessage);
+        largeEhrMessageListener.onMessage(message);
         verify(largeEhrCoreMessageHandler).handleMessage(largeSqsMessage);
     }
 

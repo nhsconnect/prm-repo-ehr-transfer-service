@@ -23,17 +23,12 @@ public class LargeEhrMessageListener implements MessageListener {
         try {
             tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from large-ehr queue");
-            var largeEhrMessage = getLargeEhrMessage(message);
+            var largeEhrMessage = largeSqsMessageParser.parse(message);
             largeEhrCoreMessageHandler.handleMessage(largeEhrMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from large-ehr queue");
         } catch (Exception e) {
             log.error("Error while processing message", e);
         }
-    }
-
-    private LargeSqsMessage getLargeEhrMessage(Message message) throws Exception {
-        String payload = ((TextMessage) message).getText();
-        return largeSqsMessageParser.parse(payload);
     }
 }

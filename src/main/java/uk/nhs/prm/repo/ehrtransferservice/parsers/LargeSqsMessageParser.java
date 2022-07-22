@@ -14,6 +14,8 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
+import javax.jms.Message;
+import javax.jms.TextMessage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +28,9 @@ public class LargeSqsMessageParser {
     private final S3Client s3Client;
     private final S3PointerMessageParser s3PointerMessageParser;
 
-    public LargeSqsMessage parse(String sqsMessagePayload) throws Exception {
+    public LargeSqsMessage parse(Message message) throws Exception {
+        var sqsMessagePayload = ((TextMessage) message).getText();
+
         if (isValidS3PointerMessage(sqsMessagePayload)) {
             log.info("Going to retrieve message from s3");
             return retrieveMessageFromS3(s3PointerMessageParser.parse(sqsMessagePayload));
