@@ -1,10 +1,11 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteSource;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,11 +61,16 @@ class S3PointerMessageHandlerTest {
         verify(s3PointerMessageParser).parse(payload);
     }
 
-    @Disabled("Checking if functionality fixed in app first")
     @Test
     void shouldNotCallS3PointerMessageParserWithoutS3PointerPayLoad() throws IOException {
-        var payload = "TBD?";
-        when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
+        var byteSource = new ByteSource() {
+            @Override
+            public InputStream openStream() throws IOException {
+                return readResourceFile("RCMR_IN030000UK06Sanitized");
+            }
+        };
+
+        var payload = byteSource.asCharSource(Charsets.UTF_8).read();
         s3PointerMessageHandler.getLargeSqsMessage(payload);
         verify(s3PointerMessageParser, never()).parse(payload);
     }
