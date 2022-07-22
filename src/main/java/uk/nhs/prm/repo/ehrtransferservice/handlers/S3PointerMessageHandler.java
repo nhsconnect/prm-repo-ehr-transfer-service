@@ -34,7 +34,14 @@ public class S3PointerMessageHandler {
     }
 
     public LargeSqsMessage getLargeSqsMessage(String sqsMessagePayload) throws IOException {
-        return getLargeSqsMessage(s3PointerMessageParser.parse(sqsMessagePayload));
+        if (isValidS3PointerMessage(sqsMessagePayload)) {
+            return getLargeSqsMessage(s3PointerMessageParser.parse(sqsMessagePayload));
+        }
+        return parse(sqsMessagePayload);
+    }
+
+    private boolean isValidS3PointerMessage(String message) {
+        return message.contains("s3BucketName") && message.contains("s3Key");
     }
 
     private LargeSqsMessage parse(String s3Message) throws JsonProcessingException {
