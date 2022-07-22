@@ -15,7 +15,6 @@ import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ public class LargeSqsMessageParser {
     private final S3Client s3Client;
     private final S3PointerMessageParser s3PointerMessageParser;
 
-    public LargeSqsMessage parse(String sqsMessagePayload) throws IOException {
+    public LargeSqsMessage parse(String sqsMessagePayload) throws Exception {
         if (isValidS3PointerMessage(sqsMessagePayload)) {
             log.info("Going to retrieve message from s3");
             return retrieveMessageFromS3(s3PointerMessageParser.parse(sqsMessagePayload));
@@ -37,7 +36,7 @@ public class LargeSqsMessageParser {
         return toLargeSqsMessage(sqsMessagePayload);
     }
 
-    public LargeSqsMessage retrieveMessageFromS3(S3PointerMessage sqsMessagePayload) throws IOException {
+    public LargeSqsMessage retrieveMessageFromS3(S3PointerMessage sqsMessagePayload) throws Exception {
         var getObjectRequest = GetObjectRequest.builder()
                 .bucket(sqsMessagePayload.getS3BucketName())
                 .key(sqsMessagePayload.getS3Key()).build();

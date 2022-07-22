@@ -41,7 +41,7 @@ class LargeSqsMessageParserTest {
     private LargeSqsMessageParser largeSqsMessageParser;
 
     @Test
-    void shouldCallParserToParseMessageReturnedFromS3() throws IOException {
+    void shouldCallParserToParseMessageReturnedFromS3() throws Exception {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
@@ -54,7 +54,7 @@ class LargeSqsMessageParserTest {
     }
 
     @Test
-    void shouldCallS3PointerMessageParserWithS3PointerPayLoad() throws IOException {
+    void shouldCallS3PointerMessageParserWithS3PointerPayLoad() throws Exception {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
         when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
@@ -63,7 +63,7 @@ class LargeSqsMessageParserTest {
     }
 
     @Test
-    void shouldNotCallS3PointerMessageParserWithoutS3PointerPayLoad() throws IOException {
+    void shouldNotCallS3PointerMessageParserWithoutS3PointerPayLoad() throws Exception {
         var byteSource = new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {

@@ -18,6 +18,6 @@ class S3PointerMessageParserTest {
     @Test
     void shouldThrowAnExceptionWhenTryingToParseAnInValidMessage() {
         var inValid = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\"]";
-        assertThrows(IllegalArgumentException.class,()-> new S3PointerMessageParser().parse(inValid));
+        assertThrows(Exception.class,() -> new S3PointerMessageParser().parse(inValid));
     }
 }

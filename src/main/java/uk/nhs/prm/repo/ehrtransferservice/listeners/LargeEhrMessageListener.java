@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 
-import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import java.io.IOException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class LargeEhrMessageListener implements MessageListener {
         }
     }
 
-    private LargeSqsMessage getLargeEhrMessage(Message message) throws IOException, JMSException {
+    private LargeSqsMessage getLargeEhrMessage(Message message) throws Exception {
         String payload = ((TextMessage) message).getText();
         return largeSqsMessageParser.parse(payload);
     }

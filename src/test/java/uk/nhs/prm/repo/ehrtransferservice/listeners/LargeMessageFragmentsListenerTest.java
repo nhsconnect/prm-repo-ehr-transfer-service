@@ -11,9 +11,6 @@ import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 
-import javax.jms.JMSException;
-import java.io.IOException;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,14 +32,14 @@ class LargeMessageFragmentsListenerTest {
     LargeMessageFragmentsListener largeMessageFragmentsListener;
 
     @Test
-    void shouldSetTraceIdWhenReceivingLargeMessageFragment() throws JMSException {
+    void shouldSetTraceIdWhenReceivingLargeMessageFragment() throws Exception {
         var sqsTextMessage = getSqsTextMessage();
         largeMessageFragmentsListener.onMessage(sqsTextMessage);
         verify(tracer).setMDCContextFromSqs(sqsTextMessage);
     }
 
     @Test
-    void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws IOException, JMSException {
+    void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws Exception {
         largeMessageFragmentsListener.onMessage(getSqsTextMessage());
         verify(largeSqsMessageParser).parse(payload);
     }
@@ -55,7 +52,7 @@ class LargeMessageFragmentsListenerTest {
         verify(largeMessageFragmentHandler).handleMessage(largeSqsMessageMock);
     }
 
-    private SQSTextMessage getSqsTextMessage() throws JMSException {
+    private SQSTextMessage getSqsTextMessage() throws Exception {
         return spy(new SQSTextMessage(payload));
     }
 }
