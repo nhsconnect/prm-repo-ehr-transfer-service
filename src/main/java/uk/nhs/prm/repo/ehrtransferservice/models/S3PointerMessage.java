@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.models;
 
-
 import com.google.gson.JsonObject;
 import lombok.Getter;
 
