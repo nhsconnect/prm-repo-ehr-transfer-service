@@ -1,7 +1,6 @@
-package uk.nhs.prm.repo.ehrtransferservice.handlers;
+package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
 import com.amazon.sqs.javamessaging.message.SQSTextMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteSource;
 import com.google.gson.JsonObject;
@@ -17,9 +16,9 @@ import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import uk.nhs.prm.repo.ehrtransferservice.models.ParsingResult;
 import uk.nhs.prm.repo.ehrtransferservice.models.S3PointerMessage;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.S3PointerMessageParser;
+import uk.nhs.prm.repo.ehrtransferservice.models.enums.Status;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,49 +31,63 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LargeSqsMessageParserTest {
+class S3PointerMessageFetcherTest {
     @Mock
     private S3Client s3Client;
     @Mock
     private S3PointerMessageParser s3PointerMessageParser;
 
-    @InjectMocks
+    @Mock
     private LargeSqsMessageParser largeSqsMessageParser;
 
+    @InjectMocks
+    private S3PointerMessageFetcher s3PointerMessageFetcher;
+
     @Test
-    void shouldCallParserToParseMessageReturnedFromS3() throws Exception {
+    void shouldCallS3ClientToParseMessageReturnedFromS3() throws Exception {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage());
+        s3PointerMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
     @Test
-    void shouldThrowExceptionWhenS3MessageIsNotValid() {
-        mockS3GetObjectResponseToReturnContentFrom("simpleTextMessage.txt");
-        assertThrows(JsonProcessingException.class, () -> largeSqsMessageParser.retrieveMessageFromS3(getStaticS3PointerMessage()));
+    void shouldThrowExceptionWhenS3ClientFails() {
+        when(s3Client.getObject(any(GetObjectRequest.class))).then(invocation -> {
+            throw new Exception("woops");
+        });
+        assertThrows(Exception.class, () -> s3PointerMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage()));
     }
 
     @Test
     void shouldCallS3PointerMessageParserWithS3PointerPayLoad() throws Exception {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        when(s3PointerMessageParser.parse(any())).thenReturn(getStaticS3PointerMessage());
-        largeSqsMessageParser.parse(new SQSTextMessage(payload));
+        var s3PointerOk = new ParsingResult<>(getStaticS3PointerMessage(), Status.OK);
+        when(s3PointerMessageParser.parse(any())).thenReturn(s3PointerOk);
+
+        s3PointerMessageFetcher.parse(new SQSTextMessage(payload));
+
         verify(s3PointerMessageParser).parse(payload);
+        verify(largeSqsMessageParser, never()).parse(payload);
     }
 
     @Test
-    void shouldNotCallS3PointerMessageParserWithoutS3PointerPayLoad() throws Exception {
+    void shouldCallLargeSqsMessageParserWithoutS3PointerPayLoad() throws Exception {
         var byteSource = new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
                 return readResourceFile("RCMR_IN030000UK06Sanitized");
             }
         };
-
         var payload = byteSource.asCharSource(Charsets.UTF_8).read();
-        largeSqsMessageParser.parse(new SQSTextMessage(payload));
-        verify(s3PointerMessageParser, never()).parse(payload);
+
+        var s3PointerKo = new ParsingResult<>(getStaticS3PointerMessage(), Status.KO);
+        when(s3PointerMessageParser.parse(any())).thenReturn(s3PointerKo);
+
+        s3PointerMessageFetcher.parse(new SQSTextMessage(payload));
+
+        verify(s3PointerMessageParser).parse(payload);
+        verify(largeSqsMessageParser).parse(payload);
     }
 
     private S3PointerMessage getStaticS3PointerMessage() {

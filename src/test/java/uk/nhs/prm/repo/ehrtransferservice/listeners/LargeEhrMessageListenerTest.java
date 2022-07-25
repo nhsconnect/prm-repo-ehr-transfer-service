@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.LargeSqsMessageParser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.S3PointerMessageFetcher;
 
 import static org.mockito.Mockito.*;
 
@@ -19,7 +19,7 @@ class LargeEhrMessageListenerTest {
     @Mock
     Tracer tracer;
     @Mock
-    LargeSqsMessageParser largeSqsMessageParser;
+    S3PointerMessageFetcher s3PointerMessageFetcher;
     @Mock
     LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
@@ -37,14 +37,14 @@ class LargeEhrMessageListenerTest {
     void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws Exception {
         var message = spy(new SQSTextMessage("payload"));
         largeEhrMessageListener.onMessage(message);
-        verify(largeSqsMessageParser).parse(message);
+        verify(s3PointerMessageFetcher).parse(message);
     }
 
     @Test
     void shouldCallLargeEhrMessageHandlerWithALargeMessage() throws Exception {
         var message = getSqsTextMessage();
         var largeSqsMessage = mock(LargeSqsMessage.class);
-        when(largeSqsMessageParser.parse(message)).thenReturn(largeSqsMessage);
+        when(s3PointerMessageFetcher.parse(message)).thenReturn(largeSqsMessage);
         largeEhrMessageListener.onMessage(message);
         verify(largeEhrCoreMessageHandler).handleMessage(largeSqsMessage);
     }
