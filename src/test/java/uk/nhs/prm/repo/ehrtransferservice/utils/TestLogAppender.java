@@ -33,4 +33,14 @@ public class TestLogAppender extends AppenderBase<ILoggingEvent> {
         if (loggingEvents.isEmpty()) return null;
         return loggingEvents.get(loggingEvents.size() - 1);
     }
+
+    public ILoggingEvent findLoggedEvent(String subString) {
+        for (ILoggingEvent event : loggingEvents) {
+            System.out.println("logged event message: " + event.getMessage());
+            if (event.getMessage().contains(subString)) {
+                return event;
+            }
+        }
+        return null;
+    }
 }

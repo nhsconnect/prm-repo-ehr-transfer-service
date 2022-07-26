@@ -15,17 +15,22 @@ public class S3PointerMessageParser {
     private final String s3PointerHeader = "software.amazon.payloadoffloading.PayloadS3Pointer";
 
     public ParsingResult<S3PointerMessage> parse(String payload) {
-        var payloadAsJson = JsonParser.parseString(payload);
+        try {
+            var payloadAsJson = JsonParser.parseString(payload);
 
-        if (!isValidS3PointerMessage(payloadAsJson)) {
-            log.info("Message parsed is not a S3PointerMessage");
+            if (!isValidS3PointerMessage(payloadAsJson)) {
+                log.info("Current message is not a S3PointerMessage");
+                return new ParsingResult<>(null, Status.KO);
+            }
+            var messageContent = payloadAsJson.getAsJsonArray().get(S3_POINTER_MESSAGE_CONTENT_INDEX).getAsJsonObject();
+
+            var s3PointerMessage = new S3PointerMessage(messageContent);
+            log.info("Successfully parsed S3PointerMessage");
+            return new ParsingResult<>(s3PointerMessage, Status.OK);
+        } catch (Exception e) {
+            log.error("Error parsing message as S3PointerMessage in ParsingResult.parse");
             return new ParsingResult<>(null, Status.KO);
         }
-        var messageContent = payloadAsJson.getAsJsonArray().get(S3_POINTER_MESSAGE_CONTENT_INDEX).getAsJsonObject();
-
-        var s3PointerMessage = new S3PointerMessage(messageContent);
-        log.info("Successfully parsed S3PointerMessage");
-        return new ParsingResult<>(s3PointerMessage, Status.OK);
     }
 
     private boolean isValidS3PointerMessage(JsonElement payloadAsJson) {
