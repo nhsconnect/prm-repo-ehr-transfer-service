@@ -16,7 +16,7 @@ locals {
     },
     {
       name  = "EHR_TRANSFER_SERVICE_EHR_REPO_URL",
-      value = "https://ehr-repo.${var.environment}.non-prod.patient-deductions.nhs.uk"
+      value = "https://ehr-repo.${var.environment_dns_zone}.patient-deductions.nhs.uk"
     },
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
