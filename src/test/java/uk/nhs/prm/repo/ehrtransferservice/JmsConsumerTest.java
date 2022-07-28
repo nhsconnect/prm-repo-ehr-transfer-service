@@ -44,14 +44,18 @@ public class JmsConsumerTest {
 
     String messageContent = "test";
 
-    private void verifySentToParsingDlq() throws JMSException {
-        String message = messageContent;
+    private void verifySentToParsingDlq(String message) throws JMSException {
+        verifySentToParsingDlq(message, message);
+    }
+
+    private void verifySentToParsingDlq(String message, String expected) throws JMSException {
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
         bytesMessage.reset();
 
         jmsConsumer.onMessage(bytesMessage, new HashMap<>());
-        verify(parsingDlqPublisher).sendMessage(message);
+
+        verify(parsingDlqPublisher).sendMessage(expected);
     }
 
     @Test
@@ -65,6 +69,7 @@ public class JmsConsumerTest {
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message, new HashMap<>());
+
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
@@ -79,6 +84,7 @@ public class JmsConsumerTest {
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
         jmsConsumer.onMessage(message, new HashMap<>());
+
         verify(tracer).setMDCContextFromMhsInbound(null);
         verify(tracer).handleConversationId(conversationId.toString());
     }
@@ -98,44 +104,49 @@ public class JmsConsumerTest {
     }
 
     @Test
-    void shouldPutMessageWithNoInteractionIdOnDLQ() throws JMSException, IOException {
+    void shouldPutMessageWithNoInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn(null);
+        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
 
-        verifySentToParsingDlq();
+        verifySentToParsingDlq(messageContent);
     }
 
     @Test
-    void shouldPutMessageWithEmptyInteractionIdOnDLQ() throws JMSException, IOException {
+    void shouldPutMessageWithEmptyInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn("   ");
+        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
 
-        verifySentToParsingDlq();
+        verifySentToParsingDlq(messageContent);
     }
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-
         when(parser.parse(any())).thenReturn(parsedMessage);
-        verifySentToParsingDlq();
+        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
+
+        verifySentToParsingDlq(messageContent);
     }
 
     @Test
-    void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws JMSException, IOException {
+    void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws IOException, JMSException {
         IOException expectedError = new IOException("failed to parse message");
         when(parser.parse(Mockito.any())).thenThrow(expectedError);
-        verifySentToParsingDlq();
+        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
+        verifySentToParsingDlq(messageContent);
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenSanitizingFails() throws JMSException {
         RuntimeException expectedError = new RuntimeException("failed to sanitize message");
         when(messageSanitizer.sanitize(Mockito.any())).thenThrow(expectedError);
-        verifySentToParsingDlq();
+        var toBeSentWhenMessageSanitizerFails = "<NOT-PARSED-YET>";
+        verifySentToParsingDlq(messageContent, toBeSentWhenMessageSanitizerFails);
     }
 }

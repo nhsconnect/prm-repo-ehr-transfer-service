@@ -36,16 +36,12 @@ public class JmsConsumer {
     public void onMessage(Message message,
                           @Headers Map<String, Object> headers) throws JMSException {
         tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID());
-
         debugMessageFormatInfo(message, headers);
-
-        var rawMessage = getRawMessage(message);
-
-        log.info("Received Message from Inbound queue");
-
+        String rawMessage = "<NOT-PARSED-YET>";
         try {
-            var sanitizedMessage = messageSanitizer.sanitize(rawMessage.getBytes(StandardCharsets.UTF_8));
-            var parsedMessage = parser.parse(sanitizedMessage);
+            rawMessage = getRawMessage(message);
+            log.info("Received Message from Inbound queue");
+            var parsedMessage = parser.parse(rawMessage);
             tracer.handleConversationId(parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
@@ -70,12 +66,16 @@ public class JmsConsumer {
             byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
             bytesMessage.readBytes(contentAsBytes);
             attemptAmqpDecode(contentAsBytes);
-            return new String(contentAsBytes, StandardCharsets.UTF_8);
+            // This logic (usage of sanitizer) was in the upper function call.
+            // Moved here to allow AMQP decoding to not depend on it.
+            var contentForcedAsUtfString = new String(contentAsBytes, StandardCharsets.UTF_8);
+            return messageSanitizer.sanitize(contentForcedAsUtfString.getBytes(StandardCharsets.UTF_8));
         }
+
         log.info("Received TextMessage from MQ");
         var textMessage = (TextMessage) message;
         log.info(textMessage.getText());
-        return textMessage.getText();
+        return messageSanitizer.sanitize(textMessage.getText().getBytes(StandardCharsets.UTF_8));
     }
 
     private void attemptAmqpDecode(byte[] contentAsBytes) {

@@ -59,20 +59,23 @@ public class JmsConsumerIntegrationTest {
         return message;
     }
 
+    // TODO: this test has to be revisited (maybe deleted), it relies on messageSanitizer to break,
+    // and messageSanitizer is going to be retired soon.
+    // Also, the test cases for parsingDlqPublish are already covered in JmsConsumerTest.
     @ParameterizedTest
     @ValueSource(strings = {
             "simpleTextMessage.txt",
             "RCMR_IN030000UK06WithoutInteractionId",
             "RCMR_IN030000UK06WithoutMessageHeader",
             "RCMR_IN030000UK06WithoutSoapHeader",
-            "RCMR_IN030000UK06WithIncorrectInteractionId"
+            "RCMR_IN030000UK06WithIncorrectInteractionId",
     })
     void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
         byte[] bytes = dataLoader.getDataAsBytes(fileName);
-        String message = dataLoader.getDataAsString(fileName);
+        String expected = "<NOT-PARSED-YET>";
 
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage(bytes);
         jmsConsumer.onMessage(bytesMessage, new HashMap<>());
-        verify(parsingDlqPublisher, times(1)).sendMessage(message);
+        verify(parsingDlqPublisher, times(1)).sendMessage(expected);
     }
 }
