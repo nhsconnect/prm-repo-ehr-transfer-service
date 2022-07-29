@@ -4,6 +4,7 @@ locals {
   sns_topic_namespace = "AWS/SNS"
   sqs_namespace = "AWS/SQS"
   sns_topic_error_logs_metric_name = "NumberOfNotificationsFailed"
+  ehr_complete_sns_topic_name        = aws_sns_topic.ehr_complete.name
 }
 
 data "aws_sns_topic" "alarm_notifications" {

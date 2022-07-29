@@ -151,3 +151,174 @@ resource "aws_cloudwatch_metric_alarm" "health_metric_failure_alarm" {
   alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
   ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
 }
+
+resource "aws_cloudwatch_metric_alarm" "ehr_complete_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.ehr_complete.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.ehr_complete.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.ehr_complete.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "large_ehr_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.large_ehr.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.large_ehr.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.large_ehr.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "small_ehr_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.small_ehr.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.small_ehr.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.small_ehr.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "large_message_fragments_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.large_message_fragments.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.large_message_fragments.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.large_message_fragments.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "negative_acks_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.negative_acks.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.negative_acks.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.negative_acks.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "positive_acks_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.positive_acks.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.positive_acks.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.positive_acks.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "parsing_dlq_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.parsing_dlq.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.parsing_dlq.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.parsing_dlq.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "transfer_complete_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.transfer_complete.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.transfer_complete.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.transfer_complete.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "splunk_uploader_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.splunk_uploader.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.splunk_uploader.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.splunk_uploader.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
