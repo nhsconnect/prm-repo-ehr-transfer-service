@@ -84,4 +84,37 @@ resource "aws_cloudwatch_metric_alarm" "large_message_fragments_age_of_message" 
   ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
+resource "aws_cloudwatch_metric_alarm" "negative_acks_size" {
+  alarm_name                = "${var.environment}-${var.component_name}-negative-acks-size"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "0"
+  evaluation_periods        = "1"
+  metric_name               = "NumberOfMessagesSent"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm to alert messages landed dlq"
+  statistic                 = "Maximum"
+  period                    = "300"
+  dimensions = {
+    QueueName = aws_sqs_queue.negative_acks.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "parsing_dlq_size" {
+  alarm_name                = "${var.environment}-${var.component_name}-parsing-dlq-size"
+  comparison_operator       = "GreaterThanThreshold"
+  threshold                 = "0"
+  evaluation_periods        = "1"
+  metric_name               = "NumberOfMessagesSent"
+  namespace                 = local.sqs_namespace
+  alarm_description         = "Alarm to alert messages landed dlq"
+  statistic                 = "Maximum"
+  period                    = "300"
+  dimensions = {
+    QueueName = aws_sqs_queue.parsing_dlq.name
+  }
+  alarm_actions             = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions                = [data.aws_sns_topic.alarm_notifications.arn]
+}
 
