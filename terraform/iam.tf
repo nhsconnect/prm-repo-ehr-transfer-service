@@ -283,7 +283,7 @@ resource "aws_sqs_queue_policy" "parsing_dlq" {
 
 resource "aws_sqs_queue_policy" "positive_acks" {
   queue_url = aws_sqs_queue.positive_acks_observability.id
-  policy    = data.aws_iam_policy_document.parsing_dlq_policy_doc.json
+  policy    = data.aws_iam_policy_document.positive_acks_policy_doc.json
 }
 
 resource "aws_sqs_queue_policy" "large_ehr" {
