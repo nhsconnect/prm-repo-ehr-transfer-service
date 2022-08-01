@@ -10,6 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 
 import static org.mockito.Mockito.*;
 
@@ -23,6 +24,9 @@ class SmallEhrMessageListenerTest {
     Parser parser;
 
     @Mock
+    S3ExtendedMessageFetcher extendedMessageFetcher;
+
+    @Mock
     SmallEhrMessageHandler smallEhrMessageHandler;
 
     @InjectMocks
@@ -33,24 +37,33 @@ class SmallEhrMessageListenerTest {
     }
 
     @Test
-    void shouldPassParsedMessageToHandlerAndAcknowledgeIt() throws Exception {
+    void shouldUpdateTraceIdFromSqsAttributes() throws Exception {
         var message = spy(new SQSTextMessage("payload"));
-        var parsedMessage = new StubParsedMessage();
-        when(parser.parse("payload")).thenReturn(parsedMessage);
 
         smallEhrMessageListener.onMessage(message);
 
-        verify(parser).parse("payload");
+        verify(tracer).setMDCContextFromSqs(message);
+    }
+
+    @Test
+    void shouldPassParsedMessageFromTheExtendedMessageFetcherToHandlerAndAcknowledgeIt() throws Exception {
+        var message = spy(new SQSTextMessage("payload"));
+        var parsedMessage = new StubParsedMessage();
+        when(extendedMessageFetcher.fetchAndParse(message)).thenReturn(parsedMessage);
+
+        smallEhrMessageListener.onMessage(message);
+
+        verify(extendedMessageFetcher).fetchAndParse(message);
         verify(tracer).setMDCContextFromSqs(message);
         verify(message, times(1)).acknowledge();
         verify(smallEhrMessageHandler).handleMessage(parsedMessage);
     }
 
     @Test
-    void shouldNotAcknowledgeMessageWhenAnExceptionOccursInParsing() throws Exception {
+    void shouldNotAcknowledgeMessageWhenAnExceptionOccursInFetchingOrParsing() throws Exception {
         var message = spy(new SQSTextMessage("bleuch"));
 
-        when(parser.parse(anyString())).thenThrow(new IllegalArgumentException());
+        when(extendedMessageFetcher.fetchAndParse(message)).thenThrow(new IllegalArgumentException());
 
         smallEhrMessageListener.onMessage(message);
 

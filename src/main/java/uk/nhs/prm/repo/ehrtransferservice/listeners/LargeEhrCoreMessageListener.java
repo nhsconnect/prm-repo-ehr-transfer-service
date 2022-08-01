@@ -4,16 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.S3PointerMessageFetcher;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
 @Slf4j
 @RequiredArgsConstructor
-public class LargeEhrMessageListener implements MessageListener {
+public class LargeEhrCoreMessageListener implements MessageListener {
     private final Tracer tracer;
-    private final S3PointerMessageFetcher s3PointerMessageFetcher;
+    private final S3ExtendedMessageFetcher extendedMessageFetcher;
     private final LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
     @Override
@@ -21,7 +21,7 @@ public class LargeEhrMessageListener implements MessageListener {
         try {
             tracer.setMDCContextFromSqs(message);
             log.info("RECEIVED: Message from large-ehr queue");
-            var largeEhrMessage = s3PointerMessageFetcher.parse(message);
+            var largeEhrMessage = extendedMessageFetcher.fetchAndParse(message);
             largeEhrCoreMessageHandler.handleMessage(largeEhrMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from large-ehr queue");

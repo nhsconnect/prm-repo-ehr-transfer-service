@@ -31,7 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class S3PointerMessageFetcherTest {
+class S3ExtendedMessageFetcherTest {
     @Mock
     private S3Client s3Client;
     @Mock
@@ -41,12 +41,12 @@ class S3PointerMessageFetcherTest {
     private LargeSqsMessageParser largeSqsMessageParser;
 
     @InjectMocks
-    private S3PointerMessageFetcher s3PointerMessageFetcher;
+    private S3ExtendedMessageFetcher s3ExtendedMessageFetcher;
 
     @Test
     void shouldCallS3ClientToParseMessageReturnedFromS3() throws Exception {
         mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
-        s3PointerMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
+        s3ExtendedMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
 
@@ -55,7 +55,7 @@ class S3PointerMessageFetcherTest {
         when(s3Client.getObject(any(GetObjectRequest.class))).then(invocation -> {
             throw new Exception("woops");
         });
-        assertThrows(Exception.class, () -> s3PointerMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage()));
+        assertThrows(Exception.class, () -> s3ExtendedMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage()));
     }
 
     @Test
@@ -65,7 +65,7 @@ class S3PointerMessageFetcherTest {
         var s3PointerOk = new ParsingResult<>(getStaticS3PointerMessage(), Status.OK);
         when(s3PointerMessageParser.parse(any())).thenReturn(s3PointerOk);
 
-        s3PointerMessageFetcher.parse(new SQSTextMessage(payload));
+        s3ExtendedMessageFetcher.fetchAndParse(new SQSTextMessage(payload));
 
         verify(s3PointerMessageParser).parse(payload);
         verify(largeSqsMessageParser, never()).parse(payload);
@@ -84,7 +84,7 @@ class S3PointerMessageFetcherTest {
         var s3PointerKo = new ParsingResult<>(getStaticS3PointerMessage(), Status.KO);
         when(s3PointerMessageParser.parse(any())).thenReturn(s3PointerKo);
 
-        s3PointerMessageFetcher.parse(new SQSTextMessage(payload));
+        s3ExtendedMessageFetcher.fetchAndParse(new SQSTextMessage(payload));
 
         verify(s3PointerMessageParser).parse(payload);
         verify(largeSqsMessageParser).parse(payload);

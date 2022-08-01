@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.models.LargeMessageFragments;
+import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrMessageFragment;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
@@ -39,7 +39,7 @@ class LargeMessageFragmentHandlerTest {
     LargeMessageFragmentHandler largeMessageFragmentHandler;
 
     @Captor
-    ArgumentCaptor<LargeMessageFragments> largeMessageFragmentsArgumentCaptor;
+    ArgumentCaptor<LargeEhrMessageFragment> largeMessageFragmentsArgumentCaptor;
 
     private UUID conversationId;
     private UUID messageId;

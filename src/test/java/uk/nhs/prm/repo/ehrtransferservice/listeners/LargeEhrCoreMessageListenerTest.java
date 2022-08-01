@@ -9,43 +9,48 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.S3PointerMessageFetcher;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LargeEhrMessageListenerTest {
+class LargeEhrCoreMessageListenerTest {
 
     @Mock
     Tracer tracer;
     @Mock
-    S3PointerMessageFetcher s3PointerMessageFetcher;
+    S3ExtendedMessageFetcher extendedMessageFetcher;
     @Mock
     LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
     @InjectMocks
-    LargeEhrMessageListener largeEhrMessageListener;
+    LargeEhrCoreMessageListener largeEhrCoreMessageListener;
 
     @Test
-    void shouldParseLargeEhrMessage() throws Exception {
+    void shouldUpdateTraceIdFromSqsAttributes() throws Exception {
         SQSTextMessage message = getSqsTextMessage();
-        largeEhrMessageListener.onMessage(message);
+        largeEhrCoreMessageListener.onMessage(message);
         verify(tracer).setMDCContextFromSqs(message);
     }
 
     @Test
-    void shouldCallLargeEhrSqsServiceWithTheMessagePayload() throws Exception {
+    void shouldPassTheMessageToTheExtendedMessageFetcher() throws Exception {
         var message = spy(new SQSTextMessage("payload"));
-        largeEhrMessageListener.onMessage(message);
-        verify(s3PointerMessageFetcher).parse(message);
+
+        largeEhrCoreMessageListener.onMessage(message);
+
+        verify(extendedMessageFetcher).fetchAndParse(message);
     }
 
     @Test
-    void shouldCallLargeEhrMessageHandlerWithALargeMessage() throws Exception {
+    void shouldCallLargeEhrCoreMessageHandlerWithTheExtendedMessageFromTheFetcher() throws Exception {
         var message = getSqsTextMessage();
         var largeSqsMessage = mock(LargeSqsMessage.class);
-        when(s3PointerMessageFetcher.parse(message)).thenReturn(largeSqsMessage);
-        largeEhrMessageListener.onMessage(message);
+
+        when(extendedMessageFetcher.fetchAndParse(message)).thenReturn(largeSqsMessage);
+
+        largeEhrCoreMessageListener.onMessage(message);
+
         verify(largeEhrCoreMessageHandler).handleMessage(largeSqsMessage);
     }
 
