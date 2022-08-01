@@ -7,7 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 
@@ -18,13 +20,15 @@ class LargeEhrCoreMessageListenerTest {
 
     @Mock
     Tracer tracer;
+
     @Mock
     S3ExtendedMessageFetcher extendedMessageFetcher;
+
     @Mock
-    LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
+    MessageHandler<ParsedMessage> largeEhrCoreMessageHandler;
 
     @InjectMocks
-    LargeEhrCoreMessageListener largeEhrCoreMessageListener;
+    S3ExtendedMessageListener largeEhrCoreMessageListener;
 
     @Test
     void shouldUpdateTraceIdFromSqsAttributes() throws Exception {

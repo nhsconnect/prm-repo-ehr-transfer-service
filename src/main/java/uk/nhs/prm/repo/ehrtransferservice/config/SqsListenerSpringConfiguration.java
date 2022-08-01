@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
@@ -47,10 +48,10 @@ public class SqsListenerSpringConfiguration {
     private String smallEhrQueueName;
 
     @Value("${aws.largeEhrQueueName}")
-    private String largeEhrQueueName;
+    private String largeEhrCoreQueueName;
 
     @Value("${aws.largeMessageFragmentsQueueName}")
-    private String largeMessageFragmentsQueueName;
+    private String largeEhrMessageFragmentQueueName;
 
     @Value("${aws.ehrCompleteQueueName}")
     private String ehrCompleteQueueName;
@@ -84,41 +85,17 @@ public class SqsListenerSpringConfiguration {
 
     @Bean
     public Session createSmallEhrQueueListener(SQSConnection connection) throws JMSException {
-        Session session = getSession(connection);
-
-        log.info("ehr small queue name : {}", smallEhrQueueName);
-        var ehrSmallConsumer = session.createConsumer(session.createQueue(smallEhrQueueName));
-        ehrSmallConsumer.setMessageListener(new SmallEhrMessageListener(tracer, parser, smallEhrMessageHandler, s3ExtendedMessageFetcher));
-
-        connection.start();
-
-        return session;
+        return createS3ExtendedSqsListener(connection, "small-ehr", smallEhrQueueName, smallEhrMessageHandler);
     }
 
     @Bean
     public Session createLargeEhrQueueListener(SQSConnection connection) throws JMSException {
-        Session session = getSession(connection);
-
-        log.info("ehr small queue name : {}", largeEhrQueueName);
-        var largeEhrConsumer = session.createConsumer(session.createQueue(largeEhrQueueName));
-        largeEhrConsumer.setMessageListener(new LargeEhrCoreMessageListener(tracer, s3ExtendedMessageFetcher, largeEhrCoreMessageHandler));
-
-        connection.start();
-
-        return session;
+        return createS3ExtendedSqsListener(connection, "large-ehr-core", largeEhrCoreQueueName, largeEhrCoreMessageHandler);
     }
 
     @Bean
     public Session createLargeEhrFragmentsQueueListener(SQSConnection connection) throws JMSException {
-        Session session = getSession(connection);
-
-        log.info("ehr small queue name : {}", largeMessageFragmentsQueueName);
-        var largeEhrFragmentsConsumer = session.createConsumer(session.createQueue(largeMessageFragmentsQueueName));
-        largeEhrFragmentsConsumer.setMessageListener(new LargeMessageFragmentsListener(tracer, s3ExtendedMessageFetcher, largeMessageFragmentHandler));
-
-        connection.start();
-
-        return session;
+        return createS3ExtendedSqsListener(connection, "large-ehr-fragment", largeEhrMessageFragmentQueueName, largeMessageFragmentHandler);
     }
 
     @Bean
@@ -141,6 +118,21 @@ public class SqsListenerSpringConfiguration {
         log.info("nack queue name : {}", negativeAckQueueName);
         var nackConsumer = session.createConsumer(session.createQueue(negativeAckQueueName));
         nackConsumer.setMessageListener(new NegativeAcknowledgementListener(tracer, parser, negativeAcknowledgementHandler));
+
+        connection.start();
+
+        return session;
+    }
+
+    private Session createS3ExtendedSqsListener(SQSConnection connection,
+                                                String messageTypeDescription,
+                                                String queueName,
+                                                MessageHandler<ParsedMessage> messageHandler) throws JMSException {
+        Session session = getSession(connection);
+
+        log.info("{} queue name: {}", messageTypeDescription, queueName);
+        var ehrSmallConsumer = session.createConsumer(session.createQueue(queueName));
+        ehrSmallConsumer.setMessageListener(new S3ExtendedMessageListener(messageTypeDescription, tracer, s3ExtendedMessageFetcher, messageHandler));
 
         connection.start();
 

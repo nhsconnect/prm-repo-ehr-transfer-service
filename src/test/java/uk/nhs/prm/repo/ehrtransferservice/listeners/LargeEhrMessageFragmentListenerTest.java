@@ -7,7 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 
@@ -23,12 +25,12 @@ class LargeEhrMessageFragmentListenerTest {
     S3ExtendedMessageFetcher s3ExtendedMessageFetcher;
 
     @Mock
-    LargeMessageFragmentHandler largeMessageFragmentHandler;
+    MessageHandler<ParsedMessage> largeMessageFragmentHandler;
 
     private static final String payload = "payload";
 
     @InjectMocks
-    LargeMessageFragmentsListener largeMessageFragmentsListener;
+    S3ExtendedMessageListener largeMessageFragmentsListener;
 
     @Test
     void shouldSetTraceIdWhenReceivingLargeMessageFragment() throws Exception {

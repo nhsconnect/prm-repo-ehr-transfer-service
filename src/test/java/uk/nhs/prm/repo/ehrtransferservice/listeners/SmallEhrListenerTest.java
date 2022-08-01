@@ -15,7 +15,7 @@ import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class SmallEhrMessageListenerTest {
+class SmallEhrListenerTest {
 
     @Mock
     Tracer tracer;
@@ -30,9 +30,9 @@ class SmallEhrMessageListenerTest {
     SmallEhrMessageHandler smallEhrMessageHandler;
 
     @InjectMocks
-    SmallEhrMessageListener smallEhrMessageListener;
+    S3ExtendedMessageListener smallEhrMessageListener;
 
-    public SmallEhrMessageListenerTest() {
+    public SmallEhrListenerTest() {
         parser = new Parser();
     }
 
