@@ -49,3 +49,4 @@ out/
 
 # other
 /local-samples/
+docker-compose-itest.yml.dojo
