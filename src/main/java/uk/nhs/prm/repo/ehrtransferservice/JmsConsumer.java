@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.codec.ReadableBuffer;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Headers;
@@ -84,9 +85,11 @@ public class JmsConsumer {
         try {
             amqpMessage.decode(byteBuffer);
             log.info("decoded as AMQP message, type is: " + amqpMessage.getBody().getType());
+            var amqpValueAsString = (String)((AmqpValue)amqpMessage.getBody()).getValue();
+            log.info("we've been able to parse body:", amqpValueAsString.substring(0, 15));
         }
         catch (Exception e) {
-            log.info("failed to decode as AMQP message");
+            log.info("failed to decode as AMQP message", e);
         }
     }
 
