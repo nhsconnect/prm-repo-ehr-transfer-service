@@ -106,10 +106,10 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageWithNoInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parser.parseMessageBody(any())).thenReturn(messageContent);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn(null);
-        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
 
         verifySentToParsingDlq(messageContent);
     }
@@ -117,19 +117,19 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageWithEmptyInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
+        when(parser.parseMessageBody(any())).thenReturn(messageContent);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn("   ");
-        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
 
         verifySentToParsingDlq(messageContent);
     }
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnDLQ() throws IOException, JMSException {
+        when(parser.parseMessageBody(any())).thenReturn(messageContent);
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parser.parse(any())).thenReturn(parsedMessage);
-        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
 
         verifySentToParsingDlq(messageContent);
     }
@@ -137,16 +137,8 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws IOException, JMSException {
         IOException expectedError = new IOException("failed to parse message");
+        when(parser.parseMessageBody(any())).thenReturn(messageContent);
         when(parser.parse(Mockito.any())).thenThrow(expectedError);
-        when(messageSanitizer.sanitize(Mockito.any())).thenReturn(messageContent);
         verifySentToParsingDlq(messageContent);
-    }
-
-    @Test
-    void shouldPutMessageOnUnhandledQueueWhenSanitizingFails() throws JMSException {
-        RuntimeException expectedError = new RuntimeException("failed to sanitize message");
-        when(messageSanitizer.sanitize(Mockito.any())).thenThrow(expectedError);
-        var toBeSentWhenMessageSanitizerFails = "<NOT-PARSED-YET>";
-        verifySentToParsingDlq(messageContent, toBeSentWhenMessageSanitizerFails);
     }
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.codec.ReadableBuffer;
+import org.apache.qpid.proton.message.Message.Factory;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
@@ -38,25 +39,26 @@ public class JmsConsumer {
                           @Headers Map<String, Object> headers) throws JMSException {
         tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID());
         debugMessageFormatInfo(message, headers);
-        String rawMessage = "<NOT-PARSED-YET>";
+        String messageBody = "<NOT-PARSED-YET>";
         try {
-            rawMessage = getRawMessage(message);
+            messageBody = parser.parseMessageBody(message);
             log.info("Received Message from Inbound queue");
-            var parsedMessage = parser.parse(rawMessage);
+            var parsedMessage = parser.parse(messageBody);
+
             tracer.handleConversationId(parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
             if (parsedMessage.getInteractionId() == null || parsedMessage.getInteractionId().isBlank()) {
                 log.warn("Sending message without Interaction ID to dlq");
-                parsingDlqPublisher.sendMessage(rawMessage);
+                parsingDlqPublisher.sendMessage(messageBody);
                 return;
             }
 
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } catch (Exception e) {
             log.error("Failed to process message - sending to dlq", e);
-            log.error("Message content: " + rawMessage);
-            parsingDlqPublisher.sendMessage(rawMessage);
+            log.error("Message content: " + messageBody);
+            parsingDlqPublisher.sendMessage(messageBody);
         }
     }
 
@@ -81,7 +83,7 @@ public class JmsConsumer {
 
     private void attemptAmqpDecode(byte[] contentAsBytes) {
         var byteBuffer = ReadableBuffer.ByteBufferReader.wrap(contentAsBytes);
-        var amqpMessage = org.apache.qpid.proton.message.Message.Factory.create();
+        var amqpMessage = Factory.create();
         try {
             amqpMessage.decode(byteBuffer);
             log.info("decoded as AMQP message, type is: " + amqpMessage.getBody().getType());
