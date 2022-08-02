@@ -33,14 +33,16 @@ public class JmsConsumer {
     private final Broker broker;
     private final Tracer tracer;
     private final ParsingDlqPublisher parsingDlqPublisher;
+    private final String unprocessableMessageBody = "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY";
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message,
                           @Headers Map<String, Object> headers) throws JMSException {
         tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID());
         debugMessageFormatInfo(message, headers);
-        String messageBody = "<NOT-PARSED-YET>";
+        String messageBody = null;
         try {
+            // TODO: single call to parser
             messageBody = parser.parseMessageBody(message);
             log.info("Received Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
@@ -56,9 +58,11 @@ public class JmsConsumer {
 
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } catch (Exception e) {
+            var toBeSentToDlq = messageBody != null ? messageBody : unprocessableMessageBody;
+            // TODO: don't log messages (here and anywhere else)
             log.error("Failed to process message - sending to dlq", e);
-            log.error("Message content: " + messageBody);
-            parsingDlqPublisher.sendMessage(messageBody);
+            log.error("Message content: " + toBeSentToDlq);
+            parsingDlqPublisher.sendMessage(toBeSentToDlq);
         }
     }
 

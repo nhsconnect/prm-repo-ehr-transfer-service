@@ -72,7 +72,7 @@ public class JmsConsumerIntegrationTest {
     })
     void shouldSendMessageToUnhandledQueue(String fileName) throws JMSException, IOException {
         byte[] bytes = dataLoader.getDataAsBytes(fileName);
-        String expected = "<NOT-PARSED-YET>";
+        String expected = "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY";
 
         ActiveMQBytesMessage bytesMessage = getActiveMQBytesMessage(bytes);
         jmsConsumer.onMessage(bytesMessage, new HashMap<>());

@@ -45,6 +45,7 @@ public class Parser {
         return new ParsedMessage(envelope, message, messageBodyAsString);
     }
 
+    // TODO: unit test this, when able to create a message with Proton library (or any other way)
     public String parseMessageBody(Message message) throws JMSException {
         log.info("Received BytesMessage from MQ");
         var bytesMessage = (BytesMessage) message;
