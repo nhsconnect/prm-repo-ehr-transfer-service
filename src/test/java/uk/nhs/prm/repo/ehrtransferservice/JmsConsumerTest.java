@@ -13,7 +13,6 @@ import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.MessageSanitizer;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
 import javax.jms.JMSException;
@@ -29,8 +28,6 @@ import static org.mockito.Mockito.*;
 public class JmsConsumerTest {
     @Mock
     JmsProducer jmsProducer;
-    @Mock
-    MessageSanitizer messageSanitizer;
     @Mock
     Parser parser;
     @Mock
