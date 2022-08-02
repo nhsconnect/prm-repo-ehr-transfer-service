@@ -132,6 +132,13 @@ public class JmsConsumerTest {
     }
 
     @Test
+    void shouldPutMessageOnUnhandledQueueWhenMessageBodyParseFails() throws JMSException {
+        var expectedError = new JMSException("failed to parse message");
+        when(parser.parseMessageBody(any())).thenThrow(expectedError);
+        verifySentToParsingDlq(messageContent, "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY");
+    }
+
+    @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws IOException, JMSException {
         IOException expectedError = new IOException("failed to parse message");
         when(parser.parseMessageBody(any())).thenReturn(messageContent);
