@@ -30,10 +30,12 @@ public class JmsConsumer {
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message,
                           @Headers Map<String, Object> headers) throws JMSException {
-        tracer.setMDCContextFromMhsInbound(headers.get("correlation-id").toString());
-        debugMessageFormatInfo(message, headers);
         String messageBody = null;
         try {
+            var correlationId = headers.containsKey("correlation-id") ? headers.get("correlation-id").toString() : null;
+            tracer.setMDCContextFromMhsInbound(correlationId);
+            debugMessageFormatInfo(message, headers);
+
             // TODO: single call to parser
             messageBody = parser.parseMessageBody(message);
             log.info("Received Message from Inbound queue");
