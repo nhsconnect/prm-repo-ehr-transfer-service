@@ -19,6 +19,7 @@ import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -50,7 +51,9 @@ public class JmsConsumerTest {
         bytesMessage.writeBytes(message.getBytes(StandardCharsets.UTF_8));
         bytesMessage.reset();
 
-        jmsConsumer.onMessage(bytesMessage, new HashMap<>());
+        var headerMap = new HashMap<String, Object>();
+        headerMap.put("correlation-id", "conversationId");
+        jmsConsumer.onMessage(bytesMessage, headerMap);
 
         verify(parsingDlqPublisher).sendMessage(expected);
     }
@@ -65,7 +68,9 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message, new HashMap<>());
+        var headerMap = new HashMap<String, Object>();
+        headerMap.put("correlation-id", conversationId);
+        jmsConsumer.onMessage(message, headerMap);
 
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
@@ -80,9 +85,11 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message, new HashMap<>());
+        Map<String, Object> headerMap = new HashMap<>();
+        headerMap.put("correlation-id", conversationId);
+        jmsConsumer.onMessage(message, headerMap);
 
-        verify(tracer).setMDCContextFromMhsInbound(null);
+        verify(tracer).setMDCContextFromMhsInbound(conversationId.toString());
         verify(tracer).handleConversationId(conversationId.toString());
     }
 
@@ -96,7 +103,9 @@ public class JmsConsumerTest {
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
 
-        jmsConsumer.onMessage(message, new HashMap<>());
+        var headerMap = new HashMap<String, Object>();
+        headerMap.put("correlation-id", conversationId);
+        jmsConsumer.onMessage(message, headerMap);
         verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 

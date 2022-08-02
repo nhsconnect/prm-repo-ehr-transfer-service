@@ -30,7 +30,7 @@ public class JmsConsumer {
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message,
                           @Headers Map<String, Object> headers) throws JMSException {
-        tracer.setMDCContextFromMhsInbound(message.getJMSCorrelationID());
+        tracer.setMDCContextFromMhsInbound(headers.get("correlation-id").toString());
         debugMessageFormatInfo(message, headers);
         String messageBody = null;
         try {
