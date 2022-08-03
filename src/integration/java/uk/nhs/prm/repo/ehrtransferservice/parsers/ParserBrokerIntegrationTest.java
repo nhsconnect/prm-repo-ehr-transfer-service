@@ -4,6 +4,11 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import org.apache.qpid.proton.amqp.messaging.Section;
+import org.apache.qpid.proton.codec.ReadableBuffer;
+import org.apache.qpid.proton.codec.WritableBuffer;
+import org.apache.qpid.proton.message.Message.Factory;
+import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -19,9 +24,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,16 +100,38 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
+    @Disabled("WIP - building message using proton libraries")
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
         var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
 
         jmsTemplate.send(inboundQueue, session -> {
+            var originalString = "{\"test\": \"hello\"}";
+            var body = new AmqpValue(originalString);
+            var message = Factory.create();
+            message.setBody(body);
+            message.setContentType("application/json");
+            message.setMessageId(UUID.randomUUID());
+//            message.setContentEncoding(StandardCharsets.UTF_8);
+
+            ByteBuffer buffer = ByteBuffer.wrap(new byte[1024 * 4]);
+            var writableBuffer = new WritableBuffer.ByteBufferWrapper(buffer);
+
+            message.encode(writableBuffer);
+
+            var bytes = writableBuffer.toReadableBuffer().array();
+            var backToString = new String(bytes, StandardCharsets.UTF_8);
+
+            System.out.println("Was it converted back to its original value?");
+            System.out.println(backToString);
+            System.out.println( "<-------------");
+
             var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
+            bytesMessage.writeBytes(bytes);
             return bytesMessage;
+//            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
+//            return bytesMessage;
         });
 
         var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
