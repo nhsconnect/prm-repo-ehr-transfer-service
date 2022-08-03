@@ -4,11 +4,14 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import org.apache.qpid.proton.amqp.messaging.Section;
-import org.apache.qpid.proton.codec.ReadableBuffer;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import org.apache.qpid.proton.amqp.messaging.AmqpValue;
+import org.apache.qpid.proton.codec.CompositeWritableBuffer;
+import org.apache.qpid.proton.codec.DroppingWritableBuffer;
 import org.apache.qpid.proton.codec.WritableBuffer;
 import org.apache.qpid.proton.message.Message.Factory;
-import org.apache.qpid.proton.amqp.messaging.AmqpValue;
+import org.apache.qpid.proton.message.ProtonJMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -24,10 +27,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -100,6 +100,36 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
+    private ByteBuffer magicCodeCopiedFromActiveMQCodebaseItself(org.apache.qpid.proton.message.Message message) {
+        ProtonJMessage amqp = (ProtonJMessage) message;
+
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[1024 * 4]);
+        final DroppingWritableBuffer overflow = new DroppingWritableBuffer();
+        int c = amqp.encode(new CompositeWritableBuffer(new WritableBuffer.ByteBufferWrapper(buffer), overflow));
+        if (overflow.position() > 0) {
+            buffer = ByteBuffer.wrap(new byte[1024 * 4 + overflow.position()]);
+            c = amqp.encode(new WritableBuffer.ByteBufferWrapper(buffer));
+        }
+
+        return buffer;
+//        return new EncodedMessage(1, buffer.array(), 0, c);
+    }
+
+    String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<RCMR_IN030000UK06 xmlns=\"urn:hl7-org:v3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:hl7-org:v3 ..SchemasRCMR_IN030000UK06.xsd\">\n" +
+            "    <ControlActEvent classCode=\"CACT\" moodCode=\"EVN\">\n" +
+            "        <subject typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
+            "            <EhrExtract classCode=\"EXTRACT\" moodCode=\"EVN\">\n" +
+            "                <recordTarget typeCode=\"RCT\">\n" +
+            "                    <patient classCode=\"PAT\">\n" +
+            "                        <id root=\"2.16.840.1.113883.2.1.4.1\" extension=\"9442964410\" />\n" +
+            "                    </patient>" +
+            "                </recordTarget>" +
+            "             </EhrExtract>" +
+            "         </subject>" +
+            "    </ControlActEvent>" +
+            "</RCMR_IN030000UK06>";
+
     @Disabled("WIP - building message using proton libraries")
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
@@ -107,25 +137,38 @@ public class ParserBrokerIntegrationTest {
         var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
 
         jmsTemplate.send(inboundQueue, session -> {
-            var originalString = "{\"test\": \"hello\"}";
+            // THIS GETS PARSED
+//            var originalString = "{\"test\": \"hello\"}";
+
+            // THIS DOES NOT, it can't get past amqpMessage.decode in Parser.java
+//            var originalString = smallEhrSanitized; // THIS DOES NOT
+
+            var json = new JsonObject();
+            json.addProperty("ebXML", extract);
+            // THIS GET PARSED, then it fails in the creation of ParseMessage
+            // to verify if there are all needed fields in it
+            var originalString = new Gson().toJson(json);
+
+            System.out.println("original message is");
+            System.out.println(originalString);
+
             var body = new AmqpValue(originalString);
             var message = Factory.create();
             message.setBody(body);
             message.setContentType("application/json");
             message.setMessageId(UUID.randomUUID());
-//            message.setContentEncoding(StandardCharsets.UTF_8);
+//            message.setContentEncoding("UTF-8"); // this break what currently works
+            var buffer = magicCodeCopiedFromActiveMQCodebaseItself(message);
 
-            ByteBuffer buffer = ByteBuffer.wrap(new byte[1024 * 4]);
             var writableBuffer = new WritableBuffer.ByteBufferWrapper(buffer);
 
             message.encode(writableBuffer);
 
             var bytes = writableBuffer.toReadableBuffer().array();
-            var backToString = new String(bytes, StandardCharsets.UTF_8);
-
-            System.out.println("Was it converted back to its original value?");
-            System.out.println(backToString);
-            System.out.println( "<-------------");
+//            var backToString = new String(bytes, StandardCharsets.UTF_8);
+//            System.out.println("Was it converted back to its original value via MAGIC?");
+//            System.out.println(backToString);
+//            System.out.println( "<-------------");
 
             var bytesMessage = session.createBytesMessage();
             bytesMessage.writeBytes(bytes);
@@ -139,8 +182,8 @@ public class ParserBrokerIntegrationTest {
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
             Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
-            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+//            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+//            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
     }
 
