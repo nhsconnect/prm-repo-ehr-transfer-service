@@ -9,7 +9,7 @@ common:
           destination: terraform/
     tasks:
       - exec:
-          command: /bin/bashƒ
+          command: /bin/bash
           arguments:
             - -c
             - ./tasks tf_plan create
