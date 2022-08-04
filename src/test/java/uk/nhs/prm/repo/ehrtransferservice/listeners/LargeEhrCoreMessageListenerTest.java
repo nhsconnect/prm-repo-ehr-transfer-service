@@ -7,8 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.DuplicateMessageException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
@@ -56,6 +56,19 @@ class LargeEhrCoreMessageListenerTest {
         largeEhrCoreMessageListener.onMessage(message);
 
         verify(largeEhrCoreMessageHandler).handleMessage(largeSqsMessage);
+    }
+
+    @Test
+    public void shouldAcknowledgeMessageWhenDuplicateMessageErrorIsCaught() throws Exception {
+        var message = getSqsTextMessage();
+        var largeSqsMessage = mock(LargeSqsMessage.class);
+
+        when(extendedMessageFetcher.fetchAndParse(message)).thenReturn(largeSqsMessage);
+        doThrow(DuplicateMessageException.class).when(largeEhrCoreMessageHandler).handleMessage(any());
+
+        largeEhrCoreMessageListener.onMessage(message);
+
+        verify(message, times(1)).acknowledge();
     }
 
     private SQSTextMessage getSqsTextMessage() throws Exception {

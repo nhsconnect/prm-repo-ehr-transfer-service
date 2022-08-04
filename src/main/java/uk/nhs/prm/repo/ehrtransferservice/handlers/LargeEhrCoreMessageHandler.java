@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrRepoDuplicateException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
@@ -22,11 +21,7 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage>
     public void handleMessage(ParsedMessage largeEhrCoreMessage) throws Exception {
         var conversationId = largeEhrCoreMessage.getConversationId();
 
-        try {
-            ehrRepoService.storeMessage(largeEhrCoreMessage);
-        } catch (EhrRepoDuplicateException e) {
-            return;
-        }
+        ehrRepoService.storeMessage(largeEhrCoreMessage);
 
         log.info("Successfully stored large-ehr message in the ehr-repo");
 

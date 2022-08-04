@@ -5,16 +5,14 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrRepoDuplicateException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.DuplicateMessageException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -34,7 +32,7 @@ public class EhrRepoClient {
         this.tracer = tracer;
     }
 
-    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws IOException, URISyntaxException, InterruptedException {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws Exception {
         String endpoint = "/messages/" + conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -47,6 +45,10 @@ public class EhrRepoClient {
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
+
+        if (response.statusCode() == 409) {
+            throw new DuplicateMessageException("Tried to store and already existing message in EHR Repo.");
+        }
         if (response.statusCode() != 200) {
             throw new RuntimeException("Unexpected response from EHR Repo when retrieving presigned URL");
         }
@@ -77,9 +79,6 @@ public class EhrRepoClient {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
 
-        if (response.statusCode() == 409) {
-            throw new EhrRepoDuplicateException("Tried to store and already existing message in EHR Repo.");
-        }
         if (response.statusCode() != 201) {
             throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
         }

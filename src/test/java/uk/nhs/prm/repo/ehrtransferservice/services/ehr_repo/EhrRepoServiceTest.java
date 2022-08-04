@@ -10,8 +10,6 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +47,7 @@ public class EhrRepoServiceTest {
     }
 
     @Test
-    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws IOException, URISyntaxException, InterruptedException {
+    void shouldThrowStorageFailureExceptionWhenPresignedUrlCannotBeRetrieved() throws Exception {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
