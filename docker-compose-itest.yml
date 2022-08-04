@@ -9,6 +9,7 @@ services:
     image: symptoma/activemq:5.17.0
     ports:
       - 61616:61616
+      - 5672:5672
   mq-2:
     image: symptoma/activemq:5.17.0
     ports:
