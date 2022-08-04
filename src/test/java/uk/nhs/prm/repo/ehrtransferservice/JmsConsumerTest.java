@@ -1,7 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
-import org.apache.activemq.command.ActiveMQTextMessage;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,22 +90,6 @@ public class JmsConsumerTest {
 
         verify(tracer).setMDCContextFromMhsInbound(conversationId.toString());
         verify(tracer).handleConversationId(conversationId.toString());
-    }
-
-    @Test
-    void shouldParseAndCallBrokerForReceivedTextMessage() throws IOException, JMSException {
-        var message = new ActiveMQTextMessage();
-        message.setText("test-message");
-        var conversationId = UUID.randomUUID();
-        var parsedMessage = mock(ParsedMessage.class);
-        when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
-
-        var headerMap = new HashMap<String, Object>();
-        headerMap.put("correlation-id", conversationId);
-        jmsConsumer.onMessage(message, headerMap);
-        verify(broker).sendMessageToCorrespondingTopicPublisher(parsedMessage);
     }
 
     @Test
