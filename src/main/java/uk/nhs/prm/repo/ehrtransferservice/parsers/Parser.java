@@ -45,7 +45,6 @@ public class Parser {
         return new ParsedMessage(envelope, message, messageBodyAsString);
     }
 
-    // TODO: unit test this, when able to create a message with Proton library (or any other way)
     public String parseMessageBody(Message message) throws JMSException {
         log.info("Received BytesMessage from MQ");
         var bytesMessage = (BytesMessage) message;
@@ -54,10 +53,6 @@ public class Parser {
         var byteBuffer = ReadableBuffer.ByteBufferReader.wrap(contentAsBytes);
         var amqpMessage = org.apache.qpid.proton.message.Message.Factory.create();
         amqpMessage.decode(byteBuffer);
-        var messageBody = (String) ((AmqpValue) amqpMessage.getBody()).getValue();
-        // Temporary log, will be soon reverted
-        log.info("Message body received: ", messageBody.substring(55));
-        return messageBody;
-//        return (String) ((AmqpValue) amqpMessage.getBody()).getValue();
+        return (String) ((AmqpValue) amqpMessage.getBody()).getValue();
     }
 }
