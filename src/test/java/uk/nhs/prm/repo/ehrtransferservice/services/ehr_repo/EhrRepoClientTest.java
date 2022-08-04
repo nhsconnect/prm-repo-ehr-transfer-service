@@ -7,8 +7,19 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrRepoDuplicateException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.EhrExtract;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.EhrExtractMessageWrapper;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Identifier;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageData;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Patient;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Reference;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPBody;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.io.IOException;
@@ -106,6 +117,31 @@ public class EhrRepoClientTest {
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
         Exception expected = assertThrows(HttpException.class, () ->
+                ehrRepoClient.confirmMessageStored(mockParsedMessage)
+        );
+        assertThat(expected, notNullValue());
+    }
+
+    @Test
+    public void shouldThrowEhrRepoDuplicateExceptionWhenReceiving409() throws MalformedURLException {
+        UUID conversationId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
+
+        wireMock.stubFor(post(urlEqualTo("/messages"))
+                .withHeader("Authorization", equalTo("secret"))
+                .willReturn(aResponse()
+                        .withStatus(409)
+                        .withHeader("Content-Type", "application/json")));
+
+        ParsedMessage mockParsedMessage = mock(ParsedMessage.class);
+        when(mockParsedMessage.getNhsNumber()).thenReturn("0123456789");
+        when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
+        when(mockParsedMessage.getMessageId()).thenReturn(messageId);
+        when(mockParsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
+        when(mockParsedMessage.getAttachmentMessageIds()).thenReturn(Collections.emptyList());
+
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        Exception expected = assertThrows(EhrRepoDuplicateException.class, () ->
                 ehrRepoClient.confirmMessageStored(mockParsedMessage)
         );
         assertThat(expected, notNullValue());

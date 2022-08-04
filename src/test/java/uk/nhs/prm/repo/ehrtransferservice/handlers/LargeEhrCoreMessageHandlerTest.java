@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrRepoDuplicateException;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
@@ -14,8 +15,8 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LargeEhrCoreMessageHandlerTest {
@@ -72,5 +73,15 @@ class LargeEhrCoreMessageHandlerTest {
         when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(transferTrackerService).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
+    }
+
+    @Test
+    public void shouldNotCallAnyMethodWhenEhrRepoDuplicateErrorIsCaught() throws Exception {
+        when(ehrRepoService.storeMessage(largeSqsMessage)).thenThrow(new EhrRepoDuplicateException());
+        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
+        verify(gp2gpMessengerService, times(0)).sendContinueMessage(any(), any());
+        verify(transferTrackerService, times(0)).getEhrTransferData(any());
+        verify(transferTrackerService, times(0)).handleEhrTransferStateUpdate(any(), any(), any());
+        verify(transferTrackerService, times(0)).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
     }
 }

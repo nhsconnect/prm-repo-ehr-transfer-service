@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrRepoDuplicateException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
@@ -76,6 +77,9 @@ public class EhrRepoClient {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
 
+        if (response.statusCode() == 409) {
+            throw new EhrRepoDuplicateException("Tried to store and already existing message in EHR Repo.");
+        }
         if (response.statusCode() != 201) {
             throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
         }
