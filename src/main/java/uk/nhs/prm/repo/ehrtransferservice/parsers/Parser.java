@@ -54,6 +54,10 @@ public class Parser {
         var byteBuffer = ReadableBuffer.ByteBufferReader.wrap(contentAsBytes);
         var amqpMessage = org.apache.qpid.proton.message.Message.Factory.create();
         amqpMessage.decode(byteBuffer);
-        return (String) ((AmqpValue) amqpMessage.getBody()).getValue();
+        var messageBody = (String) ((AmqpValue) amqpMessage.getBody()).getValue();
+        // Temporary log, will be soon reverted
+        log.info("Message body received: ", messageBody.substring(55));
+        return messageBody;
+//        return (String) ((AmqpValue) amqpMessage.getBody()).getValue();
     }
 }

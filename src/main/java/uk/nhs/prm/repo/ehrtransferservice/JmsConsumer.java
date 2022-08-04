@@ -36,7 +36,7 @@ public class JmsConsumer {
             tracer.setMDCContextFromMhsInbound(correlationId);
             debugMessageFormatInfo(message, headers);
 
-            // TODO: single call to parser
+            // TODO: single call to parser + better class name (EhrParser and ehrMessage?)
             messageBody = parser.parseMessageBody(message);
             log.info("Received Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
