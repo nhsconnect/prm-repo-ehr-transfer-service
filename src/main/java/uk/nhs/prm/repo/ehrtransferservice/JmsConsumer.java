@@ -29,14 +29,13 @@ public class JmsConsumer {
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message,
-                          @Headers Map<String, Object> headers) throws JMSException {
+                          @Headers Map<String, Object> headers) {
         String messageBody = null;
         try {
             var correlationId = headers.containsKey("correlation-id") ? headers.get("correlation-id").toString() : null;
             tracer.setMDCContextFromMhsInbound(correlationId);
             debugMessageFormatInfo(message, headers);
 
-            // TODO: single call to parser + better class name (EhrParser and ehrMessage?)
             messageBody = parser.parseMessageBody(message);
             log.info("Received Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
@@ -53,10 +52,7 @@ public class JmsConsumer {
             broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } catch (Exception e) {
             var toBeSentToDlq = messageBody != null ? messageBody : unprocessableMessageBody;
-            // TODO: don't log messages (here and anywhere else)
-            // + wrap specific case of problem parsing message around the specific code that does it?
-            log.error("Failed to process message - sending to dlq", e);
-            log.error("Message content: " + toBeSentToDlq);
+            log.error("Failed to process message - sending to dlq");
             parsingDlqPublisher.sendMessage(toBeSentToDlq);
         }
     }
