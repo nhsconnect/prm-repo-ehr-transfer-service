@@ -9,7 +9,7 @@ common:
           destination: terraform/
     tasks:
       - exec:
-          command: /bin/bash
+          command: /bin/bashƒ
           arguments:
             - -c
             - ./tasks tf_plan create
@@ -88,6 +88,9 @@ pipelines:
       dev_env:
         pipeline: ehr-transfer-service.dev
         stage: deploy
+      e2e:
+        pipeline: repo-e2e-tests.dev
+        stage: test
     environment_variables:
       NHS_ENVIRONMENT: test
     stages:
@@ -127,6 +130,9 @@ pipelines:
       test_env:
         pipeline: ehr-transfer-service.test
         stage: deploy
+      e2e:
+        pipeline: repo-e2e-tests.test
+        stage: test
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
     stages:
