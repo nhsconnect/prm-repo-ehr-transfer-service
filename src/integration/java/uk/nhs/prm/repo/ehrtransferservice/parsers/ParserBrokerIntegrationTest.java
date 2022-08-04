@@ -6,6 +6,10 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.rabbitmq.client.Address;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.codec.CompositeWritableBuffer;
 import org.apache.qpid.proton.codec.DroppingWritableBuffer;
@@ -33,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -50,6 +55,12 @@ public class ParserBrokerIntegrationTest {
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
+
+    @Value("${activemq.amqEndpoint1}")
+    private String mqEndpoint1;
+
+    @Value("${activemq.amqEndpoint2}")
+    private String mqEndpoint2;
 
     @Value("${aws.largeMessageFragmentsObservabilityQueueName}")
     private String largeMessageFragmentsObservabilityQueueName;
@@ -100,91 +111,48 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    private ByteBuffer magicCodeCopiedFromActiveMQCodebaseItself(org.apache.qpid.proton.message.Message message) {
-        ProtonJMessage amqp = (ProtonJMessage) message;
 
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[1024 * 4]);
-        final DroppingWritableBuffer overflow = new DroppingWritableBuffer();
-        int c = amqp.encode(new CompositeWritableBuffer(new WritableBuffer.ByteBufferWrapper(buffer), overflow));
-        if (overflow.position() > 0) {
-            buffer = ByteBuffer.wrap(new byte[1024 * 4 + overflow.position()]);
-            c = amqp.encode(new WritableBuffer.ByteBufferWrapper(buffer));
-        }
 
-        return buffer;
-//        return new EncodedMessage(1, buffer.array(), 0, c);
+
+    private Channel getChannel() throws IOException, TimeoutException {
+        var cf = new ConnectionFactory();
+        var address1 = new Address(mqEndpoint1);
+        var address2 = new Address(mqEndpoint2);
+        var conn = cf.newConnection(List.of(address1, address2), "sdeng");
+
+//        cf.setUsername("");
+//        cf.setPassword("");
+//        cf.setVirtualHost("");
+//        cf.setHost("");
+//        cf.setPort(61616);
+//        var conn = cf.newConnection();
+
+        return conn.createChannel();
     }
 
-    String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<RCMR_IN030000UK06 xmlns=\"urn:hl7-org:v3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:hl7-org:v3 ..SchemasRCMR_IN030000UK06.xsd\">\n" +
-            "    <ControlActEvent classCode=\"CACT\" moodCode=\"EVN\">\n" +
-            "        <subject typeCode=\"SUBJ\" contextConductionInd=\"false\">\n" +
-            "            <EhrExtract classCode=\"EXTRACT\" moodCode=\"EVN\">\n" +
-            "                <recordTarget typeCode=\"RCT\">\n" +
-            "                    <patient classCode=\"PAT\">\n" +
-            "                        <id root=\"2.16.840.1.113883.2.1.4.1\" extension=\"9442964410\" />\n" +
-            "                    </patient>" +
-            "                </recordTarget>" +
-            "             </EhrExtract>" +
-            "         </subject>" +
-            "    </ControlActEvent>" +
-            "</RCMR_IN030000UK06>";
-
-    @Disabled("WIP - building message using proton libraries")
+    @Disabled("WIP - building and sending message using rabbit mq client")
     @Test
-    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
+    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
         var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
 
-        jmsTemplate.send(inboundQueue, session -> {
-            // THIS GETS PARSED
-//            var originalString = "{\"test\": \"hello\"}";
+        var messageBody = "{\"test\": \"hello\"}";
+        var channel = getChannel();
 
-            // THIS DOES NOT, it can't get past amqpMessage.decode in Parser.java
-//            var originalString = smallEhrSanitized; // THIS DOES NOT
+        System.out.println("Do we have a channel?");
+        System.out.println(channel);
 
-            var json = new JsonObject();
-            json.addProperty("ebXML", extract);
-            // THIS GET PARSED, then it fails in the creation of ParseMessage
-            // to verify if there are all needed fields in it
-            var originalString = new Gson().toJson(json);
+        Assertions.assertNotNull(channel);
 
-            System.out.println("original message is");
-            System.out.println(originalString);
 
-            var body = new AmqpValue(originalString);
-            var message = Factory.create();
-            message.setBody(body);
-            message.setContentType("application/json");
-            message.setMessageId(UUID.randomUUID());
-//            message.setContentEncoding("UTF-8"); // this break what currently works
-            var buffer = magicCodeCopiedFromActiveMQCodebaseItself(message);
-
-            var writableBuffer = new WritableBuffer.ByteBufferWrapper(buffer);
-
-            message.encode(writableBuffer);
-
-            var bytes = writableBuffer.toReadableBuffer().array();
-//            var backToString = new String(bytes, StandardCharsets.UTF_8);
-//            System.out.println("Was it converted back to its original value via MAGIC?");
-//            System.out.println(backToString);
-//            System.out.println( "<-------------");
-
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(bytes);
-            return bytesMessage;
-//            bytesMessage.writeBytes(smallEhr.getBytes(StandardCharsets.UTF_8));
-//            return bytesMessage;
-        });
-
-        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
-            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
+//        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+//
+//        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+//            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
+//            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
 //            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
 //            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-        });
+//        });
     }
 
     @Disabled("We need to create the byteMessage properly, possibly using the proton library")
