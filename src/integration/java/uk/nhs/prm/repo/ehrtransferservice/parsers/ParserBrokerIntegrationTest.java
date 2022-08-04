@@ -4,18 +4,8 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.rabbitmq.client.Address;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.apache.qpid.proton.amqp.messaging.AmqpValue;
-import org.apache.qpid.proton.codec.CompositeWritableBuffer;
-import org.apache.qpid.proton.codec.DroppingWritableBuffer;
-import org.apache.qpid.proton.codec.WritableBuffer;
-import org.apache.qpid.proton.message.Message.Factory;
-import org.apache.qpid.proton.message.ProtonJMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -32,10 +22,8 @@ import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -116,21 +104,28 @@ public class ParserBrokerIntegrationTest {
 
     private Channel getChannel() throws IOException, TimeoutException {
         var cf = new ConnectionFactory();
-        var address1 = new Address(mqEndpoint1);
-        var address2 = new Address(mqEndpoint2);
-        var conn = cf.newConnection(List.of(address1, address2), "sdeng");
+        System.out.println("setHost...");
+        cf.setHost("127.0.0.1");
+        System.out.println("setPort...");
+        cf.setPort(5672);
+        cf.setConnectionTimeout(1000 * 5);
 
-//        cf.setUsername("");
-//        cf.setPassword("");
-//        cf.setVirtualHost("");
-//        cf.setHost("");
-//        cf.setPort(61616);
-//        var conn = cf.newConnection();
+        System.out.println("About to create connection..........");
 
-        return conn.createChannel();
+        var conn = cf.newConnection();
+
+        System.out.println("conn created, creating channel");
+
+
+        var channel = conn.createChannel();
+
+        System.out.println("created!");
+
+        return channel;
+
     }
 
-    @Disabled("WIP - building and sending message using rabbit mq client")
+//    @Disabled("WIP - building and sending message using rabbit mq client")
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
