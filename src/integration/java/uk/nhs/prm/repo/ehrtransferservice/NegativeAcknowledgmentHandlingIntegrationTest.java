@@ -60,7 +60,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
-        var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13FailureSanitized");
+        var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13FailureMessageBody");
         UUID transferConversationId = createTransferRecord();
 
         sendToQueue(negativeAck, inboundQueue);

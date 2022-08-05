@@ -92,7 +92,7 @@ public class ParserBrokerIntegrationTest {
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
         var attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
-        var attachmentSanitized = dataLoader.getDataAsString("COPC_IN000001UK01Sanitized");
+        var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01MessageBody");
 
         jmsTemplate.send(inboundQueue, session -> {
             var bytesMessage = session.createBytesMessage();
@@ -105,7 +105,7 @@ public class ParserBrokerIntegrationTest {
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(attachmentsQueueUrl);
-            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(attachmentSanitized));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(attachmentMessageBody));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
@@ -134,7 +134,7 @@ public class ParserBrokerIntegrationTest {
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
-        var smallEhrSanitized = dataLoader.getDataAsString("RCMR_IN030000UK06Sanitized");
+        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06MessageBody");
 
         var messageBody = "{\"test\": \"hello\"}";
         var channel = getChannel();
@@ -149,7 +149,7 @@ public class ParserBrokerIntegrationTest {
 //
 //        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 //            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
-//            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrSanitized));
+//            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrMessageBody));
 //            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
 //            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
 //        });

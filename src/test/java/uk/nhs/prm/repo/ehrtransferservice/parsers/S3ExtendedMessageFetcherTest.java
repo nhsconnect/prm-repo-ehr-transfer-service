@@ -45,7 +45,7 @@ class S3ExtendedMessageFetcherTest {
 
     @Test
     void shouldCallS3ClientToParseMessageReturnedFromS3() throws Exception {
-        mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
+        mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06MessageBody");
         s3ExtendedMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
         verify(s3Client).getObject(GetObjectRequest.builder().bucket("s3-bucket-name").key("s3-key-value").build());
     }
@@ -61,7 +61,7 @@ class S3ExtendedMessageFetcherTest {
     @Test
     void shouldCallS3PointerMessageParserWithS3PointerPayLoad() throws Exception {
         var payload = "{\"s3BucketName\":\"s3-bucket-name\",\"s3Key\":\"s3-key-value\"}";
-        mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06Sanitized");
+        mockS3GetObjectResponseToReturnContentFrom("RCMR_IN030000UK06MessageBody");
         var s3PointerOk = new ParsingResult<>(getStaticS3PointerMessage(), Status.OK);
         when(s3PointerMessageParser.parse(any())).thenReturn(s3PointerOk);
 
@@ -76,7 +76,7 @@ class S3ExtendedMessageFetcherTest {
         var byteSource = new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
-                return readResourceFile("RCMR_IN030000UK06Sanitized");
+                return readResourceFile("RCMR_IN030000UK06MessageBody");
             }
         };
         var payload = byteSource.asCharSource(Charsets.UTF_8).read();

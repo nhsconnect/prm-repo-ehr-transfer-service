@@ -28,11 +28,11 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05, Sanitized",
-            "RCMR_IN030000UK06, Sanitized",
-            "PRPA_IN000202UK01, Sanitized"
+            "RCMR_IN010000UK05, MessageBody",
+            "RCMR_IN030000UK06, MessageBody",
+            "PRPA_IN000202UK01, MessageBody"
     })
-    public void shouldExtractActionNameFromSanitizedMessage(String interactionId, String variant) throws IOException {
+    public void shouldExtractActionNameFromMessageBodyMessage(String interactionId, String variant) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -41,8 +41,8 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN030000UK06, WithMidSanitized, true",
-            "RCMR_IN030000UK06, Sanitized, false"
+            "RCMR_IN030000UK06, WithMidMessageBody, true",
+            "RCMR_IN030000UK06, MessageBody, false"
     })
     public void shouldCheckIfMessageIsLarge(String interactionId, String variant, boolean isLargeMessage) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
@@ -53,11 +53,11 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05, Sanitized, 17a757f2-f4d2-444e-a246-9cb77bef7f22",
-            "RCMR_IN030000UK06, Sanitized, ff27abc3-9730-40f7-ba82-382152e6b90a",
-            "PRPA_IN000202UK01, Sanitized, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
+            "RCMR_IN010000UK05, MessageBody, 17a757f2-f4d2-444e-a246-9cb77bef7f22",
+            "RCMR_IN030000UK06, MessageBody, ff27abc3-9730-40f7-ba82-382152e6b90a",
+            "PRPA_IN000202UK01, MessageBody, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
     })
-    public void shouldExtractConversationIdFromSanitizedMessage(String interactionId, String variant, UUID expectedConversationId) throws IOException {
+    public void shouldExtractConversationIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedConversationId) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -66,11 +66,11 @@ public class ParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "RCMR_IN010000UK05, Sanitized, C445C720-B0EB-4E36-AF8A-48CD1CA5DE4F",
-            "RCMR_IN030000UK06, Sanitized, 1C66BB0E-811E-4956-8F9C-33424695B75F",
-            "PRPA_IN000202UK01, Sanitized, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
+            "RCMR_IN010000UK05, MessageBody, C445C720-B0EB-4E36-AF8A-48CD1CA5DE4F",
+            "RCMR_IN030000UK06, MessageBody, 1C66BB0E-811E-4956-8F9C-33424695B75F",
+            "PRPA_IN000202UK01, MessageBody, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
     })
-    public void shouldExtractMessageIdFromSanitizedMessage(String interactionId, String variant, UUID expectedMessageId) throws IOException {
+    public void shouldExtractMessageIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedMessageId) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -79,7 +79,7 @@ public class ParserTest {
 
     @Test
     public void shouldExtractNhsNumberFromEhrExtract() throws IOException {
-        String fileName = "RCMR_IN030000UK06Sanitized";
+        String fileName = "RCMR_IN030000UK06MessageBody";
         String messageAsString = rawLoader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -88,7 +88,7 @@ public class ParserTest {
 
     @Test
     public void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
-        String messageAsString = readableReader.readMessage("RCMR_IN030000UK06", "SanitizedWithUnexpectedBackslash");
+        String messageAsString = readableReader.readMessage("RCMR_IN030000UK06", "MessageBodyWithUnexpectedBackslash");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
         assertThat(parsedMessage.getNhsNumber(), equalTo("9692\\842304"));
