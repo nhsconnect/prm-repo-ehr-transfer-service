@@ -17,7 +17,7 @@ public class PresignedUrl {
     }
 
     public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, IOException, InterruptedException {
-        var message = HttpRequest.BodyPublishers.ofString(parsedMessage.getRawMessage());
+        var message = HttpRequest.BodyPublishers.ofString(parsedMessage.getMessageBody());
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(presignedUrl.toURI())

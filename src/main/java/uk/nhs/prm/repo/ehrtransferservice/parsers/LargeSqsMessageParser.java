@@ -17,11 +17,11 @@ import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 public class LargeSqsMessageParser {
 
     //TODO: same logic duplicated from Parser.parse. Room for improvement
-    public LargeSqsMessage parse(String rawMessage) throws JsonProcessingException {
+    public LargeSqsMessage parse(String messageBody) throws JsonProcessingException {
         XmlMapper xmlMapper = new XmlMapper();
-        var mhsJsonMessage = new ObjectMapper().readValue(rawMessage, MhsJsonMessage.class);
+        var mhsJsonMessage = new ObjectMapper().readValue(messageBody, MhsJsonMessage.class);
         var envelope = xmlMapper.readValue(mhsJsonMessage.ebXML, SOAPEnvelope.class);
         var message = xmlMapper.readValue(mhsJsonMessage.payload, EhrExtractMessageWrapper.class);
-        return new LargeSqsMessage(envelope, message, rawMessage);
+        return new LargeSqsMessage(envelope, message, messageBody);
     }
 }

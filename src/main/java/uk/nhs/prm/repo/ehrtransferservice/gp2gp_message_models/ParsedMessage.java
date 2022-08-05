@@ -12,24 +12,24 @@ import java.util.UUID;
 public class ParsedMessage {
     private SOAPEnvelope soapEnvelope;
     private MessageContent messageContent;
-    private String rawMessage;
+    private String messageBody;
 
-    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, String rawMessage) {
+    public ParsedMessage(SOAPEnvelope soapEnvelope, MessageContent messageContent, String messageBody) {
         this.soapEnvelope = soapEnvelope;
         this.messageContent = messageContent;
-        this.rawMessage = rawMessage;
+        this.messageBody = messageBody;
     }
 
     public BytesMessage getBytesMessage() throws JMSException {
-        final byte[] bytesArray = this.rawMessage.getBytes(StandardCharsets.UTF_8);
+        final byte[] bytesArray = this.messageBody.getBytes(StandardCharsets.UTF_8);
         ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
         bytesMessage.writeBytes(bytesArray);
         bytesMessage.reset();
         return bytesMessage;
     }
 
-    public String getRawMessage() {
-        return rawMessage;
+    public String getMessageBody() {
+        return messageBody;
     }
 
     public MessageContent getMessageContent() {

@@ -27,7 +27,7 @@ public class Broker {
 
     public void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
         final var interactionId = parsedMessage.getInteractionId();
-        final var message = parsedMessage.getRawMessage();
+        final var message = parsedMessage.getMessageBody();
         final var conversationId = parsedMessage.getConversationId();
         switch (interactionId) {
             case EHR_EXTRACT_INTERACTION_ID:

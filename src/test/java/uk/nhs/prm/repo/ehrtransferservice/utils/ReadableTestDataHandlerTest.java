@@ -26,7 +26,7 @@ class ReadableTestDataHandlerTest {
     private ReadableTestDataHandler readableHandler = new ReadableTestDataHandler();
 
     @Test
-    public void splitMessageShouldCreateReadableXmlEnvelopeFromRawMessage_soThatItCanBeUsedToMakeTestDataReadable() throws Exception {
+    public void splitMessageShouldCreateReadableXmlEnvelopeFromMessage_soThatItCanBeUsedToMakeTestDataReadable() throws Exception {
         readableHandler.splitMessage("readabletestdataXReadableTestDataHandlerTestData");
 
         var readableEnvelope = rawLoader.getDataAsString("readable/readabletestdataX/ReadableTestDataHandlerTestData/envelope.xml");

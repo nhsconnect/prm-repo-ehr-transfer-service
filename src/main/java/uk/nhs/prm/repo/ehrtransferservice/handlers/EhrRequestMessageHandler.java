@@ -30,7 +30,7 @@ public class EhrRequestMessageHandler implements MessageHandler<ParsedMessage> {
         } catch (HttpException | URISyntaxException | IOException | InterruptedException e) {
             log.error("Failed to send the registration request", e);
             log.info("Sending message to the unhandled queue");
-            jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getRawMessage());
+            jmsProducer.sendMessageToQueue(unhandledQueue, parsedMessage.getMessageBody());
         }
     }
 }

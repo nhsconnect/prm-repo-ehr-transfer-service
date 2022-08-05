@@ -14,9 +14,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import java.io.IOException;
 
-/*
- Can parse raw binary sanitised messages
- */
 @Component
 @Slf4j
 public class Parser {

@@ -34,7 +34,7 @@ public class ReadableTestDataHandler {
     }
 
     public void splitMessage(String unreadableFilename) {
-        var rawMessage = readRawDataResource(unreadableFilename);
+        var messageBody = readRawDataResource(unreadableFilename);
 
         var interactionId = unreadableFilename.substring(0, 17);
         var variant = unreadableFilename.substring(17);
@@ -44,7 +44,7 @@ public class ReadableTestDataHandler {
         Path envelopeXmlFile = messageFolder.resolve("envelope.xml");
         Path contentXmlFile = messageFolder.resolve("payload.xml");
 
-        var parsedJson = parseMhsMessage(rawMessage);
+        var parsedJson = parseMhsMessage(messageBody);
 
         writeToFile(envelopeXmlFile, parsedJson.ebXML);
         writeToFile(contentXmlFile, parsedJson.payload);
@@ -58,9 +58,9 @@ public class ReadableTestDataHandler {
         return getPath("data/");
     }
 
-    private MhsJsonMessage parseMhsMessage(String rawMessage) {
+    private MhsJsonMessage parseMhsMessage(String messageBody) {
         try {
-            return new ObjectMapper().readValue(rawMessage, MhsJsonMessage.class);
+            return new ObjectMapper().readValue(messageBody, MhsJsonMessage.class);
         }
         catch (IOException e) {
             throw new RuntimeException(e);

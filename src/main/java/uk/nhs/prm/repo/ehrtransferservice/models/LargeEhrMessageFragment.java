@@ -7,7 +7,7 @@ public class LargeEhrMessageFragment extends LargeSqsMessage {
     private static final String EMPTY_NHS_NUMBER_REQUIRED_FOR_STORE_MESSAGE_CALL = "";
 
     public LargeEhrMessageFragment(ParsedMessage largeSqsMessage) {
-        super(largeSqsMessage.getSoapEnvelope(), largeSqsMessage.getMessageContent(), largeSqsMessage.getRawMessage());
+        super(largeSqsMessage.getSoapEnvelope(), largeSqsMessage.getMessageContent(), largeSqsMessage.getMessageBody());
     }
 
     @Override

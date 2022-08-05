@@ -8,8 +8,8 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import java.util.List;
 
 public class Acknowledgement extends ParsedMessage {
-    public Acknowledgement(SOAPEnvelope soapEnvelope, MessageContent messageContent, String rawMessage) {
-        super(soapEnvelope, messageContent, rawMessage);
+    public Acknowledgement(SOAPEnvelope soapEnvelope, MessageContent messageContent, String messageBody) {
+        super(soapEnvelope, messageContent, messageBody);
     }
 
     public List<FailureDetail> getFailureDetails() {

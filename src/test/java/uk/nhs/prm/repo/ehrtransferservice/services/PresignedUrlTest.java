@@ -25,22 +25,22 @@ public class PresignedUrlTest {
     @Test
     void shouldUploadMessageToS3() throws IOException, URISyntaxException, InterruptedException {
         URL url = new URL(wireMock.baseUrl());
-        String rawMessage = "test";
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, rawMessage);
+        String messageBody = "test";
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, messageBody);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(200)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
         presignedUrl.uploadMessage(parsedMessage);
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(equalTo(rawMessage)));
+                .withRequestBody(equalTo(messageBody)));
     }
 
     @Test
     void shouldThrowErrorWhenCannotUploadMessageToS3() throws MalformedURLException {
         URL url = new URL(wireMock.baseUrl());
-        String rawMessage = "test";
-        ParsedMessage parsedMessage = new ParsedMessage(null, null, rawMessage);
+        String messageBody = "test";
+        ParsedMessage parsedMessage = new ParsedMessage(null, null, messageBody);
         wireMock.stubFor(put(urlEqualTo("/")).willReturn(aResponse().withStatus(503)));
 
         PresignedUrl presignedUrl = new PresignedUrl(url);
@@ -50,6 +50,6 @@ public class PresignedUrlTest {
         assertThat(expected, notNullValue());
 
         verify(putRequestedFor(urlMatching("/"))
-                .withRequestBody(equalTo(rawMessage)));
+                .withRequestBody(equalTo(messageBody)));
     }
 }

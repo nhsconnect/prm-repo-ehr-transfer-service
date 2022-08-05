@@ -42,11 +42,11 @@ public class S3ExtendedMessageFetcher {
                 .bucket(sqsMessagePayload.getS3BucketName())
                 .key(sqsMessagePayload.getS3Key()).build();
 
-        var rawMessage = new BufferedReader(
+        var messageBody = new BufferedReader(
                 new InputStreamReader(s3Client.getObject(getObjectRequest), StandardCharsets.UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
 
-        return largeSqsMessageParser.parse(rawMessage);
+        return largeSqsMessageParser.parse(messageBody);
     }
 }

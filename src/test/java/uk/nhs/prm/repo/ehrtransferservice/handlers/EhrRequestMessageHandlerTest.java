@@ -64,7 +64,7 @@ public class EhrRequestMessageHandlerTest {
     @Test
     public void shouldPutMessageOnUnhandledQueueWhenRepoToGPCallThrows() throws HttpException, InterruptedException, IOException, URISyntaxException {
         String message = "test";
-        when(parsedMessage.getRawMessage()).thenReturn(message);
+        when(parsedMessage.getMessageBody()).thenReturn(message);
         HttpException expectedError = new HttpException("Failed to send deduction request");
         doThrow(expectedError).when(repoToGPClient).sendEhrRequest(parsedMessage);
 
