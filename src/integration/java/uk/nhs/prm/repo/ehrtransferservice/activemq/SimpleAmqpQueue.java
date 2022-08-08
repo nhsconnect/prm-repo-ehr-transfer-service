@@ -18,7 +18,7 @@ public class SimpleAmqpQueue {
     public void sendMessage(String messageBody) {
         AMQPContext ctx = new AMQPContext(AMQPContext.CLIENT);
 
-        String activeMqHostname = System.getProperty("EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME", "127.0.0.1");
+        var activeMqHostname = getEnvVarOrDefault("EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME", "127.0.0.1");
         Connection connection = new Connection(ctx, activeMqHostname, 5672, true);
         try {
             connection.connect();
@@ -32,5 +32,9 @@ public class SimpleAmqpQueue {
         catch (IOException | AMQPException | AuthenticationException | UnsupportedProtocolVersionException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String getEnvVarOrDefault(String key, String defaultValue) {
+        return System.getenv().getOrDefault(key, defaultValue);
     }
 }
