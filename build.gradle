@@ -28,6 +28,11 @@ jar {
     enabled = false
 }
 
+configurations {
+    integrationImplementation.extendsFrom testImplementation
+    integrationRuntime.extendsFrom testRuntime
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-activemq'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
@@ -58,7 +63,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'com.rabbitmq:amqp-client:5.15.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.4'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
@@ -66,7 +70,8 @@ dependencies {
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.32.0"
     testImplementation 'org.awaitility:awaitility:3.0.0'
-    testImplementation 'com.swiftmq:swiftmq-client:12.3.0'
+
+    integrationImplementation 'com.swiftmq:swiftmq-client:12.3.0'
 
     // CVE-2020-36518...
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
@@ -99,11 +104,6 @@ sourceSets {
     }
 }
 
-configurations {
-    integrationImplementation.extendsFrom testImplementation
-    integrationRuntime.extendsFrom testRuntime
-}
-
 tasks.withType(Test) {
     useJUnitPlatform()
 }
@@ -115,6 +115,10 @@ task integration(type: Test) {
 }
 
 integration.outputs.upToDateWhen { false }
+
+integration {
+    systemProperty "javax.xml.parsers.SAXParserFactory", "com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl"
+}
 
 jacocoTestReport {
     dependsOn test // tests are required to run before generating the report

@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice;
+package uk.nhs.prm.repo.ehrtransferservice.activemq;
 
 import com.swiftmq.amqp.AMQPContext;
 import com.swiftmq.amqp.v100.client.*;
@@ -17,7 +17,9 @@ public class SimpleAmqpQueue {
 
     public void sendMessage(String messageBody) {
         AMQPContext ctx = new AMQPContext(AMQPContext.CLIENT);
-        Connection connection = new Connection(ctx, "localhost", 5672, true);
+
+        String activeMqHostname = System.getProperty("EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME", "127.0.0.1");
+        Connection connection = new Connection(ctx, activeMqHostname, 5672, true);
         try {
             connection.connect();
             Session session = connection.createSession(100, 100);
@@ -26,13 +28,8 @@ public class SimpleAmqpQueue {
             msg.setAmqpValue(new AmqpValue(new AMQPString(messageBody)));
             p.send(msg);
             p.close();
-        } catch (AMQPException e) {
-            throw new RuntimeException(e);
-        } catch (AuthenticationException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedProtocolVersionException e) {
+        }
+        catch (IOException | AMQPException | AuthenticationException | UnsupportedProtocolVersionException e) {
             throw new RuntimeException(e);
         }
     }

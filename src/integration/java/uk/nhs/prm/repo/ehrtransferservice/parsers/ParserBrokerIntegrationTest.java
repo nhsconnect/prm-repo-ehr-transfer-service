@@ -4,11 +4,6 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.ConnectionFactory;
-import com.swiftmq.amqp.v100.client.AMQPException;
-import com.swiftmq.amqp.v100.client.AuthenticationException;
-import com.swiftmq.amqp.v100.client.UnsupportedProtocolVersionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -21,8 +16,9 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
-import uk.nhs.prm.repo.ehrtransferservice.SimpleAmqpQueue;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
@@ -34,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
@@ -48,10 +45,10 @@ public class ParserBrokerIntegrationTest {
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
 
-    @Value("${activemq.amqEndpoint1}")
+    @Value("${activemq.openwireEndpoint1}")
     private String mqEndpoint1;
 
-    @Value("${activemq.amqEndpoint2}")
+    @Value("${activemq.openwireEndpoint2}")
     private String mqEndpoint2;
 
     @Value("${aws.largeMessageFragmentsObservabilityQueueName}")
@@ -83,14 +80,7 @@ public class ParserBrokerIntegrationTest {
     @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
-        var attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
         var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01MessageBody");
-
-//        jmsTemplate.send(inboundQueue, session -> {
-//            var bytesMessage = session.createBytesMessage();
-//            bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
-//            return bytesMessage;
-//        });
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(attachmentMessageBody);
@@ -107,46 +97,12 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-
-
-
-    private Channel getChannel() throws IOException, TimeoutException {
-        var cf = new ConnectionFactory();
-        System.out.println("setHost...");
-        cf.setHost("127.0.0.1");
-        System.out.println("setPort...");
-        cf.setPort(5672);
-        cf.setConnectionTimeout(1000 * 5);
-
-        System.out.println("About to create connection..........");
-
-        var conn = cf.newConnection();
-
-        System.out.println("conn created, creating channel");
-
-
-        var channel = conn.createChannel();
-
-        System.out.println("created!");
-
-        return channel;
-
-    }
-
-    @Disabled("WIP - building and sending message using rabbit mq client")
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
+        // raw AMQP
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
+
         var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06MessageBody");
-
-        var messageBody = "{\"test\": \"hello\"}";
-//        var channel = getChannel();
-//
-//        System.out.println("Do we have a channel?");
-//        System.out.println(channel);
-//
-//        Assertions.assertNotNull(channel);
-
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(smallEhrMessageBody);

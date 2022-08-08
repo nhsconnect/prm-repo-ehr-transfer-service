@@ -3,7 +3,6 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import com.swiftmq.amqp.v100.client.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +13,8 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 @SpringBootTest()
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
@@ -56,17 +58,10 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         purgeQueue(nackInternalQueueName);
     }
 
-//    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
         var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13FailureMessageBody");
         UUID transferConversationId = createTransferRecord();
-
-//        jmsTemplate.send(inboundQueue, session -> {
-//            var bytesMessage = session.createBytesMessage();
-//            bytesMessage.writeBytes(negativeAck.getBytes(StandardCharsets.UTF_8));
-//            return bytesMessage;
-//        });
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(negativeAck);

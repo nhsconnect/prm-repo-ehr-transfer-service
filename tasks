@@ -72,6 +72,7 @@ function get_aws_account_id {
 function configure_local_envs {
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_1=tcp://mq-1:61616
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_2=tcp://mq-2:61616
+  export EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME=mq-1
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME=admin
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_PASSWORD=admin
   export LOCALSTACK_URL="http://localstack:4566"

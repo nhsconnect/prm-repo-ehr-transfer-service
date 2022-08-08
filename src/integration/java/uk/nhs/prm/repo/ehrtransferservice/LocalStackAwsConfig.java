@@ -100,10 +100,10 @@ public class LocalStackAwsConfig {
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
-    @Value("${activemq.amqEndpoint1}")
+    @Value("${activemq.openwireEndpoint1}")
     private String amqEndpoint1;
 
-    @Value("${activemq.amqEndpoint2}")
+    @Value("${activemq.openwireEndpoint2}")
     private String amqEndpoint2;
 
     @Value("${activemq.userName}")

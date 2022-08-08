@@ -15,10 +15,10 @@ import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 @Configuration
 public class ActiveMQConfig {
 
-    @Value("${activemq.amqEndpoint1}")
+    @Value("${activemq.openwireEndpoint1}")
     private String amqEndpoint1;
 
-    @Value("${activemq.amqEndpoint2}")
+    @Value("${activemq.openwireEndpoint2}")
     private String amqEndpoint2;
 
     @Value("${activemq.userName}")
