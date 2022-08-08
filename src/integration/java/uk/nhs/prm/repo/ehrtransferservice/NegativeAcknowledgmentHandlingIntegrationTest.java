@@ -3,8 +3,8 @@ package uk.nhs.prm.repo.ehrtransferservice;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.GetQueueUrlResult;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
+import com.swiftmq.amqp.v100.client.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,6 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Thread.sleep;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -57,13 +56,20 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         purgeQueue(nackInternalQueueName);
     }
 
-    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
+//    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
         var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13FailureMessageBody");
         UUID transferConversationId = createTransferRecord();
 
-        sendToQueue(negativeAck, inboundQueue);
+//        jmsTemplate.send(inboundQueue, session -> {
+//            var bytesMessage = session.createBytesMessage();
+//            bytesMessage.writeBytes(negativeAck.getBytes(StandardCharsets.UTF_8));
+//            return bytesMessage;
+//        });
+
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(negativeAck);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var transferState = fetchTransferState(transferConversationId);

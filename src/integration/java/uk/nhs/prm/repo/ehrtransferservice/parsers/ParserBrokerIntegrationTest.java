@@ -6,6 +6,9 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.swiftmq.amqp.v100.client.AMQPException;
+import com.swiftmq.amqp.v100.client.AuthenticationException;
+import com.swiftmq.amqp.v100.client.UnsupportedProtocolVersionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
@@ -19,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
+import uk.nhs.prm.repo.ehrtransferservice.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
@@ -82,11 +86,15 @@ public class ParserBrokerIntegrationTest {
         var attachment = dataLoader.getDataAsString("COPC_IN000001UK01");
         var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01MessageBody");
 
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
+//        jmsTemplate.send(inboundQueue, session -> {
+//            var bytesMessage = session.createBytesMessage();
+//            bytesMessage.writeBytes(attachment.getBytes(StandardCharsets.UTF_8));
+//            return bytesMessage;
+//        });
+
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(attachmentMessageBody);
+
 
         var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
         System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
@@ -125,29 +133,33 @@ public class ParserBrokerIntegrationTest {
 
     }
 
-//    @Disabled("WIP - building and sending message using rabbit mq client")
+    @Disabled("WIP - building and sending message using rabbit mq client")
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
         var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
         var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06MessageBody");
 
         var messageBody = "{\"test\": \"hello\"}";
-        var channel = getChannel();
-
-        System.out.println("Do we have a channel?");
-        System.out.println(channel);
-
-        Assertions.assertNotNull(channel);
-
-
-//        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+//        var channel = getChannel();
 //
-//        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-//            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
-//            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrMessageBody));
-//            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
-//            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
-//        });
+//        System.out.println("Do we have a channel?");
+//        System.out.println(channel);
+//
+//        Assertions.assertNotNull(channel);
+
+
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(smallEhrMessageBody);
+
+
+        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrMessageBody));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+        });
     }
 
     @Disabled("We need to create the byteMessage properly, possibly using the proton library")
