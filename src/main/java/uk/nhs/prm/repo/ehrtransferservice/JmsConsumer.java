@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class JmsConsumer {
+    final AmqpMessageParser amqpMessageParser;
     final JmsProducer jmsProducer;
     final Parser parser;
     private final Broker broker;
@@ -36,8 +38,8 @@ public class JmsConsumer {
             tracer.setMDCContextFromMhsInbound(correlationId);
             debugMessageFormatInfo(message, headers);
 
-            messageBody = parser.parseMessageBody(message);
-            log.info("Received Message from Inbound queue");
+            messageBody = amqpMessageParser.parse(message);
+            log.info("Received Amqp Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
 
             tracer.handleConversationId(parsedMessage.getConversationId().toString());

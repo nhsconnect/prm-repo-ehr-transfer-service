@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
@@ -26,6 +27,8 @@ import static org.mockito.Mockito.*;
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class JmsConsumerTest {
+    @Mock
+    AmqpMessageParser amqpMessageParser;
     @Mock
     JmsProducer jmsProducer;
     @Mock
@@ -95,7 +98,7 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageWithNoInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parser.parseMessageBody(any())).thenReturn(messageContent);
+        when(amqpMessageParser.parse(any())).thenReturn(messageContent);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn(null);
@@ -106,7 +109,7 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageWithEmptyInteractionIdOnDLQ() throws IOException, JMSException {
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
-        when(parser.parseMessageBody(any())).thenReturn(messageContent);
+        when(amqpMessageParser.parse(any())).thenReturn(messageContent);
         when(parser.parse(any())).thenReturn(parsedMessage);
         when(parsedMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(parsedMessage.getInteractionId()).thenReturn("   ");
@@ -116,7 +119,7 @@ public class JmsConsumerTest {
 
     @Test
     void shouldPutMessageWithoutSoapHeaderOnDLQ() throws IOException, JMSException {
-        when(parser.parseMessageBody(any())).thenReturn(messageContent);
+        when(amqpMessageParser.parse(any())).thenReturn(messageContent);
         ParsedMessage parsedMessage = mock(ParsedMessage.class);
         when(parser.parse(any())).thenReturn(parsedMessage);
 
@@ -126,14 +129,14 @@ public class JmsConsumerTest {
     @Test
     void shouldPutMessageOnUnhandledQueueWhenMessageBodyParseFails() throws JMSException {
         var expectedError = new JMSException("failed to parse message");
-        when(parser.parseMessageBody(any())).thenThrow(expectedError);
+        when(amqpMessageParser.parse(any())).thenThrow(expectedError);
         verifySentToParsingDlq(messageContent, "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY");
     }
 
     @Test
     void shouldPutMessageOnUnhandledQueueWhenParsingFails() throws IOException, JMSException {
         IOException expectedError = new IOException("failed to parse message");
-        when(parser.parseMessageBody(any())).thenReturn(messageContent);
+        when(amqpMessageParser.parse(any())).thenReturn(messageContent);
         when(parser.parse(Mockito.any())).thenThrow(expectedError);
         verifySentToParsingDlq(messageContent);
     }

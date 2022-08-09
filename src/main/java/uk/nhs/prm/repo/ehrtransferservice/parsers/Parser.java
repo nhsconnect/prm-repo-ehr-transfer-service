@@ -3,15 +3,10 @@ package uk.nhs.prm.repo.ehrtransferservice.parsers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.qpid.proton.amqp.messaging.AmqpValue;
-import org.apache.qpid.proton.codec.ReadableBuffer;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Message;
 import java.io.IOException;
 
 @Component
@@ -40,16 +35,5 @@ public class Parser {
                 break;
         }
         return new ParsedMessage(envelope, message, messageBodyAsString);
-    }
-
-    public String parseMessageBody(Message message) throws JMSException {
-        log.info("Received BytesMessage from MQ");
-        var bytesMessage = (BytesMessage) message;
-        byte[] contentAsBytes = new byte[(int) bytesMessage.getBodyLength()];
-        bytesMessage.readBytes(contentAsBytes);
-        var byteBuffer = ReadableBuffer.ByteBufferReader.wrap(contentAsBytes);
-        var amqpMessage = org.apache.qpid.proton.message.Message.Factory.create();
-        amqpMessage.decode(byteBuffer);
-        return (String) ((AmqpValue) amqpMessage.getBody()).getValue();
     }
 }
