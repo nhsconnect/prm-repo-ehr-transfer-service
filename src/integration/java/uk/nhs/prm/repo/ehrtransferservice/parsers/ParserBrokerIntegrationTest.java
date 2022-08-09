@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -35,9 +34,6 @@ import static org.awaitility.Awaitility.await;
 public class ParserBrokerIntegrationTest {
     @Autowired
     private AmazonSQSAsync sqs;
-
-    @Autowired
-    JmsTemplate jmsTemplate;
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;

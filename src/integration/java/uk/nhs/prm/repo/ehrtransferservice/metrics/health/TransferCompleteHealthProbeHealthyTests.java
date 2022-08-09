@@ -27,5 +27,4 @@ class TransferCompleteHealthProbeHealthyTests {
     void shouldReturnHealthyWhenTheProbeCanAccessTheQueue() {
         assertThat(transferCompleteSnsHealthProbe.isHealthy()).isEqualTo(true);
     }
-
 }
