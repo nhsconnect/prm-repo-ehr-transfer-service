@@ -70,7 +70,6 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
             var transferState = fetchTransferState(transferConversationId);
             assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:15");
         });
-
     }
 
     private UUID createTransferRecord() {

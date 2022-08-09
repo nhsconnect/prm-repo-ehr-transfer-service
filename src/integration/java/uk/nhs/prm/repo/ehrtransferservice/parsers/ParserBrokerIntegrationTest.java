@@ -6,7 +6,6 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +15,14 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -44,12 +41,6 @@ public class ParserBrokerIntegrationTest {
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
-
-    @Value("${activemq.openwireEndpoint1}")
-    private String mqEndpoint1;
-
-    @Value("${activemq.openwireEndpoint2}")
-    private String mqEndpoint2;
 
     @Value("${aws.largeMessageFragmentsObservabilityQueueName}")
     private String largeMessageFragmentsObservabilityQueueName;
@@ -77,14 +68,12 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(ehrCompleteQueueName);
     }
 
-    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
         var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01MessageBody");
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(attachmentMessageBody);
-
 
         var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
         System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
@@ -98,15 +87,11 @@ public class ParserBrokerIntegrationTest {
     }
 
     @Test
-    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException, TimeoutException {
-        // raw AMQP
-        var smallEhr = dataLoader.getDataAsString("RCMR_IN030000UK06");
-
+    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
         var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06MessageBody");
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(smallEhrMessageBody);
-
 
         var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
@@ -118,16 +103,12 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
-    @Disabled("We need to create the byteMessage properly, possibly using the proton library")
     @Test
     void shouldPublishInvalidMessageToDlq() {
         var wrongMessage = "something wrong";
 
-        jmsTemplate.send(inboundQueue, session -> {
-            var bytesMessage = session.createBytesMessage();
-            bytesMessage.writeBytes(wrongMessage.getBytes(StandardCharsets.UTF_8));
-            return bytesMessage;
-        });
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(wrongMessage);
 
         var parsingDqlQueueUrl = sqs.getQueueUrl(parsingDlqQueueName).getQueueUrl();
 
@@ -136,7 +117,6 @@ public class ParserBrokerIntegrationTest {
             Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(wrongMessage));
         });
     }
-
 
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
