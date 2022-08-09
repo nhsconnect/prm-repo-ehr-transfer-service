@@ -114,6 +114,20 @@ public class ParserBrokerIntegrationTest {
         });
     }
 
+    @Test
+    void shouldPublishUnprocessableMessageToDlq() {
+        var unprocessableMessage = "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY";
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendUnprocessableAmqpMessage();
+
+        var parsingDqlQueueUrl = sqs.getQueueUrl(parsingDlqQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(parsingDqlQueueUrl);
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(unprocessableMessage));
+        });
+    }
+
     private List<Message> checkMessageInRelatedQueue(String queueUrl) {
         System.out.println("checking sqs queue: " + queueUrl);
 

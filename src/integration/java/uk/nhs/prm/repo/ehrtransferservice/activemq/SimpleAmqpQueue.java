@@ -16,18 +16,38 @@ public class SimpleAmqpQueue {
     }
 
     public void sendMessage(String messageBody) {
-        AMQPContext ctx = new AMQPContext(AMQPContext.CLIENT);
-
-        var activeMqHostname = getEnvVarOrDefault("EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME", "127.0.0.1");
-        Connection connection = new Connection(ctx, activeMqHostname, 5672, true);
         try {
-            connection.connect();
-            Session session = connection.createSession(100, 100);
-            Producer p = session.createProducer(this.queueName, QoS.AT_LEAST_ONCE);
-            AMQPMessage msg = new AMQPMessage();
+            var msg = new AMQPMessage();
             msg.setAmqpValue(new AmqpValue(new AMQPString(messageBody)));
+            var p = createProducer();
             p.send(msg);
             p.close();
+        }
+        catch (AMQPException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendUnprocessableAmqpMessage() {
+        try {
+            var emptyUnprocessableAmqpMessage = new AMQPMessage();
+            var p = createProducer();
+            p.send(emptyUnprocessableAmqpMessage);
+            p.close();
+        }
+        catch (AMQPException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Producer createProducer() {
+        var ctx = new AMQPContext(AMQPContext.CLIENT);
+        var activeMqHostname = getEnvVarOrDefault("EHR_TRANSFER_SERVICE_TEST_ACTIVE_MQ_HOSTNAME", "127.0.0.1");
+        var connection = new Connection(ctx, activeMqHostname, 5672, true);
+        try {
+            connection.connect();
+            var session = connection.createSession(100, 100);
+            return session.createProducer(this.queueName, QoS.AT_LEAST_ONCE);
         }
         catch (IOException | AMQPException | AuthenticationException | UnsupportedProtocolVersionException e) {
             throw new RuntimeException(e);
