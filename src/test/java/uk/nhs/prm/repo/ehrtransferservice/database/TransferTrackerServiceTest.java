@@ -46,6 +46,7 @@ class TransferTrackerServiceTest {
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
         assertThat(value.getNemsEventLastUpdated()).isEqualTo("last-updated");
         assertThat(value.getLargeEhrCoreMessageId()).isEqualTo("");
+        assertThat(value.isActive()).isEqualTo(true);
         assertThat(Instant.parse(value.getDateTime())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }
 
@@ -88,7 +89,7 @@ class TransferTrackerServiceTest {
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "", "");
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "", "", true);
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
         transferTrackerService.getEhrTransferData(conversationId);
 

@@ -81,7 +81,7 @@ class LargeMessageFragmentHandlerTest {
     }
 
     private TransferTrackerDbEntry getTransferTrackerDbEntry() {
-        return new TransferTrackerDbEntry(conversationId.toString(),"some-nhs-number","some-source-gp","some-nems-message-id","last-updated","some-state","some-date",messageId.toString());
+        return new TransferTrackerDbEntry(conversationId.toString(),"some-nhs-number","some-source-gp","some-nems-message-id","last-updated","some-state","some-date",messageId.toString(),true);
     }
 
     void setUp() {
