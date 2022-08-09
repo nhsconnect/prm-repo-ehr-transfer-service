@@ -79,7 +79,7 @@ public class ParserTest {
 
     @Test
     public void shouldExtractNhsNumberFromEhrExtract() throws IOException {
-        String fileName = "RCMR_IN030000UK06MessageBody";
+        String fileName = "RCMR_IN030000UK06";
         String messageAsString = rawLoader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
