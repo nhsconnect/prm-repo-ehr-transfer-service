@@ -66,7 +66,7 @@ public class ParserBrokerIntegrationTest {
 
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
-        var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01MessageBody");
+        var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(attachmentMessageBody);
@@ -84,7 +84,7 @@ public class ParserBrokerIntegrationTest {
 
     @Test
     void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
-        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06MessageBody");
+        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(smallEhrMessageBody);
