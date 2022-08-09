@@ -23,17 +23,13 @@ public class TransferTrackerService {
     public void createEhrTransfer(RepoIncomingEvent incomingEvent, String status) {
         try {
             TransferTrackerDbEntry transferTrackerDbEntry =
-                    new TransferTrackerDbEntry(
-                            incomingEvent.getConversationId(),
+                    new TransferTrackerDbEntry(incomingEvent.getConversationId(),
                             incomingEvent.getNhsNumber(),
                             incomingEvent.getSourceGp(),
                             incomingEvent.getNemsMessageId(),
                             incomingEvent.getNemsEventLastUpdated(),
                             status,
-                            getTimeNow(),
-                            getLargeEhrCoreMessageId(),
-                            isActive()
-                    );
+                            getTimeNow(), getLargeEhrCoreMessageId());
             transferTrackerDb.save(transferTrackerDbEntry);
             log.info("Recorded initial Repo Incoming event in Transfer Tracker DB with status: " + status);
         } catch (Exception e) {
@@ -45,11 +41,6 @@ public class TransferTrackerService {
     private String getLargeEhrCoreMessageId() {
         String largeEhrCoreMessageId = ""; //This is a placeholder for the messageId from the LargeEhrCoreQueue
         return largeEhrCoreMessageId;
-    }
-
-    private boolean isActive() {
-        //EhrTransfer is active when created and become inactive when fully processed
-        return true;
     }
 
     public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status) {

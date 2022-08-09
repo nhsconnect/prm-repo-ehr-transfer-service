@@ -45,7 +45,7 @@ class EhrCompleteHandlerTest {
     void setUp() {
         transferTrackerDbEntry = new TransferTrackerDbEntry("conversationId", "some-nhs-number",
                 "some-ods-code", "some-nems-message-id", "nemsEventLastUpdated",
-                "state", "nemsEventLastUpdated", "largeEhrCoreMessageId", true);
+                "state", "nemsEventLastUpdated", "largeEhrCoreMessageId");
         when(ehrCompleteEvent.getConversationId()).thenReturn(conversationId);
         when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);
     }
