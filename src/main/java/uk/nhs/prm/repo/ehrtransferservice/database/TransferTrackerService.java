@@ -52,9 +52,9 @@ public class TransferTrackerService {
         return true;
     }
 
-    public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status) {
+    public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status, Boolean isActive) {
         try {
-            transferTrackerDb.update(conversationId, status, getTimeNow());
+            transferTrackerDb.update(conversationId, status, getTimeNow(), isActive);
             log.info("Updated state of EHR transfer in DB to: " + status);
             publishAuditMessage(conversationId, nemsMessageId, status);
         } catch (Exception e) {

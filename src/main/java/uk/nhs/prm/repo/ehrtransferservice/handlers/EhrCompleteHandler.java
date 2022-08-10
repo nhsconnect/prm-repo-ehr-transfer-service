@@ -21,11 +21,14 @@ public class EhrCompleteHandler {
 
     public void handleMessage(EhrCompleteEvent ehrCompleteEvent) throws Exception {
         var conversationId = ehrCompleteEvent.getConversationId();
+        boolean isActive = false;
+
         var ehrTransferData = transferTrackerService.getEhrTransferData(conversationId.toString());
         var transferCompleteEvent = createTransferCompleteEvent(ehrTransferData);
 
         gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData);
-        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), TRANSFER_TO_REPO_COMPLETE);
+
+        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), TRANSFER_TO_REPO_COMPLETE, isActive);
         transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
     }
 

@@ -64,7 +64,7 @@ class LargeEhrCoreMessageHandlerTest {
     public void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
         when(transferTrackerService.getEhrTransferData(largeSqsMessage.getConversationId().toString())).thenReturn(transferTrackerDbEntry);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
-        verify(transferTrackerService).handleEhrTransferStateUpdate(largeSqsMessage.getConversationId().toString(), "nemsMessageId" ,"ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+        verify(transferTrackerService).handleEhrTransferStateUpdate(largeSqsMessage.getConversationId().toString(), "nemsMessageId" ,"ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT", true);
     }
 
     @Test

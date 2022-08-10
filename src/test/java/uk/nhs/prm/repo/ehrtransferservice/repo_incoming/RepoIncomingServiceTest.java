@@ -48,7 +48,7 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT", true);
     }
 
     @Test
@@ -85,7 +85,7 @@ class RepoIncomingServiceTest {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
 
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(transferTrackerService, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT");
+        verify(transferTrackerService, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT", true);
     }
 
 

@@ -20,6 +20,7 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage>
     @Override
     public void handleMessage(ParsedMessage largeEhrCoreMessage) throws Exception {
         var conversationId = largeEhrCoreMessage.getConversationId();
+        boolean isActive = true;
 
         ehrRepoService.storeMessage(largeEhrCoreMessage);
 
@@ -28,7 +29,8 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage>
         var ehrTransferData = transferTrackerService.getEhrTransferData(conversationId.toString());
         gp2gpMessengerService.sendContinueMessage(largeEhrCoreMessage, ehrTransferData);
 
-        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT");
+
+        transferTrackerService.handleEhrTransferStateUpdate(conversationId.toString(), ehrTransferData.getNemsMessageId(), "ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT", isActive);
         transferTrackerService.updateLargeEhrCoreMessageId(conversationId.toString(), largeEhrCoreMessage.getMessageId().toString());
     }
 }

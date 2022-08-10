@@ -51,23 +51,34 @@ public class TransferTrackerDb {
                 .build());
     }
 
-    public void update(String conversationId, String state, String lastUpdatedAt) {
+    public void update(String conversationId, String state, String lastUpdatedAt, Boolean isActive) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
 
-        Map<String, AttributeValueUpdate> updates = new HashMap<>();
-        updates.put("state", AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(state).build())
-                .build());
-        updates.put("last_updated_at", AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(lastUpdatedAt).build())
-                .build());
+        Map<String, String> expressionAttributeName =
+                new HashMap<>();
+        expressionAttributeName.put("#state", "state");
+        expressionAttributeName.put("#last_updated_at", "last_updated_at");
+
+        Map<String, AttributeValue> expressionAttributeValues =
+                new HashMap<>();
+        expressionAttributeValues.put(":state", AttributeValue.builder().s(state).build());
+        expressionAttributeValues.put(":last_updated_at", AttributeValue.builder().s(lastUpdatedAt).build());
 
         dynamoDbClient.updateItem(UpdateItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .key(key)
-                .attributeUpdates(updates)
+                .updateExpression(createUpdateExpression(isActive))
+                .expressionAttributeNames(expressionAttributeName)
+                .expressionAttributeValues(expressionAttributeValues)
                 .build());
+    }
+
+    private String createUpdateExpression(Boolean isActive) {
+        var updateStateAndLastUpdatedAt = "set #state = :state, #last_updated_at = :last_updated_at";
+        var updateExpression = isActive ? updateStateAndLastUpdatedAt
+                : "remove is_active " + updateStateAndLastUpdatedAt;
+        return updateExpression;
     }
 
     public void updateLargeEhrCoreMessageId(String conversationId, String largeEhrCoreMessageId) {

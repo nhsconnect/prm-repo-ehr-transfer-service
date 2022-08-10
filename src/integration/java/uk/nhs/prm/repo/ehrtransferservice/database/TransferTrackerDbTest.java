@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.database;
 
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,7 +90,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldUpdateOnlyStateAndLastUpdatedAt() {
         var newTimestamp = "2222-11-01T15:00:33+00:00";
-        transferTrackerDb.update(conversationId, "ACTION:EHR_REQUEST_SENT", newTimestamp);
+        transferTrackerDb.update(conversationId, "ACTION:EHR_REQUEST_SENT", newTimestamp, true);
 
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getState()).isEqualTo("ACTION:EHR_REQUEST_SENT");
@@ -114,6 +113,15 @@ public class TransferTrackerDbTest {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
         transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
-        AssertionsForClassTypes.assertThat(transferTrackerDbData.getIsActive()).isEqualTo(true);
+        assertThat(transferTrackerDbData.getIsActive()).isTrue();
+    }
+
+    @Test
+    void shouldRemoveIsActiveAttributeOnceTransferIsComplete() {
+        var newTimestamp = "2222-11-01T15:00:33+00:00";
+        transferTrackerDb.update(conversationId, "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", newTimestamp, false);
+        var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
+        assertThat(transferTrackerDbData.getIsActive()).isFalse();
+        assertThat(transferTrackerDbData.getLastUpdatedAt()).isEqualTo(newTimestamp);
     }
 }

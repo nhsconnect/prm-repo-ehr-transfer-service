@@ -20,9 +20,10 @@ public class RepoIncomingService {
     private final Gp2gpMessengerService gp2gpMessengerService;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
+        boolean isActive = true;
         transferTrackerService.createEhrTransfer(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
         splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(),TRANSFER_TO_REPO_STARTED));
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferTrackerService.handleEhrTransferStateUpdate(repoIncomingEvent.getConversationId(), repoIncomingEvent.getNemsMessageId(), EHR_REQUEST_SENT);
+        transferTrackerService.handleEhrTransferStateUpdate(repoIncomingEvent.getConversationId(), repoIncomingEvent.getNemsMessageId(), EHR_REQUEST_SENT, isActive);
     }
 }
