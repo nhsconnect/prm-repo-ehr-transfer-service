@@ -76,9 +76,10 @@ public class TransferTrackerDb {
 
     private String createUpdateExpression(Boolean isActive) {
         var updateStateAndLastUpdatedAt = "set #state = :state, #last_updated_at = :last_updated_at";
-        var updateExpression = isActive ? updateStateAndLastUpdatedAt
-                : "remove is_active " + updateStateAndLastUpdatedAt;
-        return updateExpression;
+        if (!isActive) {
+            return "remove is_active " + updateStateAndLastUpdatedAt;
+        }
+        return updateStateAndLastUpdatedAt;
     }
 
     public void updateLargeEhrCoreMessageId(String conversationId, String largeEhrCoreMessageId) {
