@@ -40,7 +40,7 @@ public class TransferTrackerDb {
         item.put("source_gp", AttributeValue.builder().s(transferTrackerDbEntry.getSourceGP()).build());
         item.put("nems_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getNemsMessageId()).build());
         item.put("nems_event_last_updated", AttributeValue.builder().s(transferTrackerDbEntry.getNemsEventLastUpdated()).build());
-        item.put("date_time", AttributeValue.builder().s(transferTrackerDbEntry.getDateTime()).build());
+        item.put("last_updated_at", AttributeValue.builder().s(transferTrackerDbEntry.getLastUpdatedAt()).build());
         item.put("state", AttributeValue.builder().s(transferTrackerDbEntry.getState()).build());
         item.put("large_ehr_core_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getLargeEhrCoreMessageId()).build());
         item.put("is_active", AttributeValue.builder().s(transferTrackerDbEntry.getIsActive().toString()).build());
@@ -50,7 +50,7 @@ public class TransferTrackerDb {
                 .build());
     }
 
-    public void update(String conversationId, String state, String dateTime) {
+    public void update(String conversationId, String state, String lastUpdatedAt) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
 
@@ -58,8 +58,8 @@ public class TransferTrackerDb {
         updates.put("state", AttributeValueUpdate.builder()
                 .value(AttributeValue.builder().s(state).build())
                 .build());
-        updates.put("date_time", AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(dateTime).build())
+        updates.put("last_updated_at", AttributeValueUpdate.builder()
+                .value(AttributeValue.builder().s(lastUpdatedAt).build())
                 .build());
 
         dynamoDbClient.updateItem(UpdateItemRequest.builder()
@@ -94,11 +94,11 @@ public class TransferTrackerDb {
         var sourceGp = itemResponse.item().get("source_gp").s();
         var nemsMessageId = itemResponse.item().get("nems_message_id").s();
         var nemsEventLastUpdated = itemResponse.item().get("nems_event_last_updated").s();
-        var dateTime = itemResponse.item().get("date_time").s();
+        var lastUpdatedAt = itemResponse.item().get("last_updated_at").s();
         var state = itemResponse.item().get("state").s();
         var largeEhrCoreMessageId = itemResponse.item().get("large_ehr_core_message_id").s();
         var active = itemResponse.item().get("is_active");
         var isActive = (active == null) ? false : true;
-        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId, isActive);
+        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, lastUpdatedAt, largeEhrCoreMessageId, isActive);
     }
 }

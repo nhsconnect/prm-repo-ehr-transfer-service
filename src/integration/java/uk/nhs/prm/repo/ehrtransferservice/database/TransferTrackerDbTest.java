@@ -42,7 +42,7 @@ public class TransferTrackerDbTest {
     String nemsMessageId = "Nems message Id";
     String nemsEventLastUpdated = "Last updated";
     String state = "state";
-    String dateTime = "2017-11-01T15:00:33+00:00";
+    String lastUpdatedAt = "2017-11-01T15:00:33+00:00";
     String largeEhrCoreMessageId = "large ehr core message Id";
     Boolean active = true;
 
@@ -52,7 +52,7 @@ public class TransferTrackerDbTest {
 
     @BeforeEach
     public void setUp() {
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, lastUpdatedAt, largeEhrCoreMessageId, active));
     }
 
     @AfterEach
@@ -76,7 +76,7 @@ public class TransferTrackerDbTest {
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
-        assertThat(transferTrackerDbData.getDateTime()).isEqualTo(newTimestamp);
+        assertThat(transferTrackerDbData.getLastUpdatedAt()).isEqualTo(newTimestamp);
     }
 
     @Test
@@ -87,14 +87,14 @@ public class TransferTrackerDbTest {
     }
 
     @Test
-    void shouldUpdateOnlyStateAndDateTime() {
+    void shouldUpdateOnlyStateAndLastUpdatedAt() {
         var newTimestamp = "2222-11-01T15:00:33+00:00";
         transferTrackerDb.update(conversationId, "ACTION:EHR_REQUEST_SENT", newTimestamp);
 
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getState()).isEqualTo("ACTION:EHR_REQUEST_SENT");
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
-        assertThat(transferTrackerDbData.getDateTime()).isEqualTo(newTimestamp);
+        assertThat(transferTrackerDbData.getLastUpdatedAt()).isEqualTo(newTimestamp);
     }
 
     @Test

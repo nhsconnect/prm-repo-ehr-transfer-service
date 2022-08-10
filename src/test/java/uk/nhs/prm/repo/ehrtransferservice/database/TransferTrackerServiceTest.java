@@ -47,7 +47,7 @@ class TransferTrackerServiceTest {
         assertThat(value.getNemsEventLastUpdated()).isEqualTo("last-updated");
         assertThat(value.getLargeEhrCoreMessageId()).isEqualTo("");
         assertThat(value.getIsActive()).isEqualTo(true);
-        assertThat(Instant.parse(value.getDateTime())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
+        assertThat(Instant.parse(value.getLastUpdatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }
 
     @Test
@@ -66,7 +66,7 @@ class TransferTrackerServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenFailsToUpdateWithNewStateAndDateTime() {
+    void shouldThrowExceptionWhenFailsToUpdateWithNewStateAndLastUpdatedAt() {
         doThrow(RuntimeException.class).when(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any());
 
         assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.handleEhrTransferStateUpdate("conversation-id", "some-nems", "ACTION:TRANSFER_TO_REPO_STARTED"));

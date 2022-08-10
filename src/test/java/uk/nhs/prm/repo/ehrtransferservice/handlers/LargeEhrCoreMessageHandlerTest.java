@@ -41,7 +41,7 @@ class LargeEhrCoreMessageHandlerTest {
     public void setUp() throws Exception {
         transferTrackerDbEntry = new TransferTrackerDbEntry("conversationId", "nhsNumber",
                 "sourceGP", "nemsMessageId", "nemsEventLastUpdated",
-                "state", "dateTime", "largeEhrCoreMessageId", true);
+                "state", "lastUpdatedAt", "largeEhrCoreMessageId", true);
         when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
         when(largeSqsMessage.getMessageId()).thenReturn(UUID.randomUUID());
     }
