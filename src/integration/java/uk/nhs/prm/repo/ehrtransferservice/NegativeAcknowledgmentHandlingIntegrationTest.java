@@ -77,6 +77,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
                         trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
                         "great status",
                         trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
+                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
                         UUID.randomUUID().toString(),
                         true
                 );

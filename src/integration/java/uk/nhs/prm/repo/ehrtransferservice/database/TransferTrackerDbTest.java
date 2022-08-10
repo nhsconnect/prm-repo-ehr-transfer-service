@@ -42,6 +42,7 @@ public class TransferTrackerDbTest {
     String nemsMessageId = "Nems message Id";
     String nemsEventLastUpdated = "Last updated";
     String state = "state";
+    String createdAt = "2017-11-01T15:00:33+00:00";
     String lastUpdatedAt = "2017-11-01T15:00:33+00:00";
     String largeEhrCoreMessageId = "large ehr core message Id";
     Boolean active = true;
@@ -52,7 +53,7 @@ public class TransferTrackerDbTest {
 
     @BeforeEach
     public void setUp() {
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, lastUpdatedAt, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active));
     }
 
     @AfterEach
@@ -72,11 +73,12 @@ public class TransferTrackerDbTest {
     @Test
     void shouldDoInitialUpdateOfRecord() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
         assertThat(transferTrackerDbData.getLastUpdatedAt()).isEqualTo(newTimestamp);
+        assertThat(transferTrackerDbData.getCreatedAt()).isEqualTo(transferTrackerDbData.getLastUpdatedAt());
     }
 
     @Test
@@ -110,7 +112,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldCreateDbRecordWithIsActiveValue() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         AssertionsForClassTypes.assertThat(transferTrackerDbData.getIsActive()).isEqualTo(true);
     }

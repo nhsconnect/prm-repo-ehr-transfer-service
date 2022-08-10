@@ -31,6 +31,7 @@ public class TransferTrackerService {
                             incomingEvent.getNemsEventLastUpdated(),
                             status,
                             getTimeNow(),
+                            getTimeNow(),
                             getLargeEhrCoreMessageId(),
                             isActive()
                     );

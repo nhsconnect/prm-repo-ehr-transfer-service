@@ -49,6 +49,7 @@ public class NegativeAcknowledgementHandlerTest {
                         "FAILED",
                         null,
                         null,
+                        null,
                         true
                 );
         TransferCompleteEvent transferCompleteEvent =
@@ -78,6 +79,7 @@ public class NegativeAcknowledgementHandlerTest {
                         "someNemsMessageId",
                         "yesterday",
                         "FAILED",
+                        null,
                         null,
                         null,
                         true

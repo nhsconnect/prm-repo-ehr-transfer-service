@@ -48,6 +48,7 @@ class TransferTrackerServiceTest {
         assertThat(value.getLargeEhrCoreMessageId()).isEqualTo("");
         assertThat(value.getIsActive()).isEqualTo(true);
         assertThat(Instant.parse(value.getLastUpdatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
+        assertThat(Instant.parse(value.getCreatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }
 
     @Test
@@ -89,7 +90,7 @@ class TransferTrackerServiceTest {
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "", "", true);
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "","", "", true);
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
         transferTrackerService.getEhrTransferData(conversationId);
 
