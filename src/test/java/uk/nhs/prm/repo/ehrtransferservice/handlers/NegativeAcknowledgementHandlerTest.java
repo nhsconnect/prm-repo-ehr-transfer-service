@@ -11,8 +11,8 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -40,14 +40,17 @@ public class NegativeAcknowledgementHandlerTest {
     @Test
     void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailureDetails() throws Exception {
         TransferTrackerDbEntry transferTrackerDbEntry =
-                new TransferTrackerDbEntry(conversationId.toString(),
+                new TransferTrackerDbEntry(
+                        conversationId.toString(),
                         "1234567890",
                         "sourceGP",
                         "someNemsMessageId",
                         "yesterday",
                         "FAILED",
                         null,
-                        null);
+                        null,
+                        true
+                );
         TransferCompleteEvent transferCompleteEvent =
                 new TransferCompleteEvent("yesterday",
                         "sourceGP",
@@ -68,14 +71,17 @@ public class NegativeAcknowledgementHandlerTest {
     @Test
     void shouldUpdateDbRecordAsTransferFailedUsingUnknownErrorCodeIfThereAreNoFailureDetails() throws Exception {
         TransferTrackerDbEntry transferTrackerDbEntry =
-                new TransferTrackerDbEntry(conversationId.toString(),
+                new TransferTrackerDbEntry(
+                        conversationId.toString(),
                         "1234567890",
                         "sourceGP",
                         "someNemsMessageId",
                         "yesterday",
                         "FAILED",
                         null,
-                        null);
+                        null,
+                        true
+                );
 
         TransferCompleteEvent transferCompleteEvent =
                 new TransferCompleteEvent("yesterday",

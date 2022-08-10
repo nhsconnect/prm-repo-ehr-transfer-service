@@ -24,7 +24,17 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.Projection;
+import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
+import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
@@ -34,7 +44,6 @@ import software.amazon.awssdk.services.sns.model.CreateTopicRequest;
 import software.amazon.awssdk.services.sns.model.CreateTopicResponse;
 import software.amazon.awssdk.services.sns.model.SubscribeRequest;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
@@ -44,7 +53,11 @@ import javax.annotation.PostConstruct;
 import javax.jms.ConnectionFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 
@@ -333,10 +346,25 @@ public class LocalStackAwsConfig {
                 .attributeType(ScalarAttributeType.S)
                 .attributeName("conversation_id")
                 .build());
+        attributeDefinitions.add(AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("is_active")
+                .build());
+
+        GlobalSecondaryIndex globalSecondaryIndex = GlobalSecondaryIndex.builder()
+                .indexName("is_active_index")
+                .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("is_active").build())
+                .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                        .readCapacityUnits(5L)
+                        .writeCapacityUnits(5L)
+                        .build())
+                .build();
 
         var createTableRequest = CreateTableRequest.builder()
                 .tableName(transferTrackerDbTableName)
                 .keySchema(keySchema)
+                .globalSecondaryIndexes(globalSecondaryIndex)
                 .attributeDefinitions(attributeDefinitions)
                 .provisionedThroughput(ProvisionedThroughput.builder()
                         .readCapacityUnits(5L)

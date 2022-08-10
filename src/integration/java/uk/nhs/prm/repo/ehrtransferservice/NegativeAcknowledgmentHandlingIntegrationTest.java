@@ -69,13 +69,17 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     private UUID createTransferRecord() {
         var conversationId = UUID.fromString("13962cb7-6d46-4986-bdb4-3201bb25f1f7");
         TransferTrackerDbEntry transferTrackerDbEntry =
-                new TransferTrackerDbEntry(conversationId.toString(),
+                new TransferTrackerDbEntry(
+                        conversationId.toString(),
                         "0123456789",
                         "BOB13",
                         UUID.randomUUID().toString(),
                         trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
                         "great status",
-                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(), UUID.randomUUID().toString());
+                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
+                        UUID.randomUUID().toString(),
+                        true
+                );
         transferTrackerDb.save(transferTrackerDbEntry);
         return conversationId;
     }

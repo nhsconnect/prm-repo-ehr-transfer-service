@@ -3,7 +3,12 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
@@ -38,6 +43,7 @@ public class TransferTrackerDb {
         item.put("date_time", AttributeValue.builder().s(transferTrackerDbEntry.getDateTime()).build());
         item.put("state", AttributeValue.builder().s(transferTrackerDbEntry.getState()).build());
         item.put("large_ehr_core_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getLargeEhrCoreMessageId()).build());
+        item.put("is_active", AttributeValue.builder().s(transferTrackerDbEntry.getIsActive().toString()).build());
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
@@ -91,6 +97,8 @@ public class TransferTrackerDb {
         var dateTime = itemResponse.item().get("date_time").s();
         var state = itemResponse.item().get("state").s();
         var largeEhrCoreMessageId = itemResponse.item().get("large_ehr_core_message_id").s();
-        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId);
+        var active = itemResponse.item().get("is_active");
+        var isActive = (active == null) ? false : true;
+        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, dateTime, largeEhrCoreMessageId, isActive);
     }
 }

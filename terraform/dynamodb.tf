@@ -22,9 +22,20 @@ resource "aws_dynamodb_table" "transfer_tracker" {
     type = "S"
   }
 
+  attribute {
+    name = "is_active"
+    type = "S"
+  }
+
   global_secondary_index {
     name               = "NhsNumberSecondaryIndex"
     hash_key           = "nhs_number"
+    projection_type    = "ALL"
+  }
+
+  global_secondary_index {
+    name               = "IsActiveSecondaryIndex"
+    hash_key           = "is_active"
     projection_type    = "ALL"
   }
 

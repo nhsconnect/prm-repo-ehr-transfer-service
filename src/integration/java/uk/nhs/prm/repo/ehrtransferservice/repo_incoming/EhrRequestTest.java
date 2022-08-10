@@ -104,6 +104,7 @@ class EhrRequestTest {
             assertThat(dbClientItem.get("nems_event_last_updated").s()).isEqualTo(NEMS_EVENT_LAST_UPDATED);
             assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
             assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_REQUEST_SENT");
+            assertThat(dbClientItem.get("is_active").s()).isEqualTo("true");
         });
     }
 
