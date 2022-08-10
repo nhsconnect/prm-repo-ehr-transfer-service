@@ -34,8 +34,7 @@ public class JmsConsumer {
                           @Headers Map<String, Object> headers) {
         String messageBody = null;
         try {
-            var correlationId = headers.containsKey("correlation-id") ? headers.get("correlation-id").toString() : null;
-            tracer.setMDCContextFromMhsInbound(correlationId);
+            tracer.setMDCContextFromMhsInbound(getCorrelationId(headers));
             debugMessageFormatInfo(message, headers);
 
             messageBody = amqpMessageParser.parse(message);
@@ -57,6 +56,13 @@ public class JmsConsumer {
             log.error("Failed to process message - sending to dlq");
             parsingDlqPublisher.sendMessage(toBeSentToDlq);
         }
+    }
+
+    private String getCorrelationId(Map<String, Object> headers) {
+        if (headers.containsKey("correlation-id")) {
+            return headers.get("correlation-id").toString();
+        }
+        return null;
     }
 
     private void debugMessageFormatInfo(Message message, Map<String, Object> headers) throws JMSException {
