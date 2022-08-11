@@ -16,7 +16,7 @@ public class EhrRequestTimeoutHandler {
     TransferTrackerDb transferTrackerDb;
 
     @Value("${timeOutDurationInHours}")
-    Integer timeout;
+    String timeout;
 
 
     @Scheduled()
@@ -30,7 +30,7 @@ public class EhrRequestTimeoutHandler {
     private String getTimeOutTimeStamp() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.ofHours(0));
 
-        return now.minus(timeout, ChronoUnit.HOURS).toString();
+        return now.minus(Integer.valueOf(timeout), ChronoUnit.HOURS).toString();
     }
 
     private void sendMessageToTransferCompleteQueue() {

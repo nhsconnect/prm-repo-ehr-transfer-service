@@ -38,6 +38,6 @@ variable "threshold_approx_age_oldest_message" {
 }
 
 variable "timeout_in_hours" {
-  default = 1
+  default = "1"
 }
 
