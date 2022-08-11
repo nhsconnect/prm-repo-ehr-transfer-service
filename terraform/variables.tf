@@ -36,3 +36,8 @@ variable "period_of_age_of_message_metric" {
 variable "threshold_approx_age_oldest_message" {
   default = "300"
 }
+
+variable "timeout_in_hours" {
+  default = 1
+}
+

@@ -115,7 +115,7 @@ public class TransferTrackerDb {
         return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, isActive);
     }
 
-    public List<TransferTrackerDbEntry> getTimedOutRecords(String timeOut) {
+    public List<TransferTrackerDbEntry> getTimedOutRecords(String timeOutTimeStamp) {
 
         Map<String, String> expressionAttributeName =
                 new HashMap<>();
@@ -125,7 +125,7 @@ public class TransferTrackerDb {
         Map<String, AttributeValue> expressionAttributeValues =
                 new HashMap<>();
         expressionAttributeValues.put(":is_active_val", AttributeValue.builder().s("true").build());
-        expressionAttributeValues.put(":created_at_val", AttributeValue.builder().s("2022-08-10T12:14:17.640260Z").build());
+        expressionAttributeValues.put(":created_at_val", AttributeValue.builder().s(timeOutTimeStamp).build());
 
         QueryRequest request = QueryRequest.builder().indexName("IsActiveSecondaryIndex")
                 .tableName(config.transferTrackerDbTableName())
