@@ -21,6 +21,7 @@ import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,6 +97,25 @@ public class ParserBrokerIntegrationTest {
             Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrMessageBody));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
+        });
+    }
+
+    @Test
+    void shouldPassCorrelationIdToBeSetAsTraceId() throws IOException {
+        var correlationId = UUID.randomUUID().toString();
+        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(smallEhrMessageBody, correlationId);
+
+        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
+            var message = receivedMessageHolder.get(0);
+            Assertions.assertTrue(message.getBody().contains(smallEhrMessageBody));
+            Assertions.assertTrue(message.getMessageAttributes().containsKey("traceId"));
+            Assertions.assertEquals(message.getMessageAttributes().get("traceId").getStringValue(), correlationId);
         });
     }
 
