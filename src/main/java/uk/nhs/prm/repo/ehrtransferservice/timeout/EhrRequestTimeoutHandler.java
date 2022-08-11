@@ -4,16 +4,18 @@ package uk.nhs.prm.repo.ehrtransferservice.timeout;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 
 public class EhrRequestTimeoutHandler {
     TransferTrackerDb transferTrackerDb;
+    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInHours}")
     String timeout;
@@ -21,10 +23,11 @@ public class EhrRequestTimeoutHandler {
 
     @Scheduled()
     public void handle() {
-        List<String> conversationIds = getConversationIdsForTimedOutRecords(getTimeOutTimeStamp());
-        updateAllTimeOutRecordsInDb(conversationIds);
-        sendMessageToTransferCompleteQueue();
-
+        var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
+        timedOutRecords.forEach(record -> {
+            updateAllTimeOutRecordsInDb(record.getConversationId());
+            sendMessageToTransferCompleteQueue(record);
+        });
     }
 
     private String getTimeOutTimeStamp() {
@@ -33,20 +36,21 @@ public class EhrRequestTimeoutHandler {
         return now.minus(Integer.valueOf(timeout), ChronoUnit.HOURS).toString();
     }
 
-    private void sendMessageToTransferCompleteQueue() {
+    private void sendMessageToTransferCompleteQueue(TransferTrackerDbEntry record) {
+        transferCompleteMessagePublisher.sendMessage(new TransferCompleteEvent(
+                record.getNemsEventLastUpdated(),
+                record.getSourceGP(),
+                "SUSPENSION",
+                record.getNemsMessageId(),
+                record.getNhsNumber()),
+                UUID.fromString(record.getConversationId()));
     }
 
-    private void updateAllTimeOutRecordsInDb(List<String> conversationIds) {
-        conversationIds.forEach(conversationId -> transferTrackerDb.update(conversationId
-                ,"ACTION:EHR_TRANSFER_TIMEOUT"
-                , ZonedDateTime.now(ZoneOffset.ofHours(0)).toString()
-                ,false));
-    }
-
-    private List<String> getConversationIdsForTimedOutRecords(String timeout) {
-        List<String> conversationIds = new ArrayList<>();
-        List<TransferTrackerDbEntry> timedOutRecords = transferTrackerDb.getTimedOutRecords(timeout);
-        timedOutRecords.forEach(record -> conversationIds.add(record.getConversationId()));
-        return conversationIds;
+    private void updateAllTimeOutRecordsInDb(String conversationId) {
+        transferTrackerDb.update(
+                conversationId,
+                "ACTION:EHR_TRANSFER_TIMEOUT",
+                ZonedDateTime.now(ZoneOffset.ofHours(0)).toString(),
+                false);
     }
 }

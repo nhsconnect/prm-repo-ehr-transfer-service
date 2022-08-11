@@ -1,24 +1,20 @@
 package uk.nhs.prm.repo.ehrtransferservice.timeout;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import static com.github.jknack.handlebars.helper.ConditionalHelpers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -30,10 +26,13 @@ class EhrRequestTimeoutHandlerTest {
     @Mock
     TransferTrackerDb transferTrackerDb;
 
+    @Mock
+    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+
     @InjectMocks
     EhrRequestTimeoutHandler handler;
 
-    String conversationId = "conversation Id";
+    UUID conversationId = UUID.randomUUID();
     String nhsNumber = "111111111";
     String sourceGP = "source gp";
     String nemsMessageId = "Nems message Id";
@@ -43,7 +42,6 @@ class EhrRequestTimeoutHandlerTest {
     String lastUpdatedAt = "2017-11-01T15:00:33+00:00";
     String largeEhrCoreMessageId = "large ehr core message Id";
     Boolean active = true;
-
 
     @BeforeEach
     void setUp() {
@@ -61,13 +59,22 @@ class EhrRequestTimeoutHandlerTest {
     void shouldUpdateTransferTrackerDbWithTimeoutStatus(){
         when(transferTrackerDb.getTimedOutRecords(any())).thenReturn(listOfTimedOutRecords());
         handler.handle();
-        verify(transferTrackerDb).update(eq(conversationId),eq("ACTION:EHR_TRANSFER_TIMEOUT"), any(),eq(false));
+        verify(transferTrackerDb).update(eq(conversationId.toString()),eq("ACTION:EHR_TRANSFER_TIMEOUT"), any(),eq(false));
+    }
+
+    @Test
+    void shouldSendTimedOutRecordsToTransferCompleteQueue(){
+        var transferCompleteEvent = new TransferCompleteEvent(nemsEventLastUpdated, sourceGP, "SUSPENSION", nemsMessageId, nhsNumber);
+        when(transferTrackerDb.getTimedOutRecords(any())).thenReturn(listOfTimedOutRecords());
+        handler.handle();
+        verify(transferCompleteMessagePublisher).sendMessage(transferCompleteEvent, conversationId);
     }
 
     private List<TransferTrackerDbEntry> listOfTimedOutRecords() {
-
         List<TransferTrackerDbEntry> records = new ArrayList<>();
-        records.add(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active));
+        var dbEntry = new TransferTrackerDbEntry(conversationId.toString(), nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active);
+        records.add(dbEntry);
         return records;
     }
+
 }
