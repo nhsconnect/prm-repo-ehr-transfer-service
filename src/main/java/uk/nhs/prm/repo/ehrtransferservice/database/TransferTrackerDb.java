@@ -3,16 +3,13 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -29,7 +26,11 @@ public class TransferTrackerDb {
                 .key(key)
                 .build());
 
-        return fromDbItem(getItemResponse);
+        if (!getItemResponse.hasItem()) {
+            return null;
+        }
+
+        return fromDbItem(getItemResponse.item());
     }
 
     // Tested at integration level
@@ -98,21 +99,50 @@ public class TransferTrackerDb {
                 .build());
     }
 
-    private TransferTrackerDbEntry fromDbItem(GetItemResponse itemResponse) {
-        if (!itemResponse.hasItem()) {
-            return null;
-        }
-        var conversationId = itemResponse.item().get("conversation_id").s();
-        var nhsNumber = itemResponse.item().get("nhs_number").s();
-        var sourceGp = itemResponse.item().get("source_gp").s();
-        var nemsMessageId = itemResponse.item().get("nems_message_id").s();
-        var nemsEventLastUpdated = itemResponse.item().get("nems_event_last_updated").s();
-        var createdAt = itemResponse.item().get("created_at").s();
-        var lastUpdatedAt = itemResponse.item().get("last_updated_at").s();
-        var state = itemResponse.item().get("state").s();
-        var largeEhrCoreMessageId = itemResponse.item().get("large_ehr_core_message_id").s();
-        var active = itemResponse.item().get("is_active");
+    private TransferTrackerDbEntry fromDbItem(Map<String, AttributeValue> item) {
+
+        var conversationId = item.get("conversation_id").s();
+        var nhsNumber = item.get("nhs_number").s();
+        var sourceGp = item.get("source_gp").s();
+        var nemsMessageId = item.get("nems_message_id").s();
+        var nemsEventLastUpdated = item.get("nems_event_last_updated").s();
+        var createdAt = item.get("created_at").s();
+        var lastUpdatedAt = item.get("last_updated_at").s();
+        var state = item.get("state").s();
+        var largeEhrCoreMessageId = item.get("large_ehr_core_message_id").s();
+        var active = item.get("is_active");
         var isActive = (active == null) ? false : true;
         return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, isActive);
+    }
+
+    public List<TransferTrackerDbEntry> getTimedOutRecords(String timeOut) {
+
+        Map<String, String> expressionAttributeName =
+                new HashMap<>();
+        expressionAttributeName.put("#is_active", "is_active");
+        expressionAttributeName.put("#created_at", "created_at");
+
+        Map<String, AttributeValue> expressionAttributeValues =
+                new HashMap<>();
+        expressionAttributeValues.put(":is_active_val", AttributeValue.builder().s("true").build());
+        expressionAttributeValues.put(":created_at_val", AttributeValue.builder().s("2022-08-10T12:14:17.640260Z").build());
+
+        QueryRequest request = QueryRequest.builder().indexName("IsActiveSecondaryIndex")
+                .tableName(config.transferTrackerDbTableName())
+                .keyConditionExpression("#is_active = :is_active_val")
+                .filterExpression("#created_at < :created_at_val")
+                .expressionAttributeNames(expressionAttributeName)
+                .expressionAttributeValues(expressionAttributeValues)
+                .build();
+
+        return getListOfDbEntries(dynamoDbClient.query(request).items());
+    }
+
+    private List<TransferTrackerDbEntry> getListOfDbEntries(List<Map<String, AttributeValue>> items) {
+        List<TransferTrackerDbEntry> dbEntries = new ArrayList<>();
+        for (Map<String, AttributeValue> item : items) {
+            dbEntries.add(fromDbItem(item));
+        }
+        return dbEntries;
     }
 }

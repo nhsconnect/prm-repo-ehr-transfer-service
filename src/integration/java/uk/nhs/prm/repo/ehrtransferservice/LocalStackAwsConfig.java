@@ -352,7 +352,7 @@ public class LocalStackAwsConfig {
                 .build());
 
         GlobalSecondaryIndex globalSecondaryIndex = GlobalSecondaryIndex.builder()
-                .indexName("is_active_index")
+                .indexName("IsActiveSecondaryIndex")
                 .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("is_active").build())
                 .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
                 .provisionedThroughput(ProvisionedThroughput.builder()
