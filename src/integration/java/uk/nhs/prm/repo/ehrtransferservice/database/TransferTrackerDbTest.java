@@ -129,10 +129,30 @@ public class TransferTrackerDbTest {
     @Test
     void shouldNotReturnTheRecordWhenItsCreatedAtDateHasNotPassedTimeOutPeriod (){
         String timeStampBeforeTimeOut = "2022-08-10T12:27:27.640260Z";
+        transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
+        String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
+        List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
+        assertThat(transferTrackerDbData.size()).isEqualTo(1); // This record is from @BeforeEach
+        assertThat(transferTrackerDbData.get(0).getConversationId()).isEqualTo(conversationId);
+    }
+
+    @Test
+    void shouldNotReturnTheRecordWhenItsCreatedAtDateHasPassedTimeOutPeriodButIsActiveIsFalse (){
+        String timeStampBeforeTimeOut = "2022-08-10T12:01:27.640260Z";
         transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, false));
         String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
         List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
         assertThat(transferTrackerDbData.size()).isEqualTo(1);
         assertThat(transferTrackerDbData.get(0).getConversationId()).isEqualTo(conversationId);
+    }
+
+    @Test
+    void shouldReturnTheRecordWhenItsCreatedAtDateHasPassedTimeOutPeriodAndIsActiveIsTrue (){
+        String timeStampBeforeTimeOut = "2022-08-10T12:01:27.640260Z";
+        transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
+        String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
+        List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
+        assertThat(transferTrackerDbData.size()).isEqualTo(2);
+        assertThat(transferTrackerDbData.get(1).getConversationId()).isEqualTo("another-conversationId");
     }
 }
