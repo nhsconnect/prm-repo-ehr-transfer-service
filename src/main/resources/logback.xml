@@ -29,9 +29,9 @@
                 </arguments>
             </providers>
         </encoder>
-
     </appender>
     <root level="info">
         <appender-ref ref="stdout"/>
     </root>
+    <logger name="uk.nhs.prm.repo.ehrtransferservice.JmsConsumer" level="debug"/>
 </configuration>

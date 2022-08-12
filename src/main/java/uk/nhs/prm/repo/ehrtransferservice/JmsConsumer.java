@@ -66,21 +66,21 @@ public class JmsConsumer {
     }
 
     private void debugMessageFormatInfo(Message message, Map<String, Object> headers) throws JMSException {
-        log.info("Class of inbound message: " + message.getClass().getName());
-        log.info("JMS correlation id: " + message.getJMSCorrelationID());
+        log.debug("Class of inbound message: " + message.getClass().getName());
+        log.debug("JMS correlation id: " + message.getJMSCorrelationID());
 
-        log.info("property names: " + Collections.list(message.getPropertyNames()).stream().collect(Collectors.joining(", ")));
+        log.debug("property names: " + Collections.list(message.getPropertyNames()).stream().collect(Collectors.joining(", ")));
 
-        log.info("correlation-id property: " + message.getStringProperty("correlation-id"));
-        log.info("JMS_AMQP_NATIVE property: " + message.getStringProperty("JMS_AMQP_NATIVE"));
-        log.info("message-format property: " + message.getStringProperty("message-format"));
-        log.info("JMS_AMQP_ContentType property: " + message.getStringProperty("JMS_AMQP_ContentType"));
-        log.info("JMS_AMQP_HEADER property: " + message.getStringProperty("JMS_AMQP_HEADER"));
+        log.debug("correlation-id property: " + message.getStringProperty("correlation-id"));
+        log.debug("JMS_AMQP_NATIVE property: " + message.getStringProperty("JMS_AMQP_NATIVE"));
+        log.debug("message-format property: " + message.getStringProperty("message-format"));
+        log.debug("JMS_AMQP_ContentType property: " + message.getStringProperty("JMS_AMQP_ContentType"));
+        log.debug("JMS_AMQP_HEADER property: " + message.getStringProperty("JMS_AMQP_HEADER"));
 
-        log.info("headers: " + headers.entrySet().stream().map(kv -> kv.getKey() + ":" + kv.getValue()).collect(Collectors.joining(", ")));
+        log.debug("headers: " + headers.entrySet().stream().map(kv -> kv.getKey() + ":" + kv.getValue()).collect(Collectors.joining(", ")));
 
-        log.info("correlation-id header: " + headers.get("correlation-id"));
-        log.info("JMS_AMQP_NATIVE header: " + headers.get("JMS_AMQP_NATIVE"));
-        log.info("message-format header: " + headers.get("message-format"));
+        log.debug("correlation-id header: " + headers.get("correlation-id"));
+        log.debug("JMS_AMQP_NATIVE header: " + headers.get("JMS_AMQP_NATIVE"));
+        log.debug("message-format header: " + headers.get("message-format"));
     }
 }
