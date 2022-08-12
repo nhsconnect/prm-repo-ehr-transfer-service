@@ -118,7 +118,6 @@ public class TransferTrackerDb {
     }
 
     public List<TransferTrackerDbEntry> getTimedOutRecords(String timeOutTimeStamp) {
-
         Map<String, String> expressionAttributeName =
                 new HashMap<>();
         expressionAttributeName.put("#is_active", "is_active");

@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.timeout;
 
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,9 +18,10 @@ import java.util.UUID;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class EhrRequestTimeoutHandler {
-    TransferTrackerDb transferTrackerDb;
-    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+    private final TransferTrackerDb transferTrackerDb;
+    private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInHours}")
     String timeout;
