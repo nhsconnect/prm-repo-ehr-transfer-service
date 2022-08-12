@@ -27,30 +27,33 @@ public class EhrRequestTimeoutHandler {
 
     @Scheduled(fixedRateString = "${timeOutFixedScheduleInMilliseconds}")
     public void handle() {
-        log.info("Running schedule job to check for timed-out records");
-        log.info("timeout duration in hours is : {}", timeout);
-        var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
-        log.info("Number of timed-out records are: {}", timedOutRecords.size() );
-        timedOutRecords.forEach(record -> {
-            updateAllTimeOutRecordsInDb(record.getConversationId());
-            sendMessageToTransferCompleteQueue(record);
-        });
+        try {
+            log.info("Running schedule job to check for timed-out records");
+            log.info("timeout duration in hours is : {}", timeout);
+            var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
+            log.info("Number of timed-out records are: {}", timedOutRecords.size());
+            timedOutRecords.forEach(record -> {
+                updateAllTimeOutRecordsInDb(record.getConversationId());
+                sendMessageToTransferCompleteQueue(record);
+            });
+        } catch (Exception e) {
+            log.error("Encountered exception with handling timeouts ", e);
+        }
     }
 
     private String getTimeOutTimeStamp() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.ofHours(0));
-
         return now.minus(Integer.valueOf(timeout), ChronoUnit.HOURS).toString();
     }
 
     private void sendMessageToTransferCompleteQueue(TransferTrackerDbEntry record) {
         log.info("Sending message to transfer complete queue for timed-out records");
         transferCompleteMessagePublisher.sendMessage(new TransferCompleteEvent(
-                record.getNemsEventLastUpdated(),
-                record.getSourceGP(),
-                "SUSPENSION",
-                record.getNemsMessageId(),
-                record.getNhsNumber()),
+                        record.getNemsEventLastUpdated(),
+                        record.getSourceGP(),
+                        "SUSPENSION",
+                        record.getNemsMessageId(),
+                        record.getNhsNumber()),
                 UUID.fromString(record.getConversationId()));
     }
 

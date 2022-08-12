@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class TransferTrackerDb {
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
@@ -134,9 +136,10 @@ public class TransferTrackerDb {
                 .expressionAttributeNames(expressionAttributeName)
                 .expressionAttributeValues(expressionAttributeValues)
                 .build();
-
+        log.info("Querying db for timed-out records {}", request);
         QueryResponse response = dynamoDbClient.query(request);
-        if(response.hasItems()) {
+
+        if (response.hasItems()) {
             return getListOfDbEntries(response.items());
         }
         return new ArrayList<>();
