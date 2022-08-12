@@ -173,8 +173,7 @@ data "aws_iam_policy_document" "transfer-tracker-db-access" {
       "dynamodb:Query"
     ]
     resources = [
-      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}",
-      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}/index/*"
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}"
     ]
   }
 }
@@ -187,6 +186,28 @@ resource "aws_iam_policy" "transfer-tracker-db-access" {
 resource "aws_iam_role_policy_attachment" "ecs_dynamo_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.transfer-tracker-db-access.arn
+}
+
+data "aws_iam_policy_document" "transfer-tracker-db-indexes-access" {
+  statement {
+    actions = [
+      "dynamodb:Query",
+      "dynamodb:Scan"
+    ]
+    resources = [
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}/index/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "transfer-tracker-db-indexes-access" {
+  name   = "${var.environment}-${var.component_name}-transfer-tracker-db-indexes-access"
+  policy = data.aws_iam_policy_document.transfer-tracker-db-indexes-access.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_dynamo_indexes_attach" {
+  role       = aws_iam_role.component-ecs-role.name
+  policy_arn = aws_iam_policy.transfer-tracker-db-indexes-access.arn
 }
 
 resource "aws_iam_role" "sns_failure_feedback_role" {
