@@ -135,7 +135,11 @@ public class TransferTrackerDb {
                 .expressionAttributeValues(expressionAttributeValues)
                 .build();
 
-        return getListOfDbEntries(dynamoDbClient.query(request).items());
+        QueryResponse response = dynamoDbClient.query(request);
+        if(response.hasItems()) {
+            return getListOfDbEntries(response.items());
+        }
+        return new ArrayList<>();
     }
 
     private List<TransferTrackerDbEntry> getListOfDbEntries(List<Map<String, AttributeValue>> items) {

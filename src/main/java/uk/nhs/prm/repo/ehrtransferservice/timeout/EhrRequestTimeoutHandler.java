@@ -28,6 +28,7 @@ public class EhrRequestTimeoutHandler {
     @Scheduled(fixedRateString = "${timeOutFixedScheduleInMilliseconds}")
     public void handle() {
         log.info("Running schedule job to check for timed-out records");
+        log.info("timeout duration in hours is : {}", timeout);
         var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
         log.info("Number of timed-out records are: {}", timedOutRecords.size() );
         timedOutRecords.forEach(record -> {
