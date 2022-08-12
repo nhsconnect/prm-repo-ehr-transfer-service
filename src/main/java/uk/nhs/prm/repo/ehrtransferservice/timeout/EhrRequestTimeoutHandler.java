@@ -4,6 +4,7 @@ package uk.nhs.prm.repo.ehrtransferservice.timeout;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Slf4j
+@Service
 public class EhrRequestTimeoutHandler {
     TransferTrackerDb transferTrackerDb;
     TransferCompleteMessagePublisher transferCompleteMessagePublisher;
