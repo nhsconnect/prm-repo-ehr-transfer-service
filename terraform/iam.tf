@@ -173,7 +173,8 @@ data "aws_iam_policy_document" "transfer-tracker-db-access" {
       "dynamodb:Query"
     ]
     resources = [
-      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}"
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}",
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${aws_dynamodb_table.transfer_tracker.name}/index/*"
     ]
   }
 }
