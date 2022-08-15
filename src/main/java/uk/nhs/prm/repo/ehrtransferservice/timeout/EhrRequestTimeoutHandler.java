@@ -50,7 +50,7 @@ public class EhrRequestTimeoutHandler {
     }
 
     private void sendMessageToTransferCompleteQueue(TransferTrackerDbEntry record) {
-        log.info("Sending message to transfer complete queue for timed-out records");
+        log.info("Sending message with conversationId : {} to transfer complete queue for timed-out records", record.getConversationId());
         transferCompleteMessagePublisher.sendMessage(new TransferCompleteEvent(
                         record.getNemsEventLastUpdated(),
                         record.getSourceGP(),
@@ -61,7 +61,7 @@ public class EhrRequestTimeoutHandler {
     }
 
     private void updateAllTimedOutRecordsInDb(String conversationId) {
-        log.info("Updating transfer tracker db with state : {}", "ACTION:EHR_TRANSFER_TIMEOUT");
+        log.info("Updating transfer tracker db for conversationId : {} with state : {}",conversationId, "ACTION:EHR_TRANSFER_TIMEOUT");
         transferTrackerDb.update(
                 conversationId,
                 "ACTION:EHR_TRANSFER_TIMEOUT",
