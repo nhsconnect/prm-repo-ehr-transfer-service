@@ -126,12 +126,12 @@ public class TransferTrackerDb {
         Map<String, AttributeValue> expressionAttributeValues =
                 new HashMap<>();
         expressionAttributeValues.put(":is_active_val", AttributeValue.builder().s("true").build());
-        expressionAttributeValues.put(":created_at_val", AttributeValue.builder().s(timeOutTimeStamp).build());
+        expressionAttributeValues.put(":timeout_timestamp_val", AttributeValue.builder().s(timeOutTimeStamp).build());
 
         QueryRequest request = QueryRequest.builder().indexName("IsActiveSecondaryIndex")
                 .tableName(config.transferTrackerDbTableName())
                 .keyConditionExpression("#is_active = :is_active_val")
-                .filterExpression("#created_at < :created_at_val")
+                .filterExpression("#created_at < :timeout_timestamp_val")
                 .expressionAttributeNames(expressionAttributeName)
                 .expressionAttributeValues(expressionAttributeValues)
                 .build();

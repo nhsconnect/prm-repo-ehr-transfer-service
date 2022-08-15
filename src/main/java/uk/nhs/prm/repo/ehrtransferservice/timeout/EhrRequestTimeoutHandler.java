@@ -15,6 +15,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -27,7 +28,7 @@ public class EhrRequestTimeoutHandler {
     String timeout;
 
 
-    @Scheduled(fixedRateString = "${timeOutFixedScheduleInMilliseconds}")
+    @Scheduled(fixedRateString = "${timeOutFixedScheduleInMinutes}",  timeUnit = TimeUnit.MINUTES)
     public void handle() {
         try {
             log.info("Running schedule job to check for timed-out records");
@@ -35,7 +36,7 @@ public class EhrRequestTimeoutHandler {
             var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
             log.info("Number of timed-out records are: {}", timedOutRecords.size());
             timedOutRecords.forEach(record -> {
-                updateAllTimeOutRecordsInDb(record.getConversationId());
+                updateAllTimedOutRecordsInDb(record.getConversationId());
                 sendMessageToTransferCompleteQueue(record);
             });
         } catch (Exception e) {
@@ -59,7 +60,7 @@ public class EhrRequestTimeoutHandler {
                 UUID.fromString(record.getConversationId()));
     }
 
-    private void updateAllTimeOutRecordsInDb(String conversationId) {
+    private void updateAllTimedOutRecordsInDb(String conversationId) {
         log.info("Updating transfer tracker db with state : {}", "ACTION:EHR_TRANSFER_TIMEOUT");
         transferTrackerDb.update(
                 conversationId,
