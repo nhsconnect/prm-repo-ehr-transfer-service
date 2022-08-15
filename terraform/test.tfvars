@@ -5,4 +5,7 @@ task_memory = 1024
 
 service_desired_count = "2"
 
+timeout_in_hours= "1"
+timeout_scheduler_fixed_rate_in_minutes="60"
+
 environment_dns_zone= "test.non-prod"

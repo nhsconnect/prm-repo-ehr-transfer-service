@@ -8,3 +8,4 @@ service_desired_count = "1"
 environment_dns_zone= "dev.non-prod"
 
 timeout_in_hours= "1"
+timeout_scheduler_fixed_rate_in_minutes="60"

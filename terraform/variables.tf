@@ -41,3 +41,7 @@ variable "timeout_in_hours" {
   default = "1"
 }
 
+variable "timeout_scheduler_fixed_rate_in_minutes" {
+  default = "60"
+}
+

@@ -41,7 +41,8 @@ locals {
     { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn },
     { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn },
     { name = "SPLUNK_UPLOADER_TOPIC_ARN", value = aws_sns_topic.splunk_uploader.arn },
-    { name = "TIMEOUT_DURATION_IN_HOURS", value = var.timeout_in_hours}
+    { name = "TIMEOUT_DURATION_IN_HOURS", value = var.timeout_in_hours},
+    { name = "TIMEOUT_SCHEDULER_FIXED_RATE_IN_MINUTES", value = var.timeout_scheduler_fixed_rate_in_minutes}
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
