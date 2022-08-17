@@ -24,15 +24,15 @@ public class EhrRequestTimeoutHandler {
     private final TransferTrackerDb transferTrackerDb;
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
-    @Value("${timeOutDurationInHours}")
-    String timeout;
+    @Value("${timeOutDurationInSeconds}")
+    String timeoutInSeconds;
 
 
-    @Scheduled(fixedRateString = "${timeOutFixedScheduleInMinutes}",  timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedRateString = "${timeOutFixedScheduleInSeconds}",  timeUnit = TimeUnit.SECONDS)
     public void handle() {
         try {
             log.info("Running schedule job to check for timed-out records");
-            log.info("timeout duration in hours is : {}", timeout);
+            log.info("timeout duration in seconds is : {}", timeoutInSeconds);
             var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
             log.info("Number of timed-out records are: {}", timedOutRecords.size());
             timedOutRecords.forEach(record -> {
@@ -46,7 +46,7 @@ public class EhrRequestTimeoutHandler {
 
     private String getTimeOutTimeStamp() {
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.ofHours(0));
-        return now.minus(Integer.valueOf(timeout), ChronoUnit.HOURS).toString();
+        return now.minus(Integer.valueOf(timeoutInSeconds), ChronoUnit.SECONDS).toString();
     }
 
     private void sendMessageToTransferCompleteQueue(TransferTrackerDbEntry record) {

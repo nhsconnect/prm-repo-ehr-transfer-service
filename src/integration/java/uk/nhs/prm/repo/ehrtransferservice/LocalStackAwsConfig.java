@@ -24,17 +24,7 @@ import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
-import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
-import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
-import software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest;
-import software.amazon.awssdk.services.dynamodb.model.GlobalSecondaryIndex;
-import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
-import software.amazon.awssdk.services.dynamodb.model.KeyType;
-import software.amazon.awssdk.services.dynamodb.model.Projection;
-import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
-import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
-import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.dynamodb.waiters.DynamoDbWaiter;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
@@ -53,11 +43,7 @@ import javax.annotation.PostConstruct;
 import javax.jms.ConnectionFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 
@@ -112,6 +98,9 @@ public class LocalStackAwsConfig {
 
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
+
+    @Value("${aws.transferCompleteQueueName}")
+    private String transferCompleteQueueName;
 
     @Value("${activemq.openwireEndpoint1}")
     private String amqEndpoint1;
@@ -275,6 +264,10 @@ public class LocalStackAwsConfig {
         var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_message_fragments_topic").build());
         createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentQueue.getQueueUrl()));
 
+        var transferCompleteQueue = amazonSQSAsync.createQueue(transferCompleteQueueName);
+        var transferCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
+        createSnsTestReceiverSubscription(transferCompleteTopic, getQueueArn(transferCompleteQueue.getQueueUrl()));
+
         var attachmentObservabilityQueue = amazonSQSAsync.createQueue(largeMessageFragmentsObservabilityQueueName);
         createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentObservabilityQueue.getQueueUrl()));
 
@@ -305,7 +298,6 @@ public class LocalStackAwsConfig {
         var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
-        snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
         snsClient.createTopic(CreateTopicRequest.builder().name("test_splunk_uploader_topic").build());
     }
 
