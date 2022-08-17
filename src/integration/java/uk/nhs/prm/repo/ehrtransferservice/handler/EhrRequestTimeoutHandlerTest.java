@@ -1,7 +1,9 @@
 package uk.nhs.prm.repo.ehrtransferservice.handler;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.awaitility.Duration;
 import org.junit.jupiter.api.AfterEach;
@@ -20,6 +22,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -108,20 +111,20 @@ public class EhrRequestTimeoutHandlerTest {
                             .build()).item();
                     assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_TRANSFER_TIMEOUT");
                     assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
-                 //   checkMessageInRelatedQueue(transferCompleteQUrl);
+                    checkMessageInRelatedQueue(transferCompleteQUrl);
                 });
    }
 
-//    private List<Message> checkMessageInRelatedQueue(String queueUrl) {
-//        System.out.println("checking sqs queue: " + queueUrl);
-//
-//        var requestForMessagesWithAttributes
-//                = new ReceiveMessageRequest().withQueueUrl(queueUrl);
-//        var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
-//        System.out.println("messages in checkMessageInRelatedQueue: " + messages);
-//        assertThat(messages).hasSize(1);
-//        return messages;
-//    }
+    private List<Message> checkMessageInRelatedQueue(String queueUrl) {
+        System.out.println("checking sqs queue: " + queueUrl);
+
+        var requestForMessagesWithAttributes
+                = new ReceiveMessageRequest().withQueueUrl(queueUrl);
+        var messages = sqs.receiveMessage(requestForMessagesWithAttributes).getMessages();
+        System.out.println("messages in checkMessageInRelatedQueue: " + messages);
+        assertThat(messages).hasSize(1);
+        return messages;
+    }
 
     private String getRepoIncomingData() {
         return "{ \"conversationId\" : \"" + CONVERSATION_ID + "\",\n \"nhsNumber\" : \"" + NHS_NUMBER + "\",\n \"nemsMessageId\" : \"" + NEMS_MESSAGE_ID + "\",\n \"sourceGp\": \"" + SOURCE_GP + "\",\n \"destinationGp\": \"D3ST1NAT10N\" ,\n \"nemsEventLastUpdated\": \"" + NEMS_EVENT_LAST_UPDATED + "\"}";

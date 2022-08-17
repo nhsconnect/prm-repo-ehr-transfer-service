@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
@@ -25,6 +26,8 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 class EhrRequestTimeoutHandlerTest {
     @Mock
     TransferTrackerDb transferTrackerDb;
+    @Mock
+    Tracer tracer;
 
     @Mock
     TransferCompleteMessagePublisher transferCompleteMessagePublisher;

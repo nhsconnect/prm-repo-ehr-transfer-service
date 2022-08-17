@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class EhrRequestTimeoutHandler {
     private final TransferTrackerDb transferTrackerDb;
+    private final Tracer tracer;
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInSeconds}")
@@ -36,6 +38,7 @@ public class EhrRequestTimeoutHandler {
             var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
             log.info("Number of timed-out records are: {}", timedOutRecords.size());
             timedOutRecords.forEach(record -> {
+                tracer.setTraceId(record.getConversationId());
                 updateAllTimedOutRecordsInDb(record.getConversationId());
                 sendMessageToTransferCompleteQueue(record);
             });
