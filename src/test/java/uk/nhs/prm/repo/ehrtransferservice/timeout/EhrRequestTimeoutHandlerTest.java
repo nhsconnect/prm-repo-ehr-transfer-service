@@ -45,7 +45,7 @@ class EhrRequestTimeoutHandlerTest {
 
     @BeforeEach
     void setUp() {
-        setField(handler, "timeout", "1");
+        setField(handler, "timeoutInSeconds", "1");
     }
 
     @Test
