@@ -37,11 +37,11 @@ variable "threshold_approx_age_oldest_message" {
   default = "300"
 }
 
-variable "timeout_in_hours" {
+variable "timeout_in_seconds" {
   default = "1"
 }
 
-variable "timeout_scheduler_fixed_rate_in_minutes" {
+variable "timeout_scheduler_fixed_rate_in_seconds" {
   default = "60"
 }
 
