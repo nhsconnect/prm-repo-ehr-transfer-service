@@ -107,7 +107,7 @@ public class EhrRequestTimeoutHandlerTest {
                             .key(key)
                             .build()).item();
                     assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_TRANSFER_TIMEOUT");
-                    assertThat(dbClientItem.get("conversation_id").s()).isEqualTo("conversationId-for-timeout-integration-test");
+                    assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
                  //   checkMessageInRelatedQueue(transferCompleteQUrl);
                 });
    }
