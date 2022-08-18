@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.timeout;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class EhrRequestTimeoutHandler {
                 tracer.setTraceId(record.getConversationId());
                 updateAllTimedOutRecordsInDb(record.getConversationId());
                 sendMessageToTransferCompleteQueue(record);
+                MDC.remove(record.getConversationId());
             });
         } catch (Exception e) {
             log.error("Encountered exception with handling timeouts ", e);
