@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class EhrRequestTimeoutHandler {
     private final TransferTrackerDb transferTrackerDb;
     private final Tracer tracer;
+    public static final String TRACE_ID = "traceId";
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInSeconds}")
@@ -42,7 +43,7 @@ public class EhrRequestTimeoutHandler {
                 tracer.setTraceId(record.getConversationId());
                 updateAllTimedOutRecordsInDb(record.getConversationId());
                 sendMessageToTransferCompleteQueue(record);
-                MDC.remove(record.getConversationId());
+                MDC.remove(TRACE_ID);
             });
         } catch (Exception e) {
             log.error("Encountered exception with handling timeouts ", e);
