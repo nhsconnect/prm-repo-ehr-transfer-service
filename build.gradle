@@ -73,6 +73,10 @@ dependencies {
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.3.0'
 
+    // CVE-2022-25857 fix. We can remove it when springframework.boot and fasterxml libs
+    // (which depend on it) cover this update
+    implementation 'org.yaml:snakeyaml:1.31'
+
     // CVE-2020-36518...
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.1'
     // including workaround for bom mismatch which should be retired with full jackson-databind release
