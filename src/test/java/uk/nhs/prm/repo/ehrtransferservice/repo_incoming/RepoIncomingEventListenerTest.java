@@ -26,11 +26,11 @@ class RepoIncomingEventListenerTest {
 
     @Test
     void shouldCallTracerWithMessageAndConversation() throws Exception {
-        String payload = "payload";
-        RepoIncomingEvent incomingEvent = getIncomingEvent();
+        var payload = "payload";
+        var incomingEvent = getIncomingEvent();
         when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
 
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        var message = spy(new SQSTextMessage(payload));
         repoIncomingEventListener.onMessage(message);
         verify(incomingEventParser).parse(payload);
         verify(tracer).setMDCContextFromSqs(message);
@@ -43,16 +43,20 @@ class RepoIncomingEventListenerTest {
 
     @Test
     void shouldAcknowledgeTheMessageWhenNoErrors() throws JMSException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        var payload = "payload";
+        var incomingEvent = getIncomingEvent();
+        when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
+        var message = spy(new SQSTextMessage(payload));
+
         repoIncomingEventListener.onMessage(message);
+
         verify(message).acknowledge();
     }
 
     @Test
     void shouldThrowAnExceptionWhenAnyError() throws JMSException {
-        String payload = "payload";
-        SQSTextMessage message = spy(new SQSTextMessage(payload));
+        var payload = "payload";
+        var message = spy(new SQSTextMessage(payload));
         when(message.getText()).thenThrow(new RuntimeException());
         repoIncomingEventListener.onMessage(message);
         verify(message, never()).acknowledge();

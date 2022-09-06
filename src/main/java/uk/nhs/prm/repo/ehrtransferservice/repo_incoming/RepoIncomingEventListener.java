@@ -31,6 +31,7 @@ public class RepoIncomingEventListener implements MessageListener {
     private void parseAndProcessMessage(Message message) throws Exception {
         String payload = ((TextMessage) message).getText();
         var parsedMessage = parser.parse(payload);
+        log.info("PARSED: message with conversationId " + parsedMessage.getConversationId());
         repoIncomingService.processIncomingEvent(parsedMessage);
     }
 }
