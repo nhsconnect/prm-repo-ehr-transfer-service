@@ -10,6 +10,11 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
     enabled = false
   }
 
+  logging {
+    target_bucket = data.aws_s3_bucket.log_bucket.id
+    target_prefix = "sqs-large-message-access-log/"
+  }
+
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -24,7 +29,7 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
   }
 }
 
-resource "aws_s3_bucket_policy" "sqs_large_message_bucket_policy" {
+resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
   bucket = aws_s3_bucket.sqs_large_message_bucket.id
   policy = jsonencode({
     "Statement": [
@@ -38,7 +43,22 @@ resource "aws_s3_bucket_policy" "sqs_large_message_bucket_policy" {
             "aws:SecureTransport": "false"
           }
         }
+      },
+      {
+        Effect: "Deny",
+        Principal:  {
+          "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/NHSDAdminRole"
+        },
+        Action: "s3:*",
+        Resource: [
+          "${aws_s3_bucket.sqs_large_message_bucket.arn}",
+          "${aws_s3_bucket.sqs_large_message_bucket.arn}/*"
+        ]
       }
     ]
   })
+}
+
+data "aws_s3_bucket" "log_bucket" {
+  bucket = "${var.environment}-ehr-repo-log-bucket"
 }
