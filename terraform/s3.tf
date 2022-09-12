@@ -32,6 +32,7 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
 resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
   bucket = aws_s3_bucket.sqs_large_message_bucket.id
   policy = jsonencode({
+    "Version": "2008-10-17"
     "Statement": [
       {
         Effect: "Deny",
@@ -54,7 +55,7 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
           "${aws_s3_bucket.sqs_large_message_bucket.arn}",
           "${aws_s3_bucket.sqs_large_message_bucket.arn}/*"
         ]
-      }
+      },
     ]
   })
 }
