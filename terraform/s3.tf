@@ -1,8 +1,9 @@
 locals {
-  sqs_large_message_bucket_name = "${var.environment}-${var.component_name}-sqs-large-messages"
+  sqs_large_messages_bucket_name = "${var.environment}-${var.component_name}-sqs-large-messages"
+  sqs_large_messages_access_log_prefix = "s3-access-logs/"
 }
 resource "aws_s3_bucket" "sqs_large_message_bucket" {
-  bucket        = local.sqs_large_message_bucket_name
+  bucket        = local.sqs_large_messages_bucket_name
   acl           = "private"
   force_destroy = true
 
@@ -12,7 +13,7 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
 
   logging {
     target_bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
-    target_prefix = "s3-access-logs/"
+    target_prefix = local.sqs_large_messages_access_log_prefix
   }
 
   server_side_encryption_configuration {
@@ -61,7 +62,7 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
 }
 
 resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
-  bucket        = "${local.sqs_large_message_bucket_name}-access-logs"
+  bucket        = "${local.sqs_large_messages_bucket_name}-access-logs"
   acl           = "private"
   force_destroy = true
   versioning {
@@ -91,10 +92,16 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_p
       "Principal": {
         "Service": "logging.s3.amazonaws.com"
       },
-      "Action": [
-        "s3:PutObject"
-      ],
-      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/*"
+      "Action": "s3:PutObject",
+      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/${local.sqs_large_messages_access_log_prefix}"
+      "Condition": {
+        "ArnLike": {
+          "aws:SourceArn": aws_s3_bucket.sqs_large_messages_s3_access_logs.arn
+        },
+        "StringEquals": {
+          "aws:SourceAccount": local.account_id
+        }
+      }
     }
   ]
 })
