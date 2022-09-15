@@ -94,7 +94,7 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_p
       "Action": [
         "s3:PutObject"
       ],
-      "Resource": "${aws_s3_bucket.sqs_large_message_bucket.arn}/*"
+      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/*"
     }
   ]
 })
