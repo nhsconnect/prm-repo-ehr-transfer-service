@@ -79,3 +79,23 @@ resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
     Environment = var.environment
   }
 }
+
+resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_policy" {
+  bucket        = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+    {
+      "Sid": "S3ServerAccessLogsPolicy",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "logging.s3.amazonaws.com"
+      },
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": "${aws_s3_bucket.sqs_large_message_bucket.arn}/*"
+    }
+  ]
+})
+}
