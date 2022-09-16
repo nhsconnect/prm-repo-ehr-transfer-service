@@ -93,10 +93,10 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_p
         "Service": "logging.s3.amazonaws.com"
       },
       "Action": "s3:PutObject",
-      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/${local.sqs_large_messages_access_log_prefix}"
+      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/${local.sqs_large_messages_access_log_prefix}*"
       "Condition": {
         "ArnLike": {
-          "aws:SourceArn": aws_s3_bucket.sqs_large_messages_s3_access_logs.arn
+          "aws:SourceArn": aws_s3_bucket.sqs_large_message_bucket.arn
         },
         "StringEquals": {
           "aws:SourceAccount": local.account_id
