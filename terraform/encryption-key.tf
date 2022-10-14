@@ -1,6 +1,7 @@
 resource "aws_kms_key" "negative_acks" {
   description = "Custom KMS Key to enable server side encryption for negative acknowledgements SQS queue"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-negative-acks-encryption-kms-key"
@@ -17,6 +18,7 @@ resource "aws_kms_alias" "negative_acks_encryption" {
 resource "aws_kms_key" "small_ehr" {
   description = "Custom KMS Key to enable server side encryption for small EHRs SQS queue"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-small-ehr-encryption-kms-key"
@@ -33,6 +35,7 @@ resource "aws_kms_alias" "small_ehr_encryption" {
 resource "aws_kms_key" "large_ehr" {
   description = "Custom KMS Key to enable server side encryption for large EHRs SQS queue"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-large-ehr-encryption-kms-key"
@@ -49,6 +52,7 @@ resource "aws_kms_alias" "large_ehr_encryption" {
 resource "aws_kms_key" "large_message_fragments" {
   description = "Custom KMS Key to enable server side encryption for large-message-fragments SQS queue"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-large-message-fragments-encryption-kms-key"
@@ -65,6 +69,7 @@ resource "aws_kms_alias" "large_message_fragments_encryption" {
 resource "aws_kms_key" "positive_acks" {
   description = "Custom KMS Key to enable server side encryption for positive acknowledgements SQS queue"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-positive-acks-encryption-kms-key"
@@ -81,6 +86,7 @@ resource "aws_kms_alias" "positive_acks_encryption" {
 resource "aws_kms_key" "parsing_dlq" {
   description = "Custom KMS Key to enable server side encryption for parsing DLQ"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-parsing-dlq-encryption-kms-key"
@@ -97,6 +103,7 @@ resource "aws_kms_alias" "parsing_dlq_encryption" {
 resource "aws_kms_key" "ehr_complete" {
   description = "Custom KMS Key to enable server side encryption for ehr-complete"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-ehr-complete-encryption-kms-key"
@@ -113,6 +120,7 @@ resource "aws_kms_alias" "ehr_complete_encryption" {
 resource "aws_kms_key" "transfer_complete" {
   description = "Custom KMS Key to enable server side encryption for transfer-complete"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-transfer-complete-encryption-kms-key"
@@ -129,6 +137,7 @@ resource "aws_kms_alias" "transfer_complete_encryption" {
 resource "aws_kms_key" "transfer_tracker_dynamodb_kms_key" {
   description = "Custom KMS Key to enable server side encryption for Transfer Tracker DB"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-transfer-tracker-dynamodb-kms-key"
@@ -145,6 +154,7 @@ resource "aws_kms_alias" "transfer_tracker_dynamodb_encryption" {
 resource "aws_kms_key" "ehr_transfer_audit_kms_key" {
   description = "Custom KMS Key to enable server side encryption for Transfer Tracker DB"
   policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
 
   tags = {
     Name        = "${var.environment}-${var.component_name}-ehr-transfer-audit-kms-key"
