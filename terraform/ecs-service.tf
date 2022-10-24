@@ -28,19 +28,6 @@ resource "aws_security_group_rule" "ehr-transfer-service-to-ehr-repo" {
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
-data "aws_ssm_parameter" "service-to-gp-to-repo-sg-id" {
-  name = "/repo/${var.environment}/output/prm-deductions-gp-to-repo/service-to-gp-to-repo-sg-id"
-}
-
-resource "aws_security_group_rule" "ehr-transfer-service-to-gp-to-repo" {
-  type                     = "ingress"
-  protocol                 = "TCP"
-  from_port                = 443
-  to_port                  = 443
-  security_group_id        = data.aws_ssm_parameter.service-to-gp-to-repo-sg-id.value
-  source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
-}
-
 data "aws_ssm_parameter" "service-to-mq-sg-id" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/service-to-mq-sg-id"
 }
@@ -98,27 +85,27 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   vpc_id = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
-    description = "Allow outbound to deductions private and deductions core"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    description = "Allow all outbound HTTPS to deductions private and deductions core"
+    protocol    = "tcp"
+    from_port   = 443
+    to_port     = 443
     cidr_blocks = [data.aws_vpc.deductions-private.cidr_block, data.aws_vpc.deductions-core.cidr_block]
   }
 
   egress {
-    description     = "Allow outbound to VPC Endpoints"
-    protocol        = "-1"
-    from_port       = 0
-    to_port         = 0
+    description     = "Allow HTTPS traffic outbound to VPC Endpoints"
+    protocol        = "tcp"
+    from_port       = 443
+    to_port         = 443
     security_groups = concat(tolist(data.aws_vpc_endpoint.ecr-dkr.security_group_ids), tolist(data.aws_vpc_endpoint.ecr-api.security_group_ids),
     tolist(data.aws_vpc_endpoint.logs.security_group_ids), tolist(data.aws_vpc_endpoint.ssm.security_group_ids))
   }
 
   egress {
-    description = "Allow outbound to S3 VPC Endpoint"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    description = "Allow HTTPS traffic outbound to S3 VPC Endpoint"
+    protocol        = "tcp"
+    from_port       = 443
+    to_port         = 443
     cidr_blocks = data.aws_vpc_endpoint.s3.cidr_blocks
   }
 
