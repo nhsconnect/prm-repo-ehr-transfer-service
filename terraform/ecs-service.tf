@@ -72,11 +72,11 @@ resource "aws_ecs_cluster" "ehr_transfer_service_ecs_cluster" {
 }
 
 resource "aws_security_group_rule" "ehr-transfer-service-to-gp2gp-messenger" {
-  type = "ingress"
-  protocol = "TCP"
-  from_port = 443
-  to_port = 443
-  security_group_id = data.aws_ssm_parameter.service-to-gp2gp-messenger-sg-id.value
+  type                     = "ingress"
+  protocol                 = "TCP"
+  from_port                = 443
+  to_port                  = 443
+  security_group_id        = data.aws_ssm_parameter.service-to-gp2gp-messenger-sg-id.value
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
@@ -85,35 +85,35 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   vpc_id = data.aws_ssm_parameter.deductions_private_vpc_id.value
 
   egress {
-    description = "Allow all outbound HTTPS to deductions private and deductions core"
-    protocol    = "tcp"
-    from_port   = 443
-    to_port     = 443
+    description = "Allow all outbound to deductions private and deductions core"
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
     cidr_blocks = [data.aws_vpc.deductions-private.cidr_block, data.aws_vpc.deductions-core.cidr_block]
   }
 
   egress {
     description     = "Allow HTTPS traffic outbound to VPC Endpoints"
-    protocol        = "tcp"
-    from_port       = 443
-    to_port         = 443
+    protocol        = "-1"
+    from_port       = 0
+    to_port         = 0
     security_groups = concat(tolist(data.aws_vpc_endpoint.ecr-dkr.security_group_ids), tolist(data.aws_vpc_endpoint.ecr-api.security_group_ids),
     tolist(data.aws_vpc_endpoint.logs.security_group_ids), tolist(data.aws_vpc_endpoint.ssm.security_group_ids))
   }
 
   egress {
     description = "Allow HTTPS traffic outbound to S3 VPC Endpoint"
-    protocol        = "tcp"
-    from_port       = 443
-    to_port         = 443
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
     cidr_blocks = data.aws_vpc_endpoint.s3.cidr_blocks
   }
 
   egress {
     description     = "Allow outbound HTTPS traffic to dynamodb"
-    protocol        = "tcp"
-    from_port       = 443
-    to_port         = 443
+    protocol        = "-1"
+    from_port       = 0
+    to_port         = 0
     prefix_list_ids = [data.aws_ssm_parameter.dynamodb_prefix_list_id.value]
   }
 
