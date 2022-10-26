@@ -103,17 +103,17 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
 
   egress {
     description = "Allow HTTPS traffic outbound to S3 VPC Endpoint"
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
+    protocol    = "TCP"
+    from_port   = 443
+    to_port     = 443
     cidr_blocks = data.aws_vpc_endpoint.s3.cidr_blocks
   }
 
   egress {
     description     = "Allow outbound HTTPS traffic to dynamodb"
-    protocol        = "-1"
-    from_port       = 0
-    to_port         = 0
+    protocol        = "TCP"
+    from_port       = 443
+    to_port         = 443
     prefix_list_ids = [data.aws_ssm_parameter.dynamodb_prefix_list_id.value]
   }
 
