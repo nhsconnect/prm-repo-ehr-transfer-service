@@ -2,8 +2,7 @@ locals {
   private_subnets = split(",", data.aws_ssm_parameter.deductions_private_private_subnets.value)
   ports_egress = [
     443,
-    61617,
-    5671
+    61617
   ]
 }
 
@@ -93,21 +92,13 @@ resource "aws_security_group" "ehr-transfer-service-ecs-task-sg" {
   dynamic "egress" {
     for_each = local.ports_egress
     content {
-      description = "Allow HTTPS outbound to deductions private and deductions core"
+      description = "Allow HTTPS and MQ traffic outbound to deductions private and deductions core"
       protocol    = "TCP"
       from_port   = egress.value
       to_port     = egress.value
       cidr_blocks = [data.aws_vpc.deductions-private.cidr_block, data.aws_vpc.deductions-core.cidr_block]
     }
   }
-
-#  egress {
-#    description = "Allow all outbound to deductions private and deductions core"
-#    protocol    = "TCP"
-#    from_port   = 0
-#    to_port     = 0
-#    cidr_blocks = [data.aws_vpc.deductions-private.cidr_block, data.aws_vpc.deductions-core.cidr_block]
-#  }
 
   egress {
     description     = "Allow HTTPS traffic outbound to VPC Endpoints"
