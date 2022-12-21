@@ -19,4 +19,58 @@
         <cpe>cpe:/a:pivotal_software:spring_framework</cpe>
         <cpe>cpe:/a:vmware:spring_framework</cpe>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+      false positive for commons_net
+      file name: commons-codec-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-codec/commons\-codec@.*$</packageUrl>
+        <cve>CVE-2021-37533</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      false positive for commons_net
+      file name: commons-text-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.commons/commons\-text@.*$</packageUrl>
+        <cve>CVE-2021-37533</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      false positive for commons_net
+      file name: commons-logging-*.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/commons\-logging/commons\-logging@.*$</packageUrl>
+        <cve>CVE-2021-37533</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      false positive as spring boot uses safe constructor in snakeyaml, see:
+
+      https://github.com/spring-projects/spring-boot/issues/33457
+
+      file name: snakeyaml-1.33.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.yaml/snakeyaml@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-1471</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+      6.5.0 version is only used by spotbugs who do not exercise vulnerability:
+
+      https://github.com/spotbugs/spotbugs/discussions/2251
+
+      file name: bcel-6.5.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.apache\.bcel/bcel@.*$</packageUrl>
+        <vulnerabilityName>CVE-2022-42920</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        false positive due to incorrect CPE targeting 4.1.86 not 4.1.86.Final
+   file name: netty-*-4.1.86.Final.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/io\.netty/netty\-.*4.1.86.Final$</packageUrl>
+        <cpe>cpe:/a:netty:netty</cpe>
+    </suppress>
 </suppressions>
