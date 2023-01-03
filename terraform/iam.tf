@@ -283,7 +283,8 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       aws_sns_topic.negative_acks.arn,
       aws_sns_topic.ehr_complete.arn,
       aws_sns_topic.transfer_complete.arn,
-      aws_sns_topic.splunk_uploader.arn
+      aws_sns_topic.splunk_uploader.arn,
+      aws_sns_topic.ehr_in_unhandled.arn
     ]
   }
 }
@@ -347,6 +348,16 @@ resource "aws_sqs_queue_policy" "ehr_complete" {
 resource "aws_sqs_queue_policy" "ehr_complete_observability" {
   queue_url = aws_sqs_queue.ehr_complete_observability.id
   policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "ehr_out_service_incoming" {
+  queue_url = data.aws_ssm_parameter.ehr-out-service-incoming-queue-arn.id
+  policy    = data.aws_iam_policy_document.ehr_in_unhandled_policy_doc.json
+}
+
+resource "aws_sqs_queue_policy" "ehr_in_unhandled_observability" {
+  queue_url = aws_sqs_queue.ehr_in_unhandled_observability.id
+  policy    = data.aws_iam_policy_document.ehr_in_unhandled_policy_doc.json
 }
 
 
@@ -500,6 +511,33 @@ data "aws_iam_policy_document" "ehr_complete_policy_doc" {
     condition {
       test     = "ArnEquals"
       values   = [aws_sns_topic.ehr_complete.arn]
+      variable = "aws:SourceArn"
+    }
+  }
+}
+
+
+data "aws_iam_policy_document" "ehr_in_unhandled_policy_doc" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sqs:SendMessage"
+    ]
+
+    principals {
+      identifiers = ["sns.amazonaws.com"]
+      type        = "Service"
+    }
+
+    resources = [
+      aws_sqs_queue.ehr_in_unhandled_observability.arn,
+      data.aws_ssm_parameter.ehr-out-service-incoming-queue-arn.value
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      values   = [aws_sns_topic.ehr_in_unhandled.arn]
       variable = "aws:SourceArn"
     }
   }
