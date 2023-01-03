@@ -59,7 +59,3 @@ data "aws_ssm_parameter" "repo_incoming_topic_arn" {
 data "aws_ssm_parameter" "repo_incoming_kms_key" {
   name = "/repo/${var.environment}/output/suspension-service/repo-incoming-kms-key"
 }
-
-data "aws_ssm_parameter" "ehr-out-service-incoming-queue-arn" {
-  name = "/repo/${var.environment}/output/repo-to-gp/ehr-out-service-incoming-sqs-queue-arn"
-}

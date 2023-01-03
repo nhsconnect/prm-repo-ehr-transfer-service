@@ -350,16 +350,10 @@ resource "aws_sqs_queue_policy" "ehr_complete_observability" {
   policy    = data.aws_iam_policy_document.ehr_complete_policy_doc.json
 }
 
-resource "aws_sqs_queue_policy" "ehr_out_service_incoming" {
-  queue_url = data.aws_ssm_parameter.ehr-out-service-incoming-queue-arn.id
-  policy    = data.aws_iam_policy_document.ehr_in_unhandled_policy_doc.json
-}
-
 resource "aws_sqs_queue_policy" "ehr_in_unhandled_observability" {
   queue_url = aws_sqs_queue.ehr_in_unhandled_observability.id
   policy    = data.aws_iam_policy_document.ehr_in_unhandled_policy_doc.json
 }
-
 
 data "aws_iam_policy_document" "large_message_fragments_policy_doc" {
   statement {
@@ -530,10 +524,7 @@ data "aws_iam_policy_document" "ehr_in_unhandled_policy_doc" {
       type        = "Service"
     }
 
-    resources = [
-      aws_sqs_queue.ehr_in_unhandled_observability.arn,
-      data.aws_ssm_parameter.ehr-out-service-incoming-queue-arn.value
-    ]
+    resources = [aws_sqs_queue.ehr_in_unhandled_observability.arn]
 
     condition {
       test     = "ArnEquals"
