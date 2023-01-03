@@ -106,6 +106,12 @@ resource "aws_sns_topic" "ehr_in_unhandled" {
   }
 }
 
+resource "aws_ssm_parameter" "ehr_in_unhandled_sns_topic" {
+  name  = "/repo/${var.environment}/output/${var.component_name}/ehr-in-unhandled-sns-topic-arn"
+  type  = "String"
+  value = aws_sns_topic.ehr_in_unhandled.arn
+}
+
 resource "aws_sns_topic" "splunk_uploader" {
   name = "${var.environment}-${var.component_name}-splunk-uploader-sns-topic"
   kms_master_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id
