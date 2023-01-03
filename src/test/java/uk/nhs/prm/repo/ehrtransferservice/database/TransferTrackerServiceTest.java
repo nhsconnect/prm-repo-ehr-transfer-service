@@ -104,6 +104,26 @@ class TransferTrackerServiceTest {
         assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.getEhrTransferData("conversation-id"));
     }
 
+    @Test
+    void shouldReturnFalseWhenConversationIdIsNotPresentInDatabase() {
+        when(transferTrackerDb.getByConversationId("not-present-conversation-id")).thenReturn(null);
+        boolean conversationIdPresent = transferTrackerService.isConversationIdPresent("not-present-conversation-id");
+
+        verify(transferTrackerDb).getByConversationId("not-present-conversation-id");
+        assertThat(conversationIdPresent).isFalse();
+    }
+
+    @Test
+    void shouldReturnTrueWhenConversationIdIsPresentInDatabase() {
+        var conversationId = "conversationid";
+        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "","", "", true);
+        when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
+        boolean conversationIdPresent = transferTrackerService.isConversationIdPresent(conversationId);
+
+        verify(transferTrackerDb).getByConversationId(conversationId);
+        assertThat(conversationIdPresent).isTrue();
+    }
+
     private RepoIncomingEvent createIncomingEvent() {
         return new RepoIncomingEvent("123456765","source-gp","nems-message-id","destination-gp", "last-updated", "conversation-id");
     }

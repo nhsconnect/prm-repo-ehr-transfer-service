@@ -43,6 +43,15 @@ public class TransferTrackerService {
         }
     }
 
+    public boolean isConversationIdPresent(String conversationId) {
+        var ehrData = transferTrackerDb.getByConversationId(conversationId);
+        if (ehrData == null) {
+            log.info("No EHR transfer data found in transfer tracker db for conversation ID: " + conversationId);
+            return false;
+        }
+        return true;
+    }
+
     private String getLargeEhrCoreMessageId() {
         String largeEhrCoreMessageId = ""; //This is a placeholder for the messageId from the LargeEhrCoreQueue
         return largeEhrCoreMessageId;
