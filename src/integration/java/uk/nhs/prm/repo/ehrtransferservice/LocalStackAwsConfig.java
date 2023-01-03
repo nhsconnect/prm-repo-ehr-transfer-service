@@ -298,6 +298,10 @@ public class LocalStackAwsConfig {
         var nackQueue = amazonSQSAsync.createQueue(nackInternalQueueName);
         createSnsTestReceiverSubscription(nackTopic, getQueueArn(nackQueue.getQueueUrl()));
 
+        var ehrInUnhandledTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_ehr_in_unhandled_topic").build());
+        var ehrInUnhandledObservabilityQueue = amazonSQSAsync.createQueue("ehr_in_unhandled_queue");
+        createSnsTestReceiverSubscription(ehrInUnhandledTopic, getQueueArn(ehrInUnhandledObservabilityQueue.getQueueUrl()));
+
         snsClient.createTopic(CreateTopicRequest.builder().name("test_splunk_uploader_topic").build());
     }
 
