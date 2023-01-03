@@ -94,6 +94,18 @@ resource "aws_sns_topic" "transfer_complete" {
   }
 }
 
+resource "aws_sns_topic" "ehr_in_unhandled" {
+  name = "${var.environment}-${var.component_name}-unhandled-sns-topic"
+  kms_master_key_id = aws_kms_key.ehr_in_unhandled.id
+  sqs_failure_feedback_role_arn = aws_iam_role.sns_failure_feedback_role.arn
+
+  tags = {
+    Name = "${var.environment}-${var.component_name}-unhandled-sns-topic"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_sns_topic" "splunk_uploader" {
   name = "${var.environment}-${var.component_name}-splunk-uploader-sns-topic"
   kms_master_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id

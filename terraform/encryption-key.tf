@@ -168,6 +168,24 @@ resource "aws_kms_alias" "ehr_transfer_audit_encryption" {
   target_key_id = aws_kms_key.ehr_transfer_audit_kms_key.id
 }
 
+resource "aws_kms_key" "ehr_in_unhandled" {
+  description = "Custom KMS Key to enable server side encryption for ehr-in-unhandled"
+  policy      = data.aws_iam_policy_document.kms_key_policy_doc.json
+  enable_key_rotation = true
+
+  tags = {
+    Name        = "${var.environment}-${var.component_name}-unhandled-encryption-kms-key"
+    CreatedBy   = var.repo_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_kms_alias" "ehr_in_unhandled_encryption" {
+  name          = "alias/ehr-in-unhandled-encryption-kms-key"
+  target_key_id = aws_kms_key.ehr_in_unhandled.id
+}
+
+
 data "aws_iam_policy_document" "kms_key_policy_doc" {
   statement {
     effect = "Allow"
