@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
@@ -28,6 +29,10 @@ public class BrokerTest {
     PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
     @Mock
     ParsingDlqPublisher parsingDlqPublisher;
+    @Mock
+    EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
+    @Mock
+    TransferTrackerService transferTrackerService;
 
     @InjectMocks
     Broker broker;
@@ -39,6 +44,17 @@ public class BrokerTest {
     private <T extends ParsedMessage> T getMockParsedMessage(String interactionId, String messageBody, UUID conversationId, Class<T> messageClass) {
         var parsedMessage = mock(messageClass);
         when(parsedMessage.getInteractionId()).thenReturn(interactionId);
+        when(parsedMessage.getMessageBody()).thenReturn(messageBody);
+        when(parsedMessage.getConversationId()).thenReturn(conversationId);
+        return parsedMessage;
+    }
+
+    private ParsedMessage getMockParsedMessageWithoutInteractionId(String messageBody, UUID conversationId) {
+        return getMockParsedMessageWithoutInteractionId(messageBody, conversationId, ParsedMessage.class);
+    }
+
+    private <T extends ParsedMessage> T getMockParsedMessageWithoutInteractionId(String messageBody, UUID conversationId, Class<T> messageClass) {
+        var parsedMessage = mock(messageClass);
         when(parsedMessage.getMessageBody()).thenReturn(messageBody);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         return parsedMessage;
@@ -109,5 +125,23 @@ public class BrokerTest {
         broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
 
         verify(parsingDlqPublisher).sendMessage(any());
+    }
+
+    @Test
+    public void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
+        // need a mocked parsed message to use
+        String messageBody = "ehr-request";
+        UUID conversationId = UUID.randomUUID();
+        var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
+
+        // need to mock the response from database conversation id check
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(false);
+
+        // call our new method
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+
+        // assertions/verifications
+        // verify that a message publisher was called and the message was sent
+        verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
     }
 }

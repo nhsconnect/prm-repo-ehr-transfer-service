@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.EhrRequestMessageHandler;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
@@ -23,6 +24,10 @@ public class Broker {
     private final NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
     private final ParsingDlqPublisher parsingDlqPublisher;
+    private final EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
+
+    private final TransferTrackerService transferTrackerService;
+
     private final EhrRequestMessageHandler ehrRequestMessageHandler;
 
     public void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
@@ -63,6 +68,20 @@ public class Broker {
                 log.warn("Unknown Interaction ID: " + interactionId);
                 parsingDlqPublisher.sendMessage(message);
                 break;
+        }
+    }
+
+    public void sendMessageToEhrInOrEhrOut(ParsedMessage parsedMessage) {
+        // check if conversation id is in our database
+        boolean conversationIdPresent = transferTrackerService.isConversationIdPresent(parsedMessage.getConversationId().toString());
+
+        if (conversationIdPresent) {
+            // if yes - sendMessageToCorrespondingTopicPublisher()
+            // ehr in stuff
+            System.out.println("ehr in");
+        } else {
+            // if not - send to ehrInUnhandledMessagePublisher
+            ehrInUnhandledMessagePublisher.sendMessage(parsedMessage.getMessageBody(), parsedMessage.getConversationId());
         }
     }
 }
