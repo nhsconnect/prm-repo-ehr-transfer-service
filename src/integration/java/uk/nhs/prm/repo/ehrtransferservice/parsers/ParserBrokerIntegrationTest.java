@@ -6,6 +6,7 @@ import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,9 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.ehrCompleteQueueName}")
     private String ehrCompleteQueueName;
 
+    @Value("${aws.ehrInUnhandledObservabilityQueueName}")
+    private String ehrInUnhandledObservabilityQueueName;
+
     private final TestDataLoader dataLoader = new TestDataLoader();
 
     @AfterEach
@@ -63,6 +67,30 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(largeEhrQueueName);
         purgeQueue(parsingDlqQueueName);
         purgeQueue(ehrCompleteQueueName);
+        purgeQueue(ehrInUnhandledObservabilityQueueName);
+    }
+
+    @Test
+    @Disabled
+    void shouldPublishEhrRequestMessageToEhrInUnhandledObservabilityQueue() throws IOException {
+        // get EHR Request test data as a string
+        var ehrRequestMessageBody = dataLoader.getDataAsString("RCMR_IN010000UK05");
+
+        // put that fake EHR Request on the inbound queue
+        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        inboundQueueFromMhs.sendMessage(ehrRequestMessageBody);
+
+        // get the queue url for ehr in unhandled observability queue
+        var ehrInUnhandledObservabilityQueueUrl = sqs.getQueueUrl(ehrInUnhandledObservabilityQueueName).getQueueUrl();
+        System.out.println("ehrInUnhandledObservabilityQueueUrl: " + ehrInUnhandledObservabilityQueueUrl);
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            // get the messages from the queue
+            var receivedMessageHolder = checkMessageInRelatedQueue(ehrInUnhandledObservabilityQueueUrl);
+
+            // assert that the message content is as expected
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrRequestMessageBody));
+        });
     }
 
     @Test
