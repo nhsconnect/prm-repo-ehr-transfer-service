@@ -38,6 +38,7 @@ locals {
     { name = "PARSING_DLQ_TOPIC_ARN", value = aws_sns_topic.parsing_dlq.arn },
     { name = "POSITIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.positive_acks.arn },
     { name = "NEGATIVE_ACKS_TOPIC_ARN", value = aws_sns_topic.negative_acks.arn },
+    { name = "EHR_IN_UNHANDLED_TOPIC_ARN", value = aws_sns_topic.ehr_in_unhandled.arn },
     { name = "EHR_COMPLETE_TOPIC_ARN", value = aws_sns_topic.ehr_complete.arn },
     { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn },
     { name = "SPLUNK_UPLOADER_TOPIC_ARN", value = aws_sns_topic.splunk_uploader.arn },

@@ -12,23 +12,23 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class PositiveAcknowledgementMessagePublisherTest {
+class EhrInUnhandledMessagePublisherTest {
     @Mock
     private MessagePublisher messagePublisher;
 
     private final static String topicArn = "topicArn";
 
-    private PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
+    private EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
 
     @BeforeEach
     void setUp() {
-        positiveAcknowledgementMessagePublisher = new PositiveAcknowledgementMessagePublisher(messagePublisher, topicArn);
+        ehrInUnhandledMessagePublisher = new EhrInUnhandledMessagePublisher(messagePublisher, topicArn);
     }
 
     @Test
     void shouldPublishMessageToThePositiveAcknowledgmentTopic() {
         var conversationId = UUID.randomUUID();
-        positiveAcknowledgementMessagePublisher.sendMessage("message", conversationId);
+        ehrInUnhandledMessagePublisher.sendMessage("message", conversationId);
         verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
     }
 }
