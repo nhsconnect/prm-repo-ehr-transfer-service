@@ -144,4 +144,18 @@ public class BrokerTest {
         // verify that a message publisher was called and the message was sent
         verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
     }
+
+    @Test
+    public void shouldPublishMessageWithKnownConversationIdToSmallEhrMessagePublisher() {
+        String messageBody = "ehr-request";
+        UUID conversationId = UUID.randomUUID();
+        var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
+
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+
+        verifyNoInteractions(ehrInUnhandledMessagePublisher);
+        verify(smallEhrMessagePublisher).sendMessage(messageBody, conversationId);
+    }
 }

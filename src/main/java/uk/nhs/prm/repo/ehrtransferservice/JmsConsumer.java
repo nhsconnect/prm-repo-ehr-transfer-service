@@ -50,7 +50,7 @@ public class JmsConsumer {
                 return;
             }
 
-            broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+            broker.sendMessageToEhrInOrEhrOut(parsedMessage);
         } catch (Exception e) {
             var toBeSentToDlq = messageBody != null ? messageBody : unprocessableMessageBody;
             log.error("Failed to process message - sending to dlq");

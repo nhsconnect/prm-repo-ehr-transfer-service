@@ -78,7 +78,7 @@ public class Broker {
         if (conversationIdPresent) {
             // if yes - sendMessageToCorrespondingTopicPublisher()
             // ehr in stuff
-            System.out.println("ehr in");
+            sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } else {
             // if not - send to ehrInUnhandledMessagePublisher
             ehrInUnhandledMessagePublisher.sendMessage(parsedMessage.getMessageBody(), parsedMessage.getConversationId());
