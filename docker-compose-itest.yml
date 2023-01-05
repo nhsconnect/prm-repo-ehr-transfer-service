@@ -23,5 +23,5 @@ services:
       - DEFAULT_REGION=eu-west-2
       - HOSTNAME_EXTERNAL=localstack
     volumes:
-      - "/tmp/localstack:/tmp/localstack"
+      - "/var/lib/localstack:/var/lib/localstack"
       - "/var/run/docker.sock:/var/run/docker.sock"
