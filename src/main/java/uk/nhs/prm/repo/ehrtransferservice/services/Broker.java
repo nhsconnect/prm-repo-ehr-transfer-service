@@ -30,7 +30,7 @@ public class Broker {
 
     private final EhrRequestMessageHandler ehrRequestMessageHandler;
 
-    public void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
+    private void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
         final var interactionId = parsedMessage.getInteractionId();
         final var message = parsedMessage.getMessageBody();
         final var conversationId = parsedMessage.getConversationId();
@@ -72,15 +72,11 @@ public class Broker {
     }
 
     public void sendMessageToEhrInOrEhrOut(ParsedMessage parsedMessage) {
-        // check if conversation id is in our database
         boolean conversationIdPresent = transferTrackerService.isConversationIdPresent(parsedMessage.getConversationId().toString());
 
         if (conversationIdPresent) {
-            // if yes - sendMessageToCorrespondingTopicPublisher()
-            // ehr in stuff
             sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } else {
-            // if not - send to ehrInUnhandledMessagePublisher
             ehrInUnhandledMessagePublisher.sendMessage(parsedMessage.getMessageBody(), parsedMessage.getConversationId());
         }
     }

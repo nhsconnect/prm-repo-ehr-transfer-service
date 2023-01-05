@@ -66,7 +66,9 @@ public class BrokerTest {
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("COPC_IN000001UK01", messageBody, conversationId);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
 
         verify(attachmentMessagePublisher).sendMessage(messageBody, conversationId);
     }
@@ -77,7 +79,9 @@ public class BrokerTest {
         var messageBody = "ehr-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
 
         verify(smallEhrMessagePublisher).sendMessage(messageBody, conversationId);
     }
@@ -88,9 +92,9 @@ public class BrokerTest {
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
         when(parsedMessage.isLargeMessage()).thenReturn(true);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
-
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
         verify(largeEhrMessagePublisher).sendMessage(messageBody, conversationId);
     }
 
@@ -100,9 +104,9 @@ public class BrokerTest {
         var messageBody = "nack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
         when(acknowledgement.isNegativeAcknowledgement()).thenReturn(true);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToCorrespondingTopicPublisher(acknowledgement);
-
+        broker.sendMessageToEhrInOrEhrOut(acknowledgement);
         verify(negativeAcknowledgementMessagePublisher).sendMessage("nack", conversationId);
     }
 
@@ -112,8 +116,9 @@ public class BrokerTest {
         var messageBody = "positive-ack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
 
-        broker.sendMessageToCorrespondingTopicPublisher(acknowledgement);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
+        broker.sendMessageToEhrInOrEhrOut(acknowledgement);
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
     }
 
@@ -122,31 +127,27 @@ public class BrokerTest {
         var conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("something-unreckognizable", "some-ack", conversationId);
 
-        broker.sendMessageToCorrespondingTopicPublisher(parsedMessage);
+        when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
+        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
         verify(parsingDlqPublisher).sendMessage(any());
     }
 
     @Test
     public void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
-        // need a mocked parsed message to use
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
 
-        // need to mock the response from database conversation id check
         when(transferTrackerService.isConversationIdPresent(conversationId.toString())).thenReturn(false);
 
-        // call our new method
         broker.sendMessageToEhrInOrEhrOut(parsedMessage);
 
-        // assertions/verifications
-        // verify that a message publisher was called and the message was sent
         verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
     }
 
     @Test
-    public void shouldPublishMessageWithKnownConversationIdToSmallEhrMessagePublisher() {
+    public void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
@@ -156,6 +157,5 @@ public class BrokerTest {
         broker.sendMessageToEhrInOrEhrOut(parsedMessage);
 
         verifyNoInteractions(ehrInUnhandledMessagePublisher);
-        verify(smallEhrMessagePublisher).sendMessage(messageBody, conversationId);
     }
 }
