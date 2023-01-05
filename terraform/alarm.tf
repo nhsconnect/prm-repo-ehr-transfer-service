@@ -304,6 +304,25 @@ resource "aws_cloudwatch_metric_alarm" "transfer_complete_sns_topic_error_log_al
   ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
+resource "aws_cloudwatch_metric_alarm" "ehr_in_unhandled_sns_topic_error_log_alarm" {
+  alarm_name          = "${aws_sns_topic.ehr_in_unhandled.name}-error-logs"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = "0"
+  evaluation_periods  = "1"
+  period              = "60"
+  metric_name         = local.sns_topic_error_logs_metric_name
+  namespace           = local.sns_topic_namespace
+  dimensions          = {
+    TopicName = aws_sns_topic.ehr_in_unhandled.name
+  }
+  statistic           = "Sum"
+  alarm_description   = "This alarm monitors errors logs in ${aws_sns_topic.ehr_in_unhandled.name}"
+  treat_missing_data  = "notBreaching"
+  actions_enabled     = "true"
+  alarm_actions       = [data.aws_sns_topic.alarm_notifications.arn]
+  ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
+}
+
 resource "aws_cloudwatch_metric_alarm" "splunk_uploader_sns_topic_error_log_alarm" {
   alarm_name          = "${aws_sns_topic.splunk_uploader.name}-error-logs"
   comparison_operator = "GreaterThanThreshold"
