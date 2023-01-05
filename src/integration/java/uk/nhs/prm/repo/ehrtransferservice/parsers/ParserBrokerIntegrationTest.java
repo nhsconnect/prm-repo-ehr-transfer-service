@@ -4,10 +4,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,13 +12,20 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +40,9 @@ import static org.awaitility.Awaitility.await;
 public class ParserBrokerIntegrationTest {
     @Autowired
     private AmazonSQSAsync sqs;
+
+    @Autowired
+    private DynamoDbClient dbClient;
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
@@ -58,7 +65,24 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.ehrInUnhandledObservabilityQueueName}")
     private String ehrInUnhandledObservabilityQueueName;
 
+    @Value("${aws.transferTrackerDbTableName}")
+    private String transferTrackerDbTableName;
+
     private final TestDataLoader dataLoader = new TestDataLoader();
+
+    @Autowired
+    private TransferTrackerService transferTrackerService;
+
+    private final String conversationIdForSmallEhr="ff27abc3-9730-40f7-ba82-382152e6b90a";
+    private final String conversationIdForCopc="ff1457fb-4f58-4870-8d90-24d9c3ef8b91";
+
+    @BeforeEach
+    public void setup(){
+        RepoIncomingEvent repoIncomingEventForSmallEhr= new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05",conversationIdForSmallEhr);
+        RepoIncomingEvent repoIncomingEventForCopc= new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05",conversationIdForCopc);
+        transferTrackerService.createEhrTransfer(repoIncomingEventForSmallEhr,"ACTION:EHR_REQUEST_SENT");
+        transferTrackerService.createEhrTransfer(repoIncomingEventForCopc,"ACTION:EHR_REQUEST_SENT");
+    }
 
     @AfterEach
     public void tearDown() {
@@ -68,10 +92,17 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(parsingDlqQueueName);
         purgeQueue(ehrCompleteQueueName);
         purgeQueue(ehrInUnhandledObservabilityQueueName);
+
+
+        Map<String, AttributeValue> key = new HashMap<>();
+        key.put("conversation_id", AttributeValue.builder().s(conversationIdForSmallEhr).build());
+        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
+        key.clear();
+        key.put("conversation_id", AttributeValue.builder().s(conversationIdForCopc).build());
+        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
     }
 
     @Test
-    @Disabled
     void shouldPublishEhrRequestMessageToEhrInUnhandledObservabilityQueue() throws IOException {
         // get EHR Request test data as a string
         var ehrRequestMessageBody = dataLoader.getDataAsString("RCMR_IN010000UK05");
