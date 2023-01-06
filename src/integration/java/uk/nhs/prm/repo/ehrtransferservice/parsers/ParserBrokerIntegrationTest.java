@@ -104,22 +104,17 @@ public class ParserBrokerIntegrationTest {
 
     @Test
     void shouldPublishEhrRequestMessageToEhrInUnhandledObservabilityQueue() throws IOException {
-        // get EHR Request test data as a string
         var ehrRequestMessageBody = dataLoader.getDataAsString("RCMR_IN010000UK05");
 
-        // put that fake EHR Request on the inbound queue
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(ehrRequestMessageBody);
 
-        // get the queue url for ehr in unhandled observability queue
         var ehrInUnhandledObservabilityQueueUrl = sqs.getQueueUrl(ehrInUnhandledObservabilityQueueName).getQueueUrl();
         System.out.println("ehrInUnhandledObservabilityQueueUrl: " + ehrInUnhandledObservabilityQueueUrl);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            // get the messages from the queue
             var receivedMessageHolder = checkMessageInRelatedQueue(ehrInUnhandledObservabilityQueueUrl);
 
-            // assert that the message content is as expected
             Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrRequestMessageBody));
         });
     }
