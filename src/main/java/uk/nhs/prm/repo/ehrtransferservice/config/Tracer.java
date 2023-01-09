@@ -13,7 +13,6 @@ import java.util.UUID;
 @Configuration
 @NoArgsConstructor
 public class Tracer {
-
     public static final String TRACE_ID = "traceId";
     public static final String CONVERSATION_ID = "conversationId";
 

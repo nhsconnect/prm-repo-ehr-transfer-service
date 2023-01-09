@@ -43,8 +43,65 @@ class TracerTest {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
 
         tracer.setMDCContextFromSqs(message);
+
         String mdcTraceIdValue = MDC.get(TRACE_ID);
         assertThat(mdcTraceIdValue).isNotNull();
         assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
+    }
+
+    @Test
+    void shouldSetTheTraceIdInTheLoggingContextWhenCallingWithTraceIdFromMhsInbound() {
+        MDC.clear();
+
+        tracer.setMDCContextFromMhsInbound("bob");
+
+        assertThat(MDC.get(TRACE_ID)).isEqualTo("bob");
+    }
+
+    @Test
+    void shouldOverwriteTheTraceIdInTheLoggingContextWhenCallingFromMhsInbound() {
+        MDC.put(TRACE_ID, "foo");
+
+        tracer.setMDCContextFromMhsInbound("bar");
+
+        assertThat(MDC.get(TRACE_ID)).isEqualTo("bar");
+    }
+
+    @Test
+    void shouldClearTheConversationIdFromTheLoggingContextWhenCallingFromMhsInbound() {
+        MDC.put(CONVERSATION_ID, "cheese");
+
+        tracer.setMDCContextFromMhsInbound("whatevs");
+
+        assertThat(MDC.get(CONVERSATION_ID)).isNull();
+    }
+
+    @Test
+    void shouldUpdateTheConversationIdButNotClearTheTraceIdWhenCallingHandleConversationId() {
+        MDC.put(TRACE_ID, "some-trace-id");
+        MDC.put(CONVERSATION_ID, "old-convo");
+
+        tracer.handleConversationId("new-convo");
+
+        assertThat(MDC.get(TRACE_ID)).isEqualTo("some-trace-id");
+        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("new-convo");
+    }
+
+    @Test
+    void shouldLeaveTheConversationIdIfNewOneBlankWhenCallingHandleConversationId() {
+        MDC.put(CONVERSATION_ID, "old-convo");
+
+        tracer.handleConversationId("");
+
+        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("old-convo");
+    }
+
+    @Test
+    void shouldLeaveTheConversationIdIfNewOneNullWhenCallingHandleConversationId() {
+        MDC.put(CONVERSATION_ID, "old-convo");
+
+        tracer.handleConversationId(null);
+
+        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("old-convo");
     }
 }
