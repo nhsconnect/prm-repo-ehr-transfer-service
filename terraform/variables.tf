@@ -38,10 +38,11 @@ variable "threshold_approx_age_oldest_message" {
 }
 
 variable "timeout_in_seconds" {
-  default = "1"
+  description = "Timeout in seconds at which EHR in transfer is deemed complete and failed if not entire EHR received"
+  default = "14400"
 }
 
 variable "timeout_scheduler_fixed_rate_in_seconds" {
-  default = "60"
+  default = "3600"
 }
 
