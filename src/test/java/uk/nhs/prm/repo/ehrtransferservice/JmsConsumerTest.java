@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
 import org.apache.activemq.command.ActiveMQBytesMessage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.nhs.prm.repo.ehrtransferservice.logging.UpdateableTraceContext;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
@@ -39,6 +41,9 @@ public class JmsConsumerTest {
     Broker broker;
     @Mock
     Tracer tracer;
+    @Mock
+    UpdateableTraceContext traceContext;
+
     @InjectMocks
     JmsConsumer jmsConsumer;
 
@@ -58,6 +63,11 @@ public class JmsConsumerTest {
         jmsConsumer.onMessage(bytesMessage, headerMap);
 
         verify(parsingDlqPublisher).sendMessage(expected);
+    }
+
+    @BeforeEach
+    public void setupTracerMock() {
+        when(tracer.createNewContext()).thenReturn(traceContext);
     }
 
     @Test
@@ -86,13 +96,15 @@ public class JmsConsumerTest {
         when(parsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parser.parse(Mockito.any())).thenReturn(parsedMessage);
+        when(tracer.createNewContext()).thenReturn(traceContext);
 
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put("correlation-id", conversationId);
         jmsConsumer.onMessage(message, headerMap);
 
-        verify(tracer).setMDCContextFromMhsInbound(conversationId.toString());
-        verify(tracer).handleConversationId(conversationId.toString());
+        verify(tracer).createNewContext();
+        verify(traceContext).updateTraceId(conversationId.toString());
+        verify(traceContext).updateConversationId(conversationId.toString());
     }
 
     @Test

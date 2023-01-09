@@ -3,7 +3,6 @@ package uk.nhs.prm.repo.ehrtransferservice.timeout;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 public class EhrRequestTimeoutHandler {
     private final TransferTrackerDb transferTrackerDb;
     private final Tracer tracer;
-    public static final String TRACE_ID = "traceId";
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInSeconds}")
@@ -40,10 +38,10 @@ public class EhrRequestTimeoutHandler {
             var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
             log.info("Number of timed-out records are: {}", timedOutRecords.size());
             timedOutRecords.forEach(record -> {
-                tracer.setTraceId(record.getConversationId());
+                tracer.directlyUpdateTraceIdButNotConversationId(record.getConversationId());
                 updateAllTimedOutRecordsInDb(record.getConversationId());
                 sendMessageToTransferCompleteQueue(record);
-                MDC.remove(TRACE_ID);
+                Tracer.directlyRemoveTraceId();
             });
         } catch (Exception e) {
             log.error("Encountered exception with handling timeouts ", e);

@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.logging;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Configuration;
 
 import javax.jms.JMSException;
@@ -16,34 +17,29 @@ import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.traceId;
 public class Tracer {
 
     public void setMDCContextFromSqs(Message message) throws JMSException {
-        var context = new TraceContext();
+        UpdateableTraceContext context = createNewContext();
+
+        context.updateTraceId(message.getStringProperty(traceId.toString()));
+        context.updateConversationId(message.getStringProperty(conversationId.toString()));
+    }
+
+    public UpdateableTraceContext createNewContext() {
+        var context = new UpdateableTraceContext();
         context.clear();
-
-        context.handleTraceId(message.getStringProperty(traceId.toString()));
-        context.handleConversationId(message.getStringProperty(conversationId.toString()));
-    }
-
-    public void setMDCContextFromMhsInbound(String traceId) {
-        var context = new TraceContext();
-        context.clear();
-        handleTraceId(traceId);
-    }
-
-    private void handleTraceId(String traceId) {
-        var context = new TraceContext();
-        context.handleTraceId(traceId);
-    }
-
-    public void handleConversationId(String conversationId) {
-        var context = new TraceContext();
-        context.handleConversationId(conversationId);
+        return context;
     }
 
     public String getTraceId() {
-        return new TraceContext().getTraceId();
+        return new ReadOnlyTraceContext().getTraceId();
     }
 
-    public void setTraceId(String traceId) {
-        new TraceContext().setTraceId(traceId);
+    // oops, coming in backdoor? - chat with team
+
+    public void directlyUpdateTraceIdButNotConversationId(String traceId) {
+        new UpdateableTraceContext().setTraceIdNotThroughUpdateTraceId(traceId);
+    }
+
+    public static void directlyRemoveTraceId() {
+        MDC.remove(traceId.toString());
     }
 }

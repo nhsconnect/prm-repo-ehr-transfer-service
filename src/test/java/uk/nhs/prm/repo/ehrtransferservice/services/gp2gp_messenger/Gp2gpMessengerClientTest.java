@@ -55,7 +55,7 @@ public class Gp2gpMessengerClientTest {
                         .withBody(jsonPayloadString)
                         .withHeader("Content-Type", "application/json")));
 
-        tracer.setTraceId("some-trace-id");
+        tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendGp2gpMessengerEhrRequest("1234567890", requestBody);
@@ -81,7 +81,7 @@ public class Gp2gpMessengerClientTest {
                         .withStatus(204)
                         .withHeader("Content-Type", "application/json")));
 
-        tracer.setTraceId("some-trace-id");
+        tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody);
@@ -105,7 +105,7 @@ public class Gp2gpMessengerClientTest {
                         .withStatus(500)
                         .withHeader("Content-Type", "application/json")));
 
-        tracer.setTraceId("some-trace-id");
+        tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody));
@@ -124,7 +124,7 @@ public class Gp2gpMessengerClientTest {
                         .withBody(jsonPayloadString)
                         .withHeader("Content-Type", "application/json")));
 
-        tracer.setTraceId("some-trace-id");
+        tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
@@ -148,7 +148,7 @@ public class Gp2gpMessengerClientTest {
                         .withBody(jsonPayloadString)
                         .withHeader("Content-Type", "application/json")));
 
-        tracer.setTraceId("some-trace-id");
+        tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
         assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody));

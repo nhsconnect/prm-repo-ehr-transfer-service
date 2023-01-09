@@ -33,15 +33,18 @@ public class JmsConsumer {
     public void onMessage(Message message,
                           @Headers Map<String, Object> headers) {
         String messageBody = null;
+
         try {
-            tracer.setMDCContextFromMhsInbound(getCorrelationId(headers));
+            var traceContext = tracer.createNewContext();
+
+            traceContext.updateTraceId(getCorrelationId(headers));
             debugMessageFormatInfo(message, headers);
 
             messageBody = amqpMessageParser.parse(message);
             log.info("Received Amqp Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
 
-            tracer.handleConversationId(parsedMessage.getConversationId().toString());
+            traceContext.updateConversationId(parsedMessage.getConversationId().toString());
             log.info("Successfully parsed message");
 
             if (parsedMessage.getInteractionId() == null || parsedMessage.getInteractionId().isBlank()) {

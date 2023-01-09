@@ -4,6 +4,7 @@ import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
+import uk.nhs.prm.repo.ehrtransferservice.logging.UpdateableTraceContext;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.JMSException;
@@ -16,13 +17,12 @@ import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.traceId;
 
 class TracerTest {
 
-    private static final String SOME_NEMS_ID = "someNemsId";
     private static final String SOME_TRACE_ID = "someTraceId";
     private static final String SOME_CONVERSATION_ID = "someConversationId";
     private static Tracer tracer;
 
-    public static final String TRACE_ID = traceId.toString();
-    public static final String CONVERSATION_ID = conversationId.toString();
+    public static final String TRACE_ID_KEY = traceId.toString();
+    public static final String CONVERSATION_ID_KEY = conversationId.toString();
 
     @BeforeAll
     static void setUp() {
@@ -32,12 +32,12 @@ class TracerTest {
     @Test
     void shouldAddTraceIdToMDCWhenItIsPresentInMessage() throws JMSException {
         SQSTextMessage message = spy(new SQSTextMessage("payload"));
-        message.setStringProperty(TRACE_ID, SOME_TRACE_ID);
-        message.setStringProperty(CONVERSATION_ID, SOME_CONVERSATION_ID);
+        message.setStringProperty(TRACE_ID_KEY, SOME_TRACE_ID);
+        message.setStringProperty(CONVERSATION_ID_KEY, SOME_CONVERSATION_ID);
 
         tracer.setMDCContextFromSqs(message);
-        String mdcTraceIdValue = MDC.get(TRACE_ID);
-        String mdcConversationIdValue = MDC.get(CONVERSATION_ID);
+        String mdcTraceIdValue = MDC.get(TRACE_ID_KEY);
+        String mdcConversationIdValue = MDC.get(CONVERSATION_ID_KEY);
         assertThat(mdcTraceIdValue).isEqualTo(SOME_TRACE_ID);
         assertThat(mdcConversationIdValue).isEqualTo(SOME_CONVERSATION_ID);
     }
@@ -48,64 +48,18 @@ class TracerTest {
 
         tracer.setMDCContextFromSqs(message);
 
-        String mdcTraceIdValue = MDC.get(TRACE_ID);
+        String mdcTraceIdValue = MDC.get(TRACE_ID_KEY);
         assertThat(mdcTraceIdValue).isNotNull();
         assertThat(UUID.fromString(mdcTraceIdValue)).isNotNull();
     }
 
     @Test
-    void shouldSetTheTraceIdInTheLoggingContextWhenCallingWithTraceIdFromMhsInbound() {
-        MDC.clear();
+    void createNewContextShouldReturnTraceContextAfterClearingIt() {
+        MDC.put(CONVERSATION_ID_KEY, "cheese");
 
-        tracer.setMDCContextFromMhsInbound("bob");
+        UpdateableTraceContext traceContext = tracer.createNewContext();
 
-        assertThat(MDC.get(traceId.toString())).isEqualTo("bob");
-    }
-
-    @Test
-    void shouldOverwriteTheTraceIdInTheLoggingContextWhenCallingFromMhsInbound() {
-        MDC.put(TRACE_ID, "foo");
-
-        tracer.setMDCContextFromMhsInbound("bar");
-
-        assertThat(MDC.get(traceId.toString())).isEqualTo("bar");
-    }
-
-    @Test
-    void shouldClearTheConversationIdFromTheLoggingContextWhenCallingFromMhsInbound() {
-        MDC.put(CONVERSATION_ID, "cheese");
-
-        tracer.setMDCContextFromMhsInbound("whatevs");
-
+        assertThat(traceContext).isNotNull();
         assertThat(MDC.get(conversationId.toString())).isNull();
-    }
-
-    @Test
-    void shouldUpdateTheConversationIdButNotClearTheTraceIdWhenCallingHandleConversationId() {
-        MDC.put(TRACE_ID, "some-trace-id");
-        MDC.put(CONVERSATION_ID, "old-convo");
-
-        tracer.handleConversationId("new-convo");
-
-        assertThat(MDC.get(traceId.toString())).isEqualTo("some-trace-id");
-        assertThat(MDC.get(conversationId.toString())).isEqualTo("new-convo");
-    }
-
-    @Test
-    void shouldLeaveTheConversationIdIfNewOneBlankWhenCallingHandleConversationId() {
-        MDC.put(CONVERSATION_ID, "old-convo");
-
-        tracer.handleConversationId("");
-
-        assertThat(MDC.get(conversationId.toString())).isEqualTo("old-convo");
-    }
-
-    @Test
-    void shouldLeaveTheConversationIdIfNewOneNullWhenCallingHandleConversationId() {
-        MDC.put(CONVERSATION_ID, "old-convo");
-
-        tracer.handleConversationId(null);
-
-        assertThat(MDC.get(conversationId.toString())).isEqualTo("old-convo");
     }
 }
