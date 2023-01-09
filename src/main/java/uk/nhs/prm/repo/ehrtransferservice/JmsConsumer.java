@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;

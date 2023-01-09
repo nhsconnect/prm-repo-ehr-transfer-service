@@ -2,7 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.listeners;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;

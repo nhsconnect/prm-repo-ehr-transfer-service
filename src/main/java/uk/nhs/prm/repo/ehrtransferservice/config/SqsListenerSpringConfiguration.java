@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
 import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;

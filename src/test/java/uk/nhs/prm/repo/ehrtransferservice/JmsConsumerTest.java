@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;

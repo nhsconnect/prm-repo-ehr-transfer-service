@@ -7,7 +7,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;

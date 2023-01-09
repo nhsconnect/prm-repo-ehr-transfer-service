@@ -2,7 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import uk.nhs.prm.repo.ehrtransferservice.config.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.Message;
 import javax.jms.MessageListener;

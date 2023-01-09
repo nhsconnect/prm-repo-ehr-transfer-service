@@ -4,14 +4,15 @@ import com.amazon.sqs.javamessaging.message.SQSTextMessage;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.JMSException;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
-import static uk.nhs.prm.repo.ehrtransferservice.config.Tracer.CONVERSATION_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.config.Tracer.TRACE_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.conversationId;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.traceId;
 
 class TracerTest {
 
@@ -19,6 +20,9 @@ class TracerTest {
     private static final String SOME_TRACE_ID = "someTraceId";
     private static final String SOME_CONVERSATION_ID = "someConversationId";
     private static Tracer tracer;
+
+    public static final String TRACE_ID = traceId.toString();
+    public static final String CONVERSATION_ID = conversationId.toString();
 
     @BeforeAll
     static void setUp() {
@@ -55,7 +59,7 @@ class TracerTest {
 
         tracer.setMDCContextFromMhsInbound("bob");
 
-        assertThat(MDC.get(TRACE_ID)).isEqualTo("bob");
+        assertThat(MDC.get(traceId.toString())).isEqualTo("bob");
     }
 
     @Test
@@ -64,7 +68,7 @@ class TracerTest {
 
         tracer.setMDCContextFromMhsInbound("bar");
 
-        assertThat(MDC.get(TRACE_ID)).isEqualTo("bar");
+        assertThat(MDC.get(traceId.toString())).isEqualTo("bar");
     }
 
     @Test
@@ -73,7 +77,7 @@ class TracerTest {
 
         tracer.setMDCContextFromMhsInbound("whatevs");
 
-        assertThat(MDC.get(CONVERSATION_ID)).isNull();
+        assertThat(MDC.get(conversationId.toString())).isNull();
     }
 
     @Test
@@ -83,8 +87,8 @@ class TracerTest {
 
         tracer.handleConversationId("new-convo");
 
-        assertThat(MDC.get(TRACE_ID)).isEqualTo("some-trace-id");
-        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("new-convo");
+        assertThat(MDC.get(traceId.toString())).isEqualTo("some-trace-id");
+        assertThat(MDC.get(conversationId.toString())).isEqualTo("new-convo");
     }
 
     @Test
@@ -93,7 +97,7 @@ class TracerTest {
 
         tracer.handleConversationId("");
 
-        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("old-convo");
+        assertThat(MDC.get(conversationId.toString())).isEqualTo("old-convo");
     }
 
     @Test
@@ -102,6 +106,6 @@ class TracerTest {
 
         tracer.handleConversationId(null);
 
-        assertThat(MDC.get(CONVERSATION_ID)).isEqualTo("old-convo");
+        assertThat(MDC.get(conversationId.toString())).isEqualTo("old-convo");
     }
 }
