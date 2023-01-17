@@ -165,6 +165,7 @@ public class LocalStackAwsConfig {
     public static S3Client s3Client(@Value("${localstack.url}") String localstackUrl) {
         return S3Client.builder()
                 .endpointOverride(URI.create(localstackUrl))
+                .forcePathStyle(true)
                 .region(Region.EU_WEST_2)
                 .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
                     @Override
