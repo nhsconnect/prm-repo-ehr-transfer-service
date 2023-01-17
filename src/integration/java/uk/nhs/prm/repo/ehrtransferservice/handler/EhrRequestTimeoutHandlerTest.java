@@ -5,7 +5,7 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.github.tomakehurst.wiremock.WireMockServer;
-import org.awaitility.Duration;
+import org.awaitility.Durations;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -101,7 +101,7 @@ public class EhrRequestTimeoutHandlerTest {
         //assert that transfer complete queue received message
 
         await()
-                .atMost(Duration.ONE_MINUTE)
+                .atMost(Durations.ONE_MINUTE)
                 .untilAsserted(() -> {
                     Map<String, AttributeValue> key = new HashMap<>();
                     key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
