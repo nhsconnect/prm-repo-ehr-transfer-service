@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11.0.14.1_1-jre-alpine
+FROM eclipse-temurin:11.0.17_8-jre-alpine
 
 RUN apk add --no-cache bash
 
