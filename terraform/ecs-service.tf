@@ -45,11 +45,6 @@ resource "aws_security_group_rule" "ehr-transfer-service-to-mq" {
   source_security_group_id = aws_security_group.ehr-transfer-service-ecs-task-sg.id
 }
 
-data "aws_ssm_parameter" "service_to_ehr_out_service_sg_id" {
-  count = var.environment == "prod" ? 0 : 1
-  name  = "/repo/${var.environment}/output/prm-repo-ehr-out-service/service-to-ehr-out-service-sg-id"
-}
-
 resource "aws_ecs_cluster" "ehr_transfer_service_ecs_cluster" {
   name = "${var.environment}-${var.component_name}-ecs-cluster"
 
