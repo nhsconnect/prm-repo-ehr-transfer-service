@@ -15,7 +15,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -53,7 +53,7 @@ public class TransferTrackerDbTest {
 
     @BeforeEach
     public void setUp() {
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new Transfer(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active));
     }
 
     @AfterEach
@@ -73,7 +73,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldDoInitialUpdateOfRecord() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new Transfer(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getNhsNumber()).isEqualTo(nhsNumber);
         assertThat(transferTrackerDbData.getConversationId()).isEqualTo(conversationId);
@@ -112,7 +112,7 @@ public class TransferTrackerDbTest {
     @Test
     void shouldCreateDbRecordWithIsActiveValue() {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
-        transferTrackerDb.save(new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
+        transferTrackerDb.save(new Transfer(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
         assertThat(transferTrackerDbData.getIsActive()).isTrue();
     }
@@ -129,9 +129,9 @@ public class TransferTrackerDbTest {
     @Test
     void shouldNotReturnTheRecordWhenItsCreatedAtDateHasNotPassedTimeOutPeriod (){
         String timeStampBeforeTimeOut = "2022-08-10T12:27:27.640260Z";
-        transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
+        transferTrackerDb.save(new Transfer("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
         String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
-        List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
+        List<Transfer> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
         assertThat(transferTrackerDbData.size()).isEqualTo(1); // This record is from @BeforeEach
         assertThat(transferTrackerDbData.get(0).getConversationId()).isEqualTo(conversationId);
     }
@@ -139,9 +139,9 @@ public class TransferTrackerDbTest {
     @Test
     void shouldNotReturnTheRecordWhenItsCreatedAtDateHasPassedTimeOutPeriodButIsActiveIsFalse (){
         String timeStampBeforeTimeOut = "2022-08-10T12:01:27.640260Z";
-        transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, false));
+        transferTrackerDb.save(new Transfer("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, false));
         String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
-        List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
+        List<Transfer> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
         assertThat(transferTrackerDbData.size()).isEqualTo(1);
         assertThat(transferTrackerDbData.get(0).getConversationId()).isEqualTo(conversationId);
     }
@@ -149,9 +149,9 @@ public class TransferTrackerDbTest {
     @Test
     void shouldReturnTheRecordWhenItsCreatedAtDateHasPassedTimeOutPeriodAndIsActiveIsTrue (){
         String timeStampBeforeTimeOut = "2022-08-10T12:01:27.640260Z";
-        transferTrackerDb.save(new TransferTrackerDbEntry("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
+        transferTrackerDb.save(new Transfer("another-conversationId", nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, timeStampBeforeTimeOut, timeStampBeforeTimeOut, largeEhrCoreMessageId, true));
         String timeOutTimeStamp = "2022-08-10T12:14:17.640260Z";
-        List<TransferTrackerDbEntry> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
+        List<Transfer> transferTrackerDbData = transferTrackerDb.getTimedOutRecords(timeOutTimeStamp);
         assertThat(transferTrackerDbData.size()).isEqualTo(2);
         assertThat(transferTrackerDbData.get(1).getConversationId()).isEqualTo("another-conversationId");
     }

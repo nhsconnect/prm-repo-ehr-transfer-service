@@ -3,7 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 import lombok.Data;
 
 @Data
-public class TransferTrackerDbEntry {
+public class Transfer {
     String conversationId;
     String nhsNumber;
     String sourceGP;
@@ -15,7 +15,7 @@ public class TransferTrackerDbEntry {
     String largeEhrCoreMessageId;
     Boolean isActive;
 
-    public TransferTrackerDbEntry(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String nemsEventLastUpdated, String state, String createdAt, String lastUpdatedAt, String largeEhrCoreMessageId, Boolean isActive) {
+    public Transfer(String conversationId, String nhsNumber, String sourceGP, String nemsMessageId, String nemsEventLastUpdated, String state, String createdAt, String lastUpdatedAt, String largeEhrCoreMessageId, Boolean isActive) {
         this.conversationId = conversationId;
         this.nhsNumber = nhsNumber;
         this.sourceGP = sourceGP;

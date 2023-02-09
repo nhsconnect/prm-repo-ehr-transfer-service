@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 class RepoIncomingServiceTest {
 
     @Mock
-    TransferTrackerService transferTrackerService;
+    TransferStore transferStore;
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
     @Mock
@@ -32,7 +32,7 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        verify(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
     }
 
     @Test
@@ -48,7 +48,7 @@ class RepoIncomingServiceTest {
         var incomingEvent = createIncomingEvent();
         repoIncomingService.processIncomingEvent(incomingEvent);
 
-        verify(transferTrackerService).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT", true);
+        verify(transferStore).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT", true);
     }
 
     @Test
@@ -64,7 +64,7 @@ class RepoIncomingServiceTest {
     void shouldNotSendEhrRequestIsSentMessageToAuditSplunkWhenGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
         var incomingEvent = createIncomingEvent();
         var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:EHR_REQUEST_SENT");
-        doThrow(TransferTrackerDbException.class).when(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        doThrow(TransferTrackerDbException.class).when(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
 
         assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
         verify(splunkAuditPublisher, never()).sendMessage(splunkAuditMessage);
@@ -73,7 +73,7 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowErrorAndNotCallGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
         var incomingEvent = createIncomingEvent();
-        doThrow(TransferTrackerDbException.class).when(transferTrackerService).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        doThrow(TransferTrackerDbException.class).when(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
 
         assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
         verify(gp2gpMessengerService, never()).sendEhrRequest(incomingEvent);
@@ -85,7 +85,7 @@ class RepoIncomingServiceTest {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
 
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(transferTrackerService, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT", true);
+        verify(transferStore, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT", true);
     }
 
 

@@ -1,13 +1,14 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.DuplicateMessageException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
@@ -82,8 +83,10 @@ public class EhrRepoClient {
         if (response.statusCode() != 201) {
             throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
         }
+        return parseResponse(response);
+    }
+
+    private static StoreMessageResponseBody parseResponse(HttpResponse<String> response) throws JsonProcessingException {
         return new ObjectMapper().readValue(response.body(), StoreMessageResponseBody.class);
-
-
     }
 }

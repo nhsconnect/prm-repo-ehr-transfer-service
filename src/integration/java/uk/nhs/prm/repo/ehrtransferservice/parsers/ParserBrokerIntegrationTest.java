@@ -18,7 +18,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
@@ -71,7 +71,7 @@ public class ParserBrokerIntegrationTest {
     private final TestDataLoader dataLoader = new TestDataLoader();
 
     @Autowired
-    private TransferTrackerService transferTrackerService;
+    private TransferStore transferStore;
 
     private final String conversationIdForSmallEhr="ff27abc3-9730-40f7-ba82-382152e6b90a";
     private final String conversationIdForCopc="ff1457fb-4f58-4870-8d90-24d9c3ef8b91";
@@ -80,8 +80,8 @@ public class ParserBrokerIntegrationTest {
     public void setup(){
         RepoIncomingEvent repoIncomingEventForSmallEhr= new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05",conversationIdForSmallEhr);
         RepoIncomingEvent repoIncomingEventForCopc= new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05",conversationIdForCopc);
-        transferTrackerService.createEhrTransfer(repoIncomingEventForSmallEhr,"ACTION:EHR_REQUEST_SENT");
-        transferTrackerService.createEhrTransfer(repoIncomingEventForCopc,"ACTION:EHR_REQUEST_SENT");
+        transferStore.createEhrTransfer(repoIncomingEventForSmallEhr,"ACTION:EHR_REQUEST_SENT");
+        transferStore.createEhrTransfer(repoIncomingEventForCopc,"ACTION:EHR_REQUEST_SENT");
     }
 
     @AfterEach

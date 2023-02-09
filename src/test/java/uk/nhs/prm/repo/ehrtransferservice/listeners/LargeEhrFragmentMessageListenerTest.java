@@ -15,7 +15,7 @@ import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LargeEhrMessageFragmentListenerTest {
+class LargeEhrFragmentMessageListenerTest {
 
     @Mock
     Tracer tracer;

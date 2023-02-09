@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -53,7 +53,7 @@ public class EhrRequestTimeoutHandler {
         return now.minus(Integer.valueOf(timeoutInSeconds), ChronoUnit.SECONDS).toString();
     }
 
-    private void sendMessageToTransferCompleteQueue(TransferTrackerDbEntry record) {
+    private void sendMessageToTransferCompleteQueue(Transfer record) {
         log.info("Sending message with conversationId : {} to transfer complete queue for timed-out records", record.getConversationId());
         transferCompleteMessagePublisher.sendMessage(new TransferCompleteEvent(
                         record.getNemsEventLastUpdated(),

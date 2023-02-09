@@ -7,7 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
@@ -15,7 +15,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPos
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -32,11 +32,11 @@ public class Gp2gpMessengerServiceTest {
     @Mock
     ParsedMessage parsedMessage;
     @Mock
-    TransferTrackerService transferTrackerService;
+    TransferStore transferStore;
     @Mock
     EhrCompleteEvent ehrCompleteEvent;
     @Mock
-    TransferTrackerDbEntry ehrTransferData;
+    Transfer ehrTransferData;
     @InjectMocks
     Gp2gpMessengerService gp2gpMessengerService;
 

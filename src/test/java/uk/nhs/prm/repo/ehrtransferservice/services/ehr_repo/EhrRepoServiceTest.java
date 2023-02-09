@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.util.UUID;
@@ -39,8 +41,12 @@ public class EhrRepoServiceTest {
         when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
         when(mockParsedMessage.getMessageId()).thenReturn(messageId);
         when(mockEhrRepoClient.fetchStorageUrl(conversationId, messageId)).thenReturn(mockPresignedUrl);
+        when(mockEhrRepoClient.confirmMessageStored(mockParsedMessage)).thenReturn(new StoreMessageResponseBody("complete"));
 
-        ehrRepoService.storeMessage(mockParsedMessage);
+        var result = ehrRepoService.storeMessage(mockParsedMessage);
+
+        Assertions.assertThat(result.isEhrComplete()).isTrue();
+
         verify(mockEhrRepoClient, times(1)).fetchStorageUrl(conversationId, messageId);
         verify(mockPresignedUrl, times(1)).uploadMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).confirmMessageStored(mockParsedMessage);

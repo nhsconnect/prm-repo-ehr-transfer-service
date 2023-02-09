@@ -11,7 +11,7 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -24,22 +24,22 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class TransferTrackerServiceTest {
+class TransferStoreTest {
     @Mock
     TransferTrackerDb transferTrackerDb;
     @InjectMocks
-    TransferTrackerService transferTrackerService;
+    TransferStore transferStore;
     @Captor
-    ArgumentCaptor<TransferTrackerDbEntry> trackerDbEntryArgumentCaptor;
+    ArgumentCaptor<Transfer> trackerDbEntryArgumentCaptor;
     @Mock
     SplunkAuditPublisher splunkAuditPublisher;
 
     @Test
     void shouldCallDbWithExpectedValuesForInitialSaveInDb() {
-        transferTrackerService.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED");
+        transferStore.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED");
 
         verify(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
-        TransferTrackerDbEntry value = trackerDbEntryArgumentCaptor.getValue();
+        Transfer value = trackerDbEntryArgumentCaptor.getValue();
         assertThat(value.getConversationId()).isEqualTo("conversation-id");
         assertThat(value.getNemsMessageId()).isEqualTo("nems-message-id");
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
@@ -55,12 +55,12 @@ class TransferTrackerServiceTest {
     void shouldThrowExceptionWhenFailsToMakeInitialSaveInDb() {
         doThrow(RuntimeException.class).when(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED"));
+        assertThrows(TransferTrackerDbException.class, () -> transferStore.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
     @Test
     void shouldCallDbWithExpectedValuesToUpdateWithNewInputs() {
-        transferTrackerService.handleEhrTransferStateUpdate("conversation-id", "nems-message-id", "ACTION:TRANSFER_TO_REPO_STARTED", true);
+        transferStore.handleEhrTransferStateUpdate("conversation-id", "nems-message-id", "ACTION:TRANSFER_TO_REPO_STARTED", true);
         verify(splunkAuditPublisher).sendMessage(new SplunkAuditMessage("conversation-id", "nems-message-id", "ACTION:TRANSFER_TO_REPO_STARTED"));
 
         verify(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any(), eq(true));
@@ -70,12 +70,12 @@ class TransferTrackerServiceTest {
     void shouldThrowExceptionWhenFailsToUpdateWithNewStateAndLastUpdatedAt() {
         doThrow(RuntimeException.class).when(transferTrackerDb).update(eq("conversation-id"), eq("ACTION:TRANSFER_TO_REPO_STARTED"), any(), eq(true));
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.handleEhrTransferStateUpdate("conversation-id", "some-nems", "ACTION:TRANSFER_TO_REPO_STARTED", true));
+        assertThrows(TransferTrackerDbException.class, () -> transferStore.handleEhrTransferStateUpdate("conversation-id", "some-nems", "ACTION:TRANSFER_TO_REPO_STARTED", true));
     }
 
     @Test
     void shouldCallDbWithExpectedValuesToUpdateWithNewLargeEhrCoreMessageId() {
-        transferTrackerService.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id");
+        transferStore.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id");
 
         verify(transferTrackerDb).updateLargeEhrCoreMessageId(eq("conversation-id"), eq("large-ehr-core-message-id"));
     }
@@ -84,15 +84,15 @@ class TransferTrackerServiceTest {
     void shouldThrowExceptionWhenFailsToUpdateWithNewLargeEhrCoreMessageId() {
         doThrow(RuntimeException.class).when(transferTrackerDb).updateLargeEhrCoreMessageId(eq("conversation-id"), eq("large-ehr-core-message-id"));
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id"));
+        assertThrows(TransferTrackerDbException.class, () -> transferStore.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id"));
     }
 
     @Test
     void shouldGetDbInformationForSpecifiedConversationId() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "","", "", true);
+        var dbEntry = new Transfer(conversationId, "", "", "", "", "", "","", "", true);
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
-        transferTrackerService.getEhrTransferData(conversationId);
+        transferStore.findTransfer(conversationId);
 
         verify(transferTrackerDb).getByConversationId(conversationId);
     }
@@ -101,13 +101,13 @@ class TransferTrackerServiceTest {
     void shouldThrowExceptionWhenFailsToGetDbInformationForSpecifiedConversationId() {
         when(transferTrackerDb.getByConversationId(eq("conversation-id"))).thenReturn(null);
 
-        assertThrows(TransferTrackerDbException.class, () -> transferTrackerService.getEhrTransferData("conversation-id"));
+        assertThrows(TransferTrackerDbException.class, () -> transferStore.findTransfer("conversation-id"));
     }
 
     @Test
     void shouldReturnFalseWhenConversationIdIsNotPresentInDatabase() {
         when(transferTrackerDb.getByConversationId("not-present-conversation-id")).thenReturn(null);
-        boolean conversationIdPresent = transferTrackerService.isConversationIdPresent("not-present-conversation-id");
+        boolean conversationIdPresent = transferStore.isConversationIdPresent("not-present-conversation-id");
 
         verify(transferTrackerDb).getByConversationId("not-present-conversation-id");
         assertThat(conversationIdPresent).isFalse();
@@ -116,9 +116,9 @@ class TransferTrackerServiceTest {
     @Test
     void shouldReturnTrueWhenConversationIdIsPresentInDatabase() {
         var conversationId = "conversationid";
-        var dbEntry = new TransferTrackerDbEntry(conversationId, "", "", "", "", "", "","", "", true);
+        var dbEntry = new Transfer(conversationId, "", "", "", "", "", "","", "", true);
         when(transferTrackerDb.getByConversationId(conversationId)).thenReturn(dbEntry);
-        boolean conversationIdPresent = transferTrackerService.isConversationIdPresent(conversationId);
+        boolean conversationIdPresent = transferStore.isConversationIdPresent(conversationId);
 
         verify(transferTrackerDb).getByConversationId(conversationId);
         assertThat(conversationIdPresent).isTrue();

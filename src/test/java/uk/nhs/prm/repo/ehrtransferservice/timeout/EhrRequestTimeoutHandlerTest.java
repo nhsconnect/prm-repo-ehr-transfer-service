@@ -10,7 +10,7 @@ import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +73,9 @@ class EhrRequestTimeoutHandlerTest {
         verify(transferCompleteMessagePublisher).sendMessage(transferCompleteEvent, conversationId);
     }
 
-    private List<TransferTrackerDbEntry> listOfTimedOutRecords() {
-        List<TransferTrackerDbEntry> records = new ArrayList<>();
-        var dbEntry = new TransferTrackerDbEntry(conversationId.toString(), nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active);
+    private List<Transfer> listOfTimedOutRecords() {
+        List<Transfer> records = new ArrayList<>();
+        var dbEntry = new Transfer(conversationId.toString(), nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, active);
         records.add(dbEntry);
         return records;
     }

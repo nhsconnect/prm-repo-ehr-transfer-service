@@ -6,12 +6,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerService;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.util.UUID;
@@ -26,12 +26,12 @@ class EhrCompleteHandlerTest {
     EhrCompleteEvent ehrCompleteEvent;
 
     @Mock
-    TransferTrackerService transferTrackerService;
+    TransferStore transferStore;
 
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
 
-    TransferTrackerDbEntry transferTrackerDbEntry;
+    Transfer transfer;
 
     @Mock
     TransferCompleteMessagePublisher transferCompleteMessagePublisher;
@@ -43,31 +43,31 @@ class EhrCompleteHandlerTest {
 
     @BeforeEach
     void setUp() {
-        transferTrackerDbEntry = new TransferTrackerDbEntry("conversationId", "some-nhs-number",
+        transfer = new Transfer("conversationId", "some-nhs-number",
                 "some-ods-code", "some-nems-message-id", "nemsEventLastUpdated",
                 "state", "createdAt", "lastUpdatedAt", "largeEhrCoreMessageId", true);
         when(ehrCompleteEvent.getConversationId()).thenReturn(conversationId);
-        when(transferTrackerService.getEhrTransferData(conversationId.toString())).thenReturn(transferTrackerDbEntry);
+        when(transferStore.findTransfer(conversationId.toString())).thenReturn(transfer);
     }
 
     @Test
     public void shouldCallGp2gpMessengerServiceToSendPositiveAcknowledgement() throws Exception {
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
-        verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transferTrackerDbEntry);
+        verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transfer);
     }
 
     @Test
     public void shouldUpdateDbWithEhrTransferStatusWhenEhrRequestSentSuccessfully() throws Exception {
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
-        verify(transferTrackerService).handleEhrTransferStateUpdate(conversationId.toString(), "some-nems-message-id", "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
+        verify(transferStore).handleEhrTransferStateUpdate(conversationId.toString(), "some-nems-message-id", "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
     }
 
     @Test
     public void shouldThrowErrorAndNotUpdateDbWhenFailsToSendPositiveAcknowledgement() throws Exception {
-        doThrow(Exception.class).when(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transferTrackerDbEntry);
+        doThrow(Exception.class).when(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transfer);
 
         assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));
-        verify(transferTrackerService, never()).handleEhrTransferStateUpdate(conversationId.toString(),"some-nems-message-id","ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
+        verify(transferStore, never()).handleEhrTransferStateUpdate(conversationId.toString(),"some-nems-message-id","ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
     }
 
     @Test
@@ -83,7 +83,7 @@ class EhrCompleteHandlerTest {
 
     @Test
     public void shouldThrowErrorAndNotSendMessageWhenDbFailsTOUpdate() {
-        doThrow(TransferTrackerDbException.class).when(transferTrackerService).handleEhrTransferStateUpdate(conversationId.toString(),"nemsMessageId","ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
+        doThrow(TransferTrackerDbException.class).when(transferStore).handleEhrTransferStateUpdate(conversationId.toString(),"nemsMessageId","ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
 
         assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));
         verify(transferCompleteMessagePublisher, never()).sendMessage(any(), any());

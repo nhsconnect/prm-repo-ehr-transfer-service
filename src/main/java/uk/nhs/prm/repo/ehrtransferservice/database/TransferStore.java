@@ -7,23 +7,24 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Service
 @Slf4j
-public class TransferTrackerService {
+public class TransferStore {
 
     private final TransferTrackerDb transferTrackerDb;
     private final SplunkAuditPublisher splunkAuditPublisher;
 
     public void createEhrTransfer(RepoIncomingEvent incomingEvent, String status) {
         try {
-            TransferTrackerDbEntry transferTrackerDbEntry =
-                    new TransferTrackerDbEntry(
+            Transfer transfer =
+                    new Transfer(
                             incomingEvent.getConversationId(),
                             incomingEvent.getNhsNumber(),
                             incomingEvent.getSourceGp(),
@@ -35,7 +36,7 @@ public class TransferTrackerService {
                             getLargeEhrCoreMessageId(),
                             isActive()
                     );
-            transferTrackerDb.save(transferTrackerDbEntry);
+            transferTrackerDb.save(transfer);
             log.info("Recorded initial Repo Incoming event in Transfer Tracker DB with status: " + status);
         } catch (Exception e) {
             log.error("Error encountered while recording Repo Incoming event in Transfer tracker db: " + e.getMessage());
@@ -77,7 +78,11 @@ public class TransferTrackerService {
         log.info("Published audit message with the status of: " + status);
     }
 
-    public TransferTrackerDbEntry getEhrTransferData(String conversationId) {
+    public Transfer findTransfer(UUID conversationId) {
+        return findTransfer(conversationId.toString());
+    }
+
+    public Transfer findTransfer(String conversationId) {
         var ehrData = transferTrackerDb.getByConversationId(conversationId);
         if (ehrData == null) {
             log.error("Failed to retrieve EHR transfer data for conversation ID: " + conversationId);

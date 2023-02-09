@@ -11,7 +11,7 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPos
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -37,14 +37,14 @@ public class Gp2gpMessengerService {
         }
     }
 
-    public void sendContinueMessage(ParsedMessage parsedMessage, TransferTrackerDbEntry ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
+    public void sendContinueMessage(ParsedMessage parsedMessage, Transfer ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
         var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), ehrTransferData.getSourceGP(), parsedMessage.getMessageId());
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
         log.info("Successfully sent continue message request");
     }
 
-    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, TransferTrackerDbEntry ehrTransferData) throws Exception {
-        Gp2gpMessengerPositiveAcknowledgementRequestBody requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(repositoryAsid, ehrTransferData.getSourceGP(), parsedMessage.getConversationId().toString(), parsedMessage.getMessageId().toString());
+    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, Transfer ehrTransferData) throws Exception {
+        var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(repositoryAsid, ehrTransferData.getSourceGP(), parsedMessage.getConversationId().toString(), parsedMessage.getMessageId().toString());
         try {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(ehrTransferData.getNhsNumber(), requestBody);
             log.info("Successfully send positive acknowledgement");

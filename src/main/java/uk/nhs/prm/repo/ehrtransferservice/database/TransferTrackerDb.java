@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class TransferTrackerDb {
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
 
-    public TransferTrackerDbEntry getByConversationId(String conversationId) {
+    public Transfer getByConversationId(String conversationId) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
         var getItemResponse = dynamoDbClient.getItem(GetItemRequest.builder()
@@ -36,18 +36,18 @@ public class TransferTrackerDb {
     }
 
     // Tested at integration level
-    public void save(TransferTrackerDbEntry transferTrackerDbEntry) {
+    public void save(Transfer transfer) {
         Map<String, AttributeValue> item = new HashMap<>();
-        item.put("nhs_number", AttributeValue.builder().s(transferTrackerDbEntry.getNhsNumber()).build());
-        item.put("conversation_id", AttributeValue.builder().s(transferTrackerDbEntry.getConversationId()).build());
-        item.put("source_gp", AttributeValue.builder().s(transferTrackerDbEntry.getSourceGP()).build());
-        item.put("nems_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getNemsMessageId()).build());
-        item.put("nems_event_last_updated", AttributeValue.builder().s(transferTrackerDbEntry.getNemsEventLastUpdated()).build());
-        item.put("created_at", AttributeValue.builder().s(transferTrackerDbEntry.getCreatedAt()).build());
-        item.put("last_updated_at", AttributeValue.builder().s(transferTrackerDbEntry.getLastUpdatedAt()).build());
-        item.put("state", AttributeValue.builder().s(transferTrackerDbEntry.getState()).build());
-        item.put("large_ehr_core_message_id", AttributeValue.builder().s(transferTrackerDbEntry.getLargeEhrCoreMessageId()).build());
-        item.put("is_active", AttributeValue.builder().s(transferTrackerDbEntry.getIsActive().toString()).build());
+        item.put("nhs_number", AttributeValue.builder().s(transfer.getNhsNumber()).build());
+        item.put("conversation_id", AttributeValue.builder().s(transfer.getConversationId()).build());
+        item.put("source_gp", AttributeValue.builder().s(transfer.getSourceGP()).build());
+        item.put("nems_message_id", AttributeValue.builder().s(transfer.getNemsMessageId()).build());
+        item.put("nems_event_last_updated", AttributeValue.builder().s(transfer.getNemsEventLastUpdated()).build());
+        item.put("created_at", AttributeValue.builder().s(transfer.getCreatedAt()).build());
+        item.put("last_updated_at", AttributeValue.builder().s(transfer.getLastUpdatedAt()).build());
+        item.put("state", AttributeValue.builder().s(transfer.getState()).build());
+        item.put("large_ehr_core_message_id", AttributeValue.builder().s(transfer.getLargeEhrCoreMessageId()).build());
+        item.put("is_active", AttributeValue.builder().s(transfer.getIsActive().toString()).build());
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
@@ -101,7 +101,7 @@ public class TransferTrackerDb {
                 .build());
     }
 
-    private TransferTrackerDbEntry fromDbItem(Map<String, AttributeValue> item) {
+    private Transfer fromDbItem(Map<String, AttributeValue> item) {
 
         var conversationId = item.get("conversation_id").s();
         var nhsNumber = item.get("nhs_number").s();
@@ -114,10 +114,10 @@ public class TransferTrackerDb {
         var largeEhrCoreMessageId = item.get("large_ehr_core_message_id").s();
         var active = item.get("is_active");
         var isActive = (active == null) ? false : true;
-        return new TransferTrackerDbEntry(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, isActive);
+        return new Transfer(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, isActive);
     }
 
-    public List<TransferTrackerDbEntry> getTimedOutRecords(String timeOutTimeStamp) {
+    public List<Transfer> getTimedOutRecords(String timeOutTimeStamp) {
         Map<String, String> expressionAttributeName =
                 new HashMap<>();
         expressionAttributeName.put("#is_active", "is_active");
@@ -144,8 +144,8 @@ public class TransferTrackerDb {
         return new ArrayList<>();
     }
 
-    private List<TransferTrackerDbEntry> getListOfDbEntries(List<Map<String, AttributeValue>> items) {
-        List<TransferTrackerDbEntry> dbEntries = new ArrayList<>();
+    private List<Transfer> getListOfDbEntries(List<Map<String, AttributeValue>> items) {
+        List<Transfer> dbEntries = new ArrayList<>();
         for (Map<String, AttributeValue> item : items) {
             dbEntries.add(fromDbItem(item));
         }

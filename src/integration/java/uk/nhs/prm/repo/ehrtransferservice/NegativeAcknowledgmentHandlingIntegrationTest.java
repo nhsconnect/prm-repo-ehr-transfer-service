@@ -14,7 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.TransferTrackerDbEntry;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
@@ -68,8 +68,8 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
 
     private UUID createTransferRecord() {
         var conversationId = UUID.fromString("13962cb7-6d46-4986-bdb4-3201bb25f1f7");
-        TransferTrackerDbEntry transferTrackerDbEntry =
-                new TransferTrackerDbEntry(
+        Transfer transfer =
+                new Transfer(
                         conversationId.toString(),
                         "0123456789",
                         "BOB13",
@@ -81,7 +81,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
                         UUID.randomUUID().toString(),
                         true
                 );
-        transferTrackerDb.save(transferTrackerDbEntry);
+        transferTrackerDb.save(transfer);
         return conversationId;
     }
 
@@ -89,7 +89,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         return ZonedDateTime.now(ZoneOffset.ofHours(0)).toString();
     }
 
-    private TransferTrackerDbEntry fetchTransferState(UUID conversationId) {
+    private Transfer fetchTransferState(UUID conversationId) {
         return transferTrackerDb.getByConversationId(conversationId.toString());
     }
 
