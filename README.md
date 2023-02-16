@@ -1,7 +1,10 @@
 ### prm-repo-ehr-transfer-service
 
-This is an implementation of a component to handle the receiving of the GP2GP message set used to transfer a patient's
-Electronic Health Record between GP Practices.
+This component of the Repository is reponsible for the request and receiving (incoming transfer) of a patient's
+Electronic Health Record over GP2GP.
+
+It is the first receiver of all inbound messages (from MHS inbound) for the Repository and will send on 
+irrelevant messages to a downstream "not handled" queue so that they can be actioned by the service responsible.
 
 ## Prerequisites
 
