@@ -8,7 +8,7 @@ locals {
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_URL_2", value = data.aws_ssm_parameter.openwire_endpoint_1.value },
     {
       name  = "EHR_TRANSFER_SERVICE_EHR_REPO_URL",
-      value = "https://ehr-repo.${var.environment_dns_zone}.patient-deductions.nhs.uk"
+      value = "https://ehr-repo.${data.aws_ssm_parameter.env_domain_name.value}"
     },
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
     { name = "EHR_TRANSFER_SERVICE_LOG_LEVEL", value = var.log_level },
@@ -21,7 +21,10 @@ locals {
     { name = "EHR_COMPLETE_QUEUE_NAME", value = aws_sqs_queue.ehr_complete.name },
     { name = "TRANSFER_TRACKER_DB_NAME", value = aws_dynamodb_table.transfer_tracker.name },
     { name = "NHS_ENVIRONMENT", value = var.environment },
-    { name = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL", value = data.aws_ssm_parameter.gp2gp_messenger_url.value },
+    {
+      name  = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL",
+      value = "https://gp2gp-messenger.${data.aws_ssm_parameter.env_domain_name.value}"
+    },
     { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value },
     { name = "SQS_LARGE_MESSAGE_BUCKET_NAME", value = aws_s3_bucket.sqs_large_message_bucket.bucket },
     { name = "SMALL_EHR_TOPIC_ARN", value = aws_sns_topic.small_ehr.arn },
