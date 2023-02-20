@@ -102,4 +102,13 @@
         <packageUrl regex="true">^pkg:maven/software\.amazon\.awssdk/utils@.*$</packageUrl>
         <cve>CVE-2021-4277</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+        false positive stax2-api.jar does not have the specified vulnerability
+
+   file name: stax2-api-4.2.1.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.codehaus\.woodstox/stax2\-api@.*$</packageUrl>
+        <cve>CVE-2022-40152</cve>
+    </suppress>
 </suppressions>
