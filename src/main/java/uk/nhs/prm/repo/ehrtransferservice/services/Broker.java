@@ -61,7 +61,7 @@ public class Broker {
         }
     }
 
-    public void sendMessageToEhrInOrEhrOut(ParsedMessage parsedMessage) {
+    public void sendMessageToEhrInOrUnhandled(ParsedMessage parsedMessage) {
         boolean conversationIdPresent = transferStore.isConversationIdPresent(parsedMessage.getConversationId().toString());
 
         if (conversationIdPresent) {

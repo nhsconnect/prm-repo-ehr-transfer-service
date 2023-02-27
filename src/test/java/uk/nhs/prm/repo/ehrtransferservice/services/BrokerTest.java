@@ -68,7 +68,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
         verify(attachmentMessagePublisher).sendMessage(messageBody, conversationId);
     }
@@ -81,7 +81,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
         verify(smallEhrMessagePublisher).sendMessage(messageBody, conversationId);
     }
@@ -94,7 +94,7 @@ public class BrokerTest {
         when(parsedMessage.isLargeMessage()).thenReturn(true);
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
         verify(largeEhrMessagePublisher).sendMessage(messageBody, conversationId);
     }
 
@@ -106,7 +106,7 @@ public class BrokerTest {
         when(acknowledgement.isNegativeAcknowledgement()).thenReturn(true);
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(acknowledgement);
+        broker.sendMessageToEhrInOrUnhandled(acknowledgement);
         verify(negativeAcknowledgementMessagePublisher).sendMessage("nack", conversationId);
     }
 
@@ -118,7 +118,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(acknowledgement);
+        broker.sendMessageToEhrInOrUnhandled(acknowledgement);
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
     }
 
@@ -129,7 +129,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
         verify(parsingDlqPublisher).sendMessage(any());
     }
 
@@ -141,7 +141,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(false);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
         verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
     }
@@ -154,7 +154,7 @@ public class BrokerTest {
 
         when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
 
-        broker.sendMessageToEhrInOrEhrOut(parsedMessage);
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
         verifyNoInteractions(ehrInUnhandledMessagePublisher);
     }

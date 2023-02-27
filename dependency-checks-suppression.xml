@@ -111,4 +111,28 @@
         <packageUrl regex="true">^pkg:maven/org\.codehaus\.woodstox/stax2\-api@.*$</packageUrl>
         <cve>CVE-2022-40152</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+         false positive CVE refers specifically to hutool not this aws package
+         file name: json-utils-2.18.41.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/software\.amazon\.awssdk/json\-utils@.*$</packageUrl>
+        <cve>CVE-2022-45688</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+         false positive CVE refers specifically to hutool not this aws package
+         file name: aws-json-protocol-2.18.41.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/software\.amazon\.awssdk/aws\-json\-protocol@.*$</packageUrl>
+        <cve>CVE-2022-45688</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+         false positive CVE refers specifically to hutool not this package
+         file name: jackson-core-2.13.4.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-core@.*$</packageUrl>
+        <cve>CVE-2022-45688</cve>
+    </suppress>
 </suppressions>

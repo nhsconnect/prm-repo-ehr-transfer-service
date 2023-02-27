@@ -84,7 +84,7 @@ public class JmsConsumerTest {
         headerMap.put("correlation-id", conversationId);
         jmsConsumer.onMessage(message, headerMap);
 
-        verify(broker).sendMessageToEhrInOrEhrOut(parsedMessage);
+        verify(broker).sendMessageToEhrInOrUnhandled(parsedMessage);
     }
 
     @Test
