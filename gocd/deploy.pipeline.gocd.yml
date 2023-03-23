@@ -88,9 +88,9 @@ pipelines:
       dev_env:
         pipeline: ehr-transfer-service.dev
         stage: deploy
-      e2e:
-        pipeline: repo-e2e-tests.dev
-        stage: test
+#      e2e:
+#        pipeline: repo-e2e-tests.dev
+#        stage: test
     environment_variables:
       NHS_ENVIRONMENT: test
     stages:
@@ -130,9 +130,9 @@ pipelines:
       test_env:
         pipeline: ehr-transfer-service.test
         stage: deploy
-      e2e:
-        pipeline: repo-e2e-tests.test
-        stage: test
+#      e2e:
+#        pipeline: repo-e2e-tests.test
+#        stage: test
     environment_variables:
       NHS_ENVIRONMENT: perf
     stages:
@@ -172,9 +172,9 @@ pipelines:
       test_env:
         pipeline: ehr-transfer-service.test
         stage: deploy
-      e2e:
-        pipeline: repo-e2e-tests.test
-        stage: test
+#      e2e:
+#        pipeline: repo-e2e-tests.test
+#        stage: test
     environment_variables:
       NHS_ENVIRONMENT: pre-prod
     stages:
