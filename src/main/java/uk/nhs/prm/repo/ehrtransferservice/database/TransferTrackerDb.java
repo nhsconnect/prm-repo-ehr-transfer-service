@@ -21,15 +21,26 @@ public class TransferTrackerDb {
     private final AppConfig config;
 
     public Transfer getByConversationId(String conversationId) {
+        String upperCaseConversationId = conversationId.toUpperCase();
         Map<String, AttributeValue> key = new HashMap<>();
-        key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
+        key.put("conversation_id", AttributeValue.builder().s(upperCaseConversationId).build());
         var getItemResponse = dynamoDbClient.getItem(GetItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .key(key)
                 .build());
 
         if (!getItemResponse.hasItem()) {
-            return null;
+            String lowerCaseConversationId = conversationId.toLowerCase();
+            Map<String, AttributeValue> lowerCaseKey = new HashMap<>();
+            lowerCaseKey.put("conversation_id", AttributeValue.builder().s(lowerCaseConversationId).build());
+            getItemResponse = dynamoDbClient.getItem(GetItemRequest.builder()
+                    .tableName(config.transferTrackerDbTableName())
+                    .key(lowerCaseKey)
+                    .build());
+
+            if (!getItemResponse.hasItem()) {
+                return null;
+            }
         }
 
         return fromDbItem(getItemResponse.item());
