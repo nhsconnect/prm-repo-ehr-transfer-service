@@ -33,6 +33,8 @@ public class SimpleAmqpQueue {
             msg.setApplicationProperties(properties);
             msg.setAmqpValue(new AmqpValue(new AMQPString(messageBody)));
 
+
+
             var p = createProducer();
             p.send(msg);
             p.close();
