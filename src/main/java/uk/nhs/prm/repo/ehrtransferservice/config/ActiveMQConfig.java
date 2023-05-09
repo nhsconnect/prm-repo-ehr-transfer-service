@@ -38,7 +38,7 @@ public class ActiveMQConfig {
         factory.setSessionAcknowledgeMode(CLIENT_ACKNOWLEDGE);
         factory.setBackOff(new FixedBackOff(5000, 10));
         // This provides all boot's default to this factory, including the message converter
-        configurer.configure(factory, connectionFactory);
+//        configurer.configure(factory, connectionFactory);
         // You could still override some of Boot's default if necessary.
         return factory;
     }

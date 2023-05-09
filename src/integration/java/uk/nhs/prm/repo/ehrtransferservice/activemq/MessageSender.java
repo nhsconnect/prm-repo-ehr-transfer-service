@@ -8,11 +8,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MessageSender {
-
-    @Autowired
     private JmsTemplate jmsTemplate;
 
     private static final Logger logger = LoggerFactory.getLogger(MessageSender.class);
+
+    @Autowired
+    public MessageSender(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
+    }
 
     public void sendTextMessage(String destination, String message) {
         logger.info("Sending message to {} destination with text {}", destination, message);
