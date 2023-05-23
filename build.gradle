@@ -89,7 +89,7 @@ dependencies {
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.0"
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
-    integrationImplementation 'com.swiftmq:swiftmq-client:12.3.0'
+    integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
 }
 
 test {
