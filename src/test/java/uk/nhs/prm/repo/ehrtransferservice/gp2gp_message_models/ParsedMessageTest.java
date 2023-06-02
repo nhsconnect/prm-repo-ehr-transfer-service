@@ -149,7 +149,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnEmptyArrayWhenNoAttachments() {
+    public void shouldReturnEmptyArrayWhenNoFragments() {
         List<UUID> expectedListOfMIDs = new ArrayList<>();
 
         SOAPEnvelope envelope = new SOAPEnvelope();
@@ -157,11 +157,11 @@ public class ParsedMessageTest {
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(cid);
         ParsedMessage message = new ParsedMessage(envelope, null, null);
-        assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
+        assertThat(message.getFragmentMessageIds(), equalTo(expectedListOfMIDs));
     }
 
     @Test
-    public void shouldReturnArrayOfAttachmentMessageIdsWhenMessageHasAttachments() {
+    public void shouldReturnArrayOfFragmentMessageIdsWhenMessageHasFragments() {
         List<UUID> expectedListOfMIDs = new ArrayList<>();
         expectedListOfMIDs.add(UUID.fromString("BFA900F3-4D4E-4661-8A78-82BE5742F0CB"));
         expectedListOfMIDs.add(UUID.fromString("7D52B137-36CE-4179-8375-40B42AFCCF81"));
@@ -172,7 +172,7 @@ public class ParsedMessageTest {
         envelope.body.manifest.add(mid);
         envelope.body.manifest.add(othermid);
         ParsedMessage message = new ParsedMessage(envelope, null, null);
-        assertThat(message.getAttachmentMessageIds(), equalTo(expectedListOfMIDs));
+        assertThat(message.getFragmentMessageIds(), equalTo(expectedListOfMIDs));
     }
 
     @Test

@@ -64,9 +64,9 @@ public class EhrRepoClient {
         var messageId = parsedMessage.getMessageId();
         var messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
         var nhsNumber = parsedMessage.getNhsNumber();
-        var attachmentMessageIds = parsedMessage.getAttachmentMessageIds();
+        var fragmentMessageIds = parsedMessage.getFragmentMessageIds();
 
-        var jsonPayloadString = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
+        var jsonPayloadString = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, fragmentMessageIds));
         var jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
 
         HttpRequest request = HttpRequest.newBuilder()

@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class BrokerTest {
     @Mock
-    AttachmentMessagePublisher attachmentMessagePublisher;
+    FragmentMessagePublisher fragmentMessagePublisher;
     @Mock
     SmallEhrMessagePublisher smallEhrMessagePublisher;
     @Mock
@@ -61,7 +61,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendCopcMessageToAttachmentMessagePublisher()  {
+    public void shouldSendCopcMessageToFragmentMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("COPC_IN000001UK01", messageBody, conversationId);
@@ -70,7 +70,7 @@ public class BrokerTest {
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
-        verify(attachmentMessagePublisher).sendMessage(messageBody, conversationId);
+        verify(fragmentMessagePublisher).sendMessage(messageBody, conversationId);
     }
 
     @Test

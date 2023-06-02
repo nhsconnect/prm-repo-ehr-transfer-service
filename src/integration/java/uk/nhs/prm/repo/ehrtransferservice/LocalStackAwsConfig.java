@@ -261,16 +261,16 @@ public class LocalStackAwsConfig {
     private void setUpQueueAndTopics() {
         amazonSQSAsync.createQueue(repoIncomingQueueName);
 
-        var attachmentQueue = amazonSQSAsync.createQueue(largeMessageFragmentsQueueName);
-        var attachmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_message_fragments_topic").build());
-        createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentQueue.getQueueUrl()));
+        var fragmentQueue = amazonSQSAsync.createQueue(largeMessageFragmentsQueueName);
+        var fragmentsTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_large_message_fragments_topic").build());
+        createSnsTestReceiverSubscription(fragmentsTopic, getQueueArn(fragmentQueue.getQueueUrl()));
 
         var transferCompleteQueue = amazonSQSAsync.createQueue(transferCompleteQueueName);
         var transferCompleteTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_transfer_complete_topic").build());
         createSnsTestReceiverSubscription(transferCompleteTopic, getQueueArn(transferCompleteQueue.getQueueUrl()));
 
-        var attachmentObservabilityQueue = amazonSQSAsync.createQueue(largeMessageFragmentsObservabilityQueueName);
-        createSnsTestReceiverSubscription(attachmentsTopic, getQueueArn(attachmentObservabilityQueue.getQueueUrl()));
+        var fragmentObservabilityQueue = amazonSQSAsync.createQueue(largeMessageFragmentsObservabilityQueueName);
+        createSnsTestReceiverSubscription(fragmentsTopic, getQueueArn(fragmentObservabilityQueue.getQueueUrl()));
 
         var smallEhrQueue = amazonSQSAsync.createQueue(smallEhrQueueName);
         var smallEhrTopic = snsClient.createTopic(CreateTopicRequest.builder().name("test_small_ehr_topic").build());

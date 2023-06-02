@@ -130,7 +130,7 @@ public class EhrRepoClientTest {
         when(mockParsedMessage.getConversationId()).thenReturn(conversationId);
         when(mockParsedMessage.getMessageId()).thenReturn(messageId);
         when(mockParsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
-        when(mockParsedMessage.getAttachmentMessageIds()).thenReturn(Collections.emptyList());
+        when(mockParsedMessage.getFragmentMessageIds()).thenReturn(Collections.emptyList());
 
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
         Exception expected = assertThrows(HttpException.class, () ->
@@ -144,11 +144,11 @@ public class EhrRepoClientTest {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
-        UUID attachmentId = UUID.randomUUID();
+        UUID fragmentId = UUID.randomUUID();
         String nhsNumber = "1234567890";
         String messageType = "ehrExtract";
         String interactionId = "RCMR_IN030000UK06";
-        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[\"" + attachmentId + "\"]}}}";
+        String requestBody = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"fragmentMessageIds\":[\"" + fragmentId + "\"]}}}";
 
         //TODO: Refactor the below json body
         String responseBody = "{\"healthRecordStatus\":\"complete\"}";
@@ -163,7 +163,7 @@ public class EhrRepoClientTest {
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
 
         // Create parsed message to store
-        SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, attachmentId, interactionId);
+        SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, fragmentId, interactionId);
         EhrExtractMessageWrapper ehrExtractMessageWrapper = getMessageContent(nhsNumber);
         ParsedMessage parsedMessage = new ParsedMessage(envelope, ehrExtractMessageWrapper, null);
 
@@ -191,10 +191,10 @@ public class EhrRepoClientTest {
         return ehrExtractMessageWrapper;
     }
 
-    private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, UUID attachmentId, String interactionId) {
+    private SOAPEnvelope getSoapEnvelope(UUID conversationId, UUID messageId, UUID fragmentId, String interactionId) {
         SOAPEnvelope envelope = new SOAPEnvelope();
         Reference reference = new Reference();
-        reference.href = "mid:" + attachmentId;
+        reference.href = "mid:" + fragmentId;
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
         envelope.body.manifest.add(reference);
