@@ -16,7 +16,7 @@ public class Broker {
     private static final String EHR_EXTRACT_INTERACTION_ID = "RCMR_IN030000UK06";
     private static final String ACKNOWLEDGEMENT_INTERACTION_ID = "MCCI_IN010000UK13";
 
-    private final AttachmentMessagePublisher attachmentMessagePublisher;
+    private final FragmentMessagePublisher fragmentMessagePublisher;
     private final SmallEhrMessagePublisher smallEhrMessagePublisher;
     private final LargeEhrMessagePublisher largeEhrMessagePublisher;
     private final NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
@@ -42,7 +42,7 @@ public class Broker {
                 break;
             case LARGE_MESSAGE_FRAGMENT_INTERACTION_ID:
                 log.info("Message Type: LARGE MESSAGE FRAGMENT");
-                attachmentMessagePublisher.sendMessage(message, conversationId);
+                fragmentMessagePublisher.sendMessage(message, conversationId);
                 break;
             case ACKNOWLEDGEMENT_INTERACTION_ID:
                 var acknowledgement = (Acknowledgement) parsedMessage;

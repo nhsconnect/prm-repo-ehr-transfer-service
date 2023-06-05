@@ -16,24 +16,24 @@ public class ConfirmMessageStoredTest {
     UUID conversationId = UUID.randomUUID();
     String nhsNumber = "1234567890";
     String messageType = "ehrExtract";
-    List<UUID> attachmentMessageIds = new ArrayList<>();
-    UUID attachmentMessageID = UUID.randomUUID();
-    UUID secondAttachmentMessageID = UUID.randomUUID();
+    List<UUID> fragmentMessageIds = new ArrayList<>();
+    UUID fragmentMessageID = UUID.randomUUID();
+    UUID secondFragmentMessageID = UUID.randomUUID();
 
     @Test
     public void shouldSerializeToJson() {
-        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[]}}}";
-        String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
+        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"fragmentMessageIds\":[]}}}";
+        String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, fragmentMessageIds));
         assertThat(jsonText, equalTo(expectedJson));
     }
 
     @Test
-    public void shouldSerializeToJsonWithAttachmentMessageIds() {
-        attachmentMessageIds.add(attachmentMessageID);
-        attachmentMessageIds.add(secondAttachmentMessageID);
+    public void shouldSerializeToJsonWithFragmentMessageIds() {
+        fragmentMessageIds.add(fragmentMessageID);
+        fragmentMessageIds.add(secondFragmentMessageID);
 
-        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"attachmentMessageIds\":[\"" + attachmentMessageID + "\",\"" + secondAttachmentMessageID + "\"]}}}";
-        String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, attachmentMessageIds));
+        String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"fragmentMessageIds\":[\"" + fragmentMessageID + "\",\"" + secondFragmentMessageID + "\"]}}}";
+        String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, fragmentMessageIds));
         assertThat(jsonText, equalTo(expectedJson));
     }
 }

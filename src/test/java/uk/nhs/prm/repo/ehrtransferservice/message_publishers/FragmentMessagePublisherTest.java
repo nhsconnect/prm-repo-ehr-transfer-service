@@ -12,23 +12,23 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class AttachmentMessagePublisherTest {
+class FragmentMessagePublisherTest {
     @Mock
     private MessagePublisher messagePublisher;
 
     private final static String topicArn = "topicArn";
 
-    private AttachmentMessagePublisher attachmentMessagePublisher;
+    private FragmentMessagePublisher fragmentMessagePublisher;
 
     @BeforeEach
     void setUp() {
-        attachmentMessagePublisher = new AttachmentMessagePublisher(messagePublisher, topicArn);
+        fragmentMessagePublisher = new FragmentMessagePublisher(messagePublisher, topicArn);
     }
 
     @Test
-    void shouldPublishMessageToTheAttachmentTopic() {
+    void shouldPublishMessageToTheFragmentTopic() {
         var conversationId = UUID.randomUUID();
-        attachmentMessagePublisher.sendMessage("message", conversationId);
+        fragmentMessagePublisher.sendMessage("message", conversationId);
         verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
     }
 }

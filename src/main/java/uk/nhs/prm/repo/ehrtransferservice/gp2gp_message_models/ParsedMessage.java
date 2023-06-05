@@ -100,16 +100,17 @@ public class ParsedMessage {
         return false;
     }
 
-    public List<UUID> getAttachmentMessageIds() {
-        List<UUID> attachmentMessageIds = new ArrayList<>();
+    public List<UUID> getFragmentMessageIds() {
+        List<UUID> fragmentMessageIds = new ArrayList<>();
         SOAPEnvelope soapEnvelope = getSoapEnvelope();
 
-        for (Reference reference : soapEnvelope.body.manifest) {
+        soapEnvelope.body.manifest.forEach(reference -> {
             if (reference.href.contains("mid")) {
-                String attachmentMessageId = reference.href.substring(4);
-                attachmentMessageIds.add(UUID.fromString(attachmentMessageId));
+                String fragmentMessageId = reference.href.substring(4);
+                fragmentMessageIds.add(UUID.fromString(fragmentMessageId));
             }
-        }
-        return attachmentMessageIds;
+        });
+
+        return fragmentMessageIds;
     }
 }

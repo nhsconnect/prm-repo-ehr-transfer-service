@@ -121,17 +121,17 @@ public class ParserBrokerIntegrationTest {
 
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
-        var attachmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
+        var fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
 
         var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
-        inboundQueueFromMhs.sendMessage(attachmentMessageBody);
+        inboundQueueFromMhs.sendMessage(fragmentMessageBody);
 
-        var attachmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
-        System.out.println("attachmentsQueueUrl: " + attachmentsQueueUrl);
+        var fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
+        System.out.println("fragmentsQueueUrl: " + fragmentsQueueUrl);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(attachmentsQueueUrl);
-            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(attachmentMessageBody));
+            var receivedMessageHolder = checkMessageInRelatedQueue(fragmentsQueueUrl);
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(fragmentMessageBody));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
