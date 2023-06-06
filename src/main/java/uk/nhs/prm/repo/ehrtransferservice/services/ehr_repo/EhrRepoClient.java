@@ -62,7 +62,7 @@ public class EhrRepoClient {
         var endpoint = "/messages";
         var conversationId = parsedMessage.getConversationId();
         var messageId = parsedMessage.getMessageId();
-        var messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "attachment";
+        var messageType = parsedMessage.getInteractionId().equals("RCMR_IN030000UK06") ? "ehrExtract" : "fragment";
         var nhsNumber = parsedMessage.getNhsNumber();
         var fragmentMessageIds = parsedMessage.getFragmentMessageIds();
 
