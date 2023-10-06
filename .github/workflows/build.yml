@@ -20,7 +20,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args:
-            -Dsonar.projectKey=prm-orphaned-record-continuity_prm-repo-ehr-transfer-service
-            -Dsonar.organization=prm-orphaned-record-continuity
