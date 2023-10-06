@@ -5,6 +5,7 @@ plugins {
     id 'jacoco'
     id 'com.github.spotbugs' version '5.0.13'
     id 'org.owasp.dependencycheck' version '7.4.4'
+    id 'org.sonarqube' version '4.3.1.3277'
 }
 
 group = 'uk.nhs.prm.repo'
@@ -173,6 +174,14 @@ dependencyCheck {
           ossIndexEnabled = false
     }
 
+}
+
+sonar {
+  properties {
+    property 'sonar.projectKey', 'prm-orphaned-record-continuity_prm-repo-ehr-transfer-service'
+    property 'sonar.organization', 'prm-orphaned-record-continuity'
+    property 'sonar.host.url', 'https://sonarcloud.io'
+  }
 }
 
 check.dependsOn integration
