@@ -1,4 +1,6 @@
 name: SonarCloud
+env:
+  NHS_ENVIRONMENT: 'dev'
 on:
   push:
     branches:
