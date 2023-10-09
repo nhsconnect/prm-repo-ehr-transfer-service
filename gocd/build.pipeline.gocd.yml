@@ -15,6 +15,7 @@ pipelines:
             sonar_analysis:
               environment_variables:
                 NHS_ENVIRONMENT: dev
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
               resources:
                 - docker
               artifacts:
