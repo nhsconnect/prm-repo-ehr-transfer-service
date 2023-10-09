@@ -1,6 +1,4 @@
 name: SonarCloud
-env:
-  NHS_ENVIRONMENT: 'dev'
 on:
   push:
     branches:
@@ -38,4 +36,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          NHS_ENVIRONMENT: 'dev'
         run: ./gradlew build sonar --info
