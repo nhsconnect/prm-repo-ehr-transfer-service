@@ -245,14 +245,14 @@ case "${command}" in
     configure_local_envs
     dojo -c Dojofile-itest
     ;;
-#  _run_sonar_with_localstack)
-#      ./gradlew build sonar --info
-#      ;;
-#  run_sonar_with_localstack)
-#      ensure_prev_build_images_are_stopped
-#      configure_local_envs
-#      dojo -c Dojofile-itest "./tasks _run_sonar_with_localstack"
-#      ;;
+  _run_sonar)
+      ./gradlew build sonar --info
+      ;;
+  run_sonar)
+      ensure_prev_build_images_are_stopped
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _run_sonar"
+      ;;
   _dep)
       gradle dependencyCheckAnalyze
       ;;
