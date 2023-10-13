@@ -89,7 +89,6 @@ dependencies {
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.0"
     testImplementation 'org.awaitility:awaitility:4.2.0'
-    testImplementation 'org.apache.activemq.tooling:activemq-junit:5.18.2'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.3.0'
 }

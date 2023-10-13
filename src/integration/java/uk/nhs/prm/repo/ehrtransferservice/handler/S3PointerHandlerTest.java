@@ -62,11 +62,11 @@ public class S3PointerHandlerTest {
                 RequestBody.fromBytes(Files.readAllBytes(Paths.get("src/integration/resources/data/RCMR_IN030000UK06"))));
     }
 
-//    @Test
-//    void shouldReadLargeMessageContentFromS3() throws Exception {
-//        ParsedMessage parsedMessage = s3ExtendedMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
-//        assertThat(parsedMessage.getInteractionId()).isEqualTo("RCMR_IN030000UK06");
-//    }
+    @Test
+    void shouldReadLargeMessageContentFromS3() throws Exception {
+        ParsedMessage parsedMessage = s3ExtendedMessageFetcher.retrieveMessageFromS3(getStaticS3PointerMessage());
+        assertThat(parsedMessage.getInteractionId()).isEqualTo("RCMR_IN030000UK06");
+    }
 
     private S3PointerMessage getStaticS3PointerMessage() {
         var validMessage = "{\"s3BucketName\":\"test-s3-bucket-name-cant-have-underscores\",\"s3Key\":\"/large-message-key\"}";
