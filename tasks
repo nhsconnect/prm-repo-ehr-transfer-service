@@ -77,7 +77,10 @@ function configure_local_envs {
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_PASSWORD=admin
   export LOCALSTACK_URL="http://localstack:4566"
   export AWS_REGION=${AWS_DEFAULT_REGION}
-  export SONAR_TOKEN=$(get_aws_ssm_secret '/repo/dev/output/ehr-transfer-service/sonar_token')
+}
+
+function configure_sonar_environment_variable {
+  export SONAR_TOKEN=$(_get_aws_ssm_secret "/repo/dev/output/ehr-transfer-service/sonar_token")
 }
 
 #######################
@@ -247,6 +250,7 @@ case "${command}" in
     dojo -c Dojofile-itest
     ;;
   _run_sonar)
+      configure_sonar_environment_variable
       ./gradlew build sonar --info
       ;;
   run_sonar)
