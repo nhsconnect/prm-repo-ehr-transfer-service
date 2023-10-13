@@ -216,9 +216,9 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _test_integration"
       ;;
   test_integration_shell)
-    configure_local_envs
-    dojo -c Dojofile-itest
-    ;;
+      configure_local_envs
+      dojo -c Dojofile-itest
+      ;;
   _test_coverage)
       gradle jacocoTestCoverageVerification
       ;;
@@ -239,23 +239,23 @@ case "${command}" in
       dojo -c Dojofile-itest "./tasks _code_quality"
       ;;
   _test_all)
-    gradle test integration jacocoTestCoverageVerification check
-    ;;
+      gradle test integration jacocoTestCoverageVerification check
+      ;;
   test_all)
-    configure_local_envs
-    dojo -c Dojofile-itest "./tasks _test_all"
-    ;;
+      configure_local_envs
+      dojo -c Dojofile-itest "./tasks _test_all"
+      ;;
   test_all_shell)
-    configure_local_envs
-    dojo -c Dojofile-itest
-    ;;
+      configure_local_envs
+      dojo -c Dojofile-itest
+      ;;
   _run_sonar)
-      configure_sonar_environment_variable
       ./gradlew build sonar --info
       ;;
   run_sonar)
       ensure_prev_build_images_are_stopped
       configure_local_envs
+      configure_sonar_environment_variable
       dojo -c Dojofile-itest "./tasks _run_sonar"
       ;;
   _dep)
