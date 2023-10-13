@@ -77,7 +77,7 @@ function configure_local_envs {
   export EHR_TRANSFER_SERVICE_MHS_QUEUE_PASSWORD=admin
   export LOCALSTACK_URL="http://localstack:4566"
   export AWS_REGION=${AWS_DEFAULT_REGION}
-  export SONAR_TOKEN=77d4b284b219b1fdd0552b888cadef6db240984e
+  export SONAR_TOKEN=$(get_aws_ssm_secret "/repo/dev/output/ehr-transfer-service/sonar_token")
 }
 
 #######################
