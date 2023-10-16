@@ -254,6 +254,7 @@ case "${command}" in
       ;;
   run_sonar)
       ensure_prev_build_images_are_stopped
+      _assume_environment_role $NHS_ENVIRONMENT
       configure_local_envs
       configure_sonar_environment_variable
       dojo -c Dojofile-itest "./tasks _run_sonar"
