@@ -250,7 +250,6 @@ case "${command}" in
       dojo -c Dojofile-itest
       ;;
   _run_sonar)
-      _test_coverage
       ./gradlew build sonar --info
       ;;
   run_sonar)
