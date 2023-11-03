@@ -44,7 +44,7 @@ class EhrRequestTimeoutHandlerTest {
     String createdAt = "2017-11-01T15:00:33+00:00";
     String lastUpdatedAt = "2017-11-01T15:00:33+00:00";
     String largeEhrCoreMessageId = "large ehr core message Id";
-    Boolean active = true;
+    boolean active = true;
 
     @BeforeEach
     void setUp() {

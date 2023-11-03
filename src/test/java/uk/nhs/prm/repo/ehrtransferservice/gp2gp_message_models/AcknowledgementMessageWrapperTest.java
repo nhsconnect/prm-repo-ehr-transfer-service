@@ -135,7 +135,7 @@ class AcknowledgementMessageWrapperTest {
     @Test
     public void reasonsShouldBeEmptyWhenThereIsNoControlActElementThen(){
         var wrapper = new AcknowledgementMessageWrapper();
-        wrapper.controlActEvent = null;
+        wrapper.setControlActEvent(null);
 
         assertThat(wrapper.reasons()).isEmpty();
     }

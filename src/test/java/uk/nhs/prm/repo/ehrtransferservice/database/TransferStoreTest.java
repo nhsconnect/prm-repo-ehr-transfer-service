@@ -46,7 +46,7 @@ class TransferStoreTest {
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
         assertThat(value.getNemsEventLastUpdated()).isEqualTo("last-updated");
         assertThat(value.getLargeEhrCoreMessageId()).isEqualTo("");
-        assertThat(value.getIsActive()).isEqualTo(true);
+        assertThat(value.isActive()).isEqualTo(true);
         assertThat(Instant.parse(value.getLastUpdatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
         assertThat(Instant.parse(value.getCreatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }

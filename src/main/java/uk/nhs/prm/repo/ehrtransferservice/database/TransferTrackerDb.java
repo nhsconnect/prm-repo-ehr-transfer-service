@@ -47,14 +47,17 @@ public class TransferTrackerDb {
         item.put("last_updated_at", AttributeValue.builder().s(transfer.getLastUpdatedAt()).build());
         item.put("state", AttributeValue.builder().s(transfer.getState()).build());
         item.put("large_ehr_core_message_id", AttributeValue.builder().s(transfer.getLargeEhrCoreMessageId()).build());
-        item.put("is_active", AttributeValue.builder().s(transfer.getIsActive().toString()).build());
+        item.put("is_active", AttributeValue.builder().s((
+                transfer.isActive() ? "true" : "false"))
+                .build());
+
         dynamoDbClient.putItem(PutItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .item(item)
                 .build());
     }
 
-    public void update(String conversationId, String state, String lastUpdatedAt, Boolean isActive) {
+    public void update(String conversationId, String state, String lastUpdatedAt, boolean isActive) {
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(conversationId).build());
 
@@ -77,12 +80,11 @@ public class TransferTrackerDb {
                 .build());
     }
 
-    private String createUpdateExpression(Boolean isActive) {
+    private String createUpdateExpression(boolean isActive) {
         var updateStateAndLastUpdatedAt = "set #state = :state, #last_updated_at = :last_updated_at";
-        if (!isActive) {
-            return "remove is_active " + updateStateAndLastUpdatedAt;
-        }
-        return updateStateAndLastUpdatedAt;
+        return (isActive)
+                ? updateStateAndLastUpdatedAt
+                :"remove is_active " + updateStateAndLastUpdatedAt;
     }
 
     public void updateLargeEhrCoreMessageId(String conversationId, String largeEhrCoreMessageId) {
@@ -113,7 +115,7 @@ public class TransferTrackerDb {
         var state = item.get("state").s();
         var largeEhrCoreMessageId = item.get("large_ehr_core_message_id").s();
         var active = item.get("is_active");
-        var isActive = (active == null) ? false : true;
+        var isActive = active != null;
         return new Transfer(conversationId, nhsNumber, sourceGp, nemsMessageId, nemsEventLastUpdated, state, createdAt, lastUpdatedAt, largeEhrCoreMessageId, isActive);
     }
 

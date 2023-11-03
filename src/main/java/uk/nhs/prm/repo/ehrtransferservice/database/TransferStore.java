@@ -33,8 +33,8 @@ public class TransferStore {
                             status,
                             getTimeNow(),
                             getTimeNow(),
-                            getLargeEhrCoreMessageId(),
-                            isActive()
+                            "", //This is a placeholder for the messageId from the LargeEhrCoreQueue,
+                            true
                     );
             transferTrackerDb.save(transfer);
             log.info("Recorded initial Repo Incoming event in Transfer Tracker DB with status: " + status);
@@ -53,16 +53,7 @@ public class TransferStore {
         return true;
     }
 
-    private String getLargeEhrCoreMessageId() {
-        String largeEhrCoreMessageId = ""; //This is a placeholder for the messageId from the LargeEhrCoreQueue
-        return largeEhrCoreMessageId;
-    }
-
-    private boolean isActive() {
-        return true;
-    }
-
-    public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status, Boolean isActive) {
+    public void handleEhrTransferStateUpdate(String conversationId, String nemsMessageId, String status, boolean isActive) {
         try {
             transferTrackerDb.update(conversationId, status, getTimeNow(), isActive);
             log.info("Updated state of EHR transfer in DB to: " + status);
