@@ -21,14 +21,21 @@ public class NegativeAcknowledgementHandler {
     private final TransferStore transferStore;
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
-    public void handleMessage(Acknowledgement acknowledgement) throws Exception {
+    public void handleMessage(Acknowledgement acknowledgement) {
         var conversationId = acknowledgement.getConversationId();
         boolean isActive = false;
 
         logFailureDetail(acknowledgement);
-        transferStore.handleEhrTransferStateUpdate(conversationId.toString(),
-                transferStore.findTransfer(conversationId.toString()).getNemsMessageId(), createState(acknowledgement), isActive);
-        publishTransferCompleteEvent(transferStore.findTransfer(conversationId.toString()), conversationId);
+
+        transferStore.handleEhrTransferStateUpdate(
+                conversationId.toString(),
+                transferStore.findTransfer(conversationId.toString()).getNemsMessageId(),
+                createState(acknowledgement),
+                isActive);
+
+        publishTransferCompleteEvent(
+                transferStore.findTransfer(conversationId.toString()),
+                conversationId);
     }
 
     private String createState(Acknowledgement acknowledgement) {

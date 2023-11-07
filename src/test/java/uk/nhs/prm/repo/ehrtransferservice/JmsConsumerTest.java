@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
-public class JmsConsumerTest {
+class JmsConsumerTest {
     @Mock
     AmqpMessageParser amqpMessageParser;
     @Mock

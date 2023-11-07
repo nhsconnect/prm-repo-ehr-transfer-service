@@ -16,7 +16,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 
 @Tag("unit")
-public class JmsProducerTest {
+class JmsProducerTest {
     @Mock
     JmsTemplate jmsTemplate;
     @InjectMocks

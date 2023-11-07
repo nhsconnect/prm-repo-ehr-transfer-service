@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AcknowledgementMessageWrapperTest {
     @Test
-    public void getTypeCodeShouldReturnedTheEnumeratedAcknowledgementTypeCode() {
+    void getTypeCodeShouldReturnedTheEnumeratedAcknowledgementTypeCode() {
         var acknowledgementMessage = new AcknowledgementMessageWrapper();
         acknowledgementMessage.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
         acknowledgementMessage.acknowledgement.typeCode = "AE";
@@ -19,7 +19,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getTypeCodeShouldHandleMissingTypeCode() {
+    void getTypeCodeShouldHandleMissingTypeCode() {
         var acknowledgementMessage = new AcknowledgementMessageWrapper();
         acknowledgementMessage.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
         acknowledgementMessage.acknowledgement.typeCode = null;
@@ -135,7 +135,7 @@ class AcknowledgementMessageWrapperTest {
     @Test
     public void reasonsShouldBeEmptyWhenThereIsNoControlActElementThen(){
         var wrapper = new AcknowledgementMessageWrapper();
-        wrapper.setControlActEvent(null);
+        wrapper.controlActEvent = null;
 
         assertThat(wrapper.reasons()).isEmpty();
     }

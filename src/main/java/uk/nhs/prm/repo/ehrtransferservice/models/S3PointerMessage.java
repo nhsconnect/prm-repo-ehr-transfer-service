@@ -3,10 +3,10 @@ package uk.nhs.prm.repo.ehrtransferservice.models;
 import com.google.gson.JsonObject;
 
 public class S3PointerMessage {
-    final public static String S3_BUCKET_NAME_PROPERTY = "s3BucketName";
-    final public static String S3_KEY_PROPERTY = "s3Key";
-    final private String s3BucketName;
-    final private String s3Key;
+    public static final String S3_BUCKET_NAME_PROPERTY = "s3BucketName";
+    public static final String S3_KEY_PROPERTY = "s3Key";
+    private final String s3BucketName;
+    private final String s3Key;
 
     public S3PointerMessage(JsonObject s3PointerJsonObject) {
         this.s3BucketName = s3PointerJsonObject.get(S3_BUCKET_NAME_PROPERTY).getAsString();

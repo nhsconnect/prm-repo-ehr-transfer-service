@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class StoreMessageResponseBody{
-
-    public String healthRecordStatus;
+    private String healthRecordStatus;
 }

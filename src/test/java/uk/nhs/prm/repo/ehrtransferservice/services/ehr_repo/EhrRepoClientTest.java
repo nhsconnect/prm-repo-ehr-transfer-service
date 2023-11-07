@@ -70,7 +70,7 @@ public class EhrRepoClientTest {
                 .withHeader("Authorization", matching("secret"))
                 .withHeader("traceId", matching(String.valueOf(traceId))));
 
-        assertThat(response.presignedUrl, Matchers.equalTo(new URL("https://fake-presigned-url")));
+        assertThat(response.getUrl(), Matchers.equalTo(new URL("https://fake-presigned-url")));
     }
 
     @Test

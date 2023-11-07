@@ -13,7 +13,9 @@ import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessa
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,14 +28,17 @@ public class EhrRepoClient {
     private final String ehrRepoAuthKey;
     private final Tracer tracer;
 
-
-    public EhrRepoClient(@Value("${ehrRepoUrl}") String ehrRepoUrl, @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey, Tracer tracer) throws MalformedURLException {
+    public EhrRepoClient(
+            @Value("${ehrRepoUrl}") String ehrRepoUrl,
+            @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey,
+            Tracer tracer
+    ) throws MalformedURLException {
         this.ehrRepoUrl = new URL(ehrRepoUrl);
         this.ehrRepoAuthKey = ehrRepoAuthKey;
         this.tracer = tracer;
     }
 
-    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws Exception {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws DuplicateMessageException, RuntimeException, IOException, URISyntaxException, InterruptedException {
         String endpoint = "/messages/" + conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -45,7 +50,6 @@ public class EhrRepoClient {
         HttpResponse<String> response = HttpClient.newBuilder()
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
-
 
         if (response.statusCode() == 409) {
             throw new DuplicateMessageException("Tried to store and already existing message in EHR Repo.");
