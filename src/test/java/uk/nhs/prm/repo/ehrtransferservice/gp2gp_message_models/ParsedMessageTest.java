@@ -41,7 +41,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnActionWhenSOAPIsValid() {
+    void shouldReturnActionWhenSOAPIsValid() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
@@ -52,7 +52,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnNullWhenSOAPDoesNotHaveAHeader() {
+    void shouldReturnNullWhenSOAPDoesNotHaveAHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
 
         ParsedMessage message = new ParsedMessage(envelope, null, null);
@@ -60,7 +60,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnNhsNumberForEhrExtract() {
+    void shouldReturnNhsNumberForEhrExtract() {
         EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
         ehrExtractMessageWrapper.controlActEvent = new EhrExtractMessageWrapper.ControlActEvent();
         ehrExtractMessageWrapper.controlActEvent.subject = new EhrExtractMessageWrapper.ControlActEvent.Subject();
@@ -75,7 +75,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnEhrRequestId() {
+    void shouldReturnEhrRequestId() {
         EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
         ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
         ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
@@ -88,7 +88,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnNhsNumberForEhrRequest() {
+    void shouldReturnNhsNumberForEhrRequest() {
         EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
         ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
         ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
@@ -103,7 +103,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnRequestingPracticeOdsCodeForEhrRequest() {
+    void shouldReturnRequestingPracticeOdsCodeForEhrRequest() {
         EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
         ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
         ehrRequestMessageWrapper.controlActEvent.subject = new EhrRequestMessageWrapper.ControlActEvent.Subject();
@@ -119,7 +119,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnLargeMessageTrueWhenThereIsMID() {
+    void shouldReturnLargeMessageTrueWhenThereIsMID() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
@@ -129,7 +129,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnLargeMessageFalseWhenThereIsNoMID() {
+    void shouldReturnLargeMessageFalseWhenThereIsNoMID() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
@@ -139,7 +139,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnLargeMessageFalseWhenReferenceIsInvalid() {
+    void shouldReturnLargeMessageFalseWhenReferenceIsInvalid() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.body = new SOAPBody();
         envelope.body.manifest = new ArrayList<>();
@@ -149,7 +149,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnEmptyArrayWhenNoFragments() {
+    void shouldReturnEmptyArrayWhenNoFragments() {
         List<UUID> expectedListOfMIDs = new ArrayList<>();
 
         SOAPEnvelope envelope = new SOAPEnvelope();
@@ -161,7 +161,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnArrayOfFragmentMessageIdsWhenMessageHasFragments() {
+    void shouldReturnArrayOfFragmentMessageIdsWhenMessageHasFragments() {
         List<UUID> expectedListOfMIDs = new ArrayList<>();
         expectedListOfMIDs.add(UUID.fromString("BFA900F3-4D4E-4661-8A78-82BE5742F0CB"));
         expectedListOfMIDs.add(UUID.fromString("7D52B137-36CE-4179-8375-40B42AFCCF81"));
@@ -176,7 +176,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnConversationIdWhenSOAPIsValid() {
+    void shouldReturnConversationIdWhenSOAPIsValid() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
@@ -186,7 +186,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnNullForConversationIdWhenSOAPDoesNotHaveAMessageHeader() {
+    void shouldReturnNullForConversationIdWhenSOAPDoesNotHaveAMessageHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         ParsedMessage message = new ParsedMessage(envelope, null, null);
@@ -194,7 +194,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnMessageIdWhenSOAPIsValid() {
+    void shouldReturnMessageIdWhenSOAPIsValid() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         envelope.header.messageHeader = new MessageHeader();
@@ -205,7 +205,7 @@ public class ParsedMessageTest {
     }
 
     @Test
-    public void shouldReturnNullForMessageIdWhenSOAPDoesNotHaveAMessageHeader() {
+    void shouldReturnNullForMessageIdWhenSOAPDoesNotHaveAMessageHeader() {
         SOAPEnvelope envelope = new SOAPEnvelope();
         envelope.header = new SOAPHeader();
         ParsedMessage message = new ParsedMessage(envelope, null, null);

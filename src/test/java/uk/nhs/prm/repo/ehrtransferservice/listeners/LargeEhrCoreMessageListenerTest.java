@@ -59,7 +59,7 @@ class LargeEhrCoreMessageListenerTest {
     }
 
     @Test
-    public void shouldAcknowledgeMessageWhenDuplicateMessageErrorIsCaught() throws Exception {
+    void shouldAcknowledgeMessageWhenDuplicateMessageErrorIsCaught() throws Exception {
         var message = getSqsTextMessage();
         var largeSqsMessage = mock(LargeSqsMessage.class);
 

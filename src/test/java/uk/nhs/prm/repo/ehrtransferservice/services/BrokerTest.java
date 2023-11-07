@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class BrokerTest {
+class BrokerTest {
     @Mock
     FragmentMessagePublisher fragmentMessagePublisher;
     @Mock
@@ -61,7 +61,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendCopcMessageToFragmentMessagePublisher()  {
+    void shouldSendCopcMessageToFragmentMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("COPC_IN000001UK01", messageBody, conversationId);
@@ -74,7 +74,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendSmallEhrMessageToSmallEhrMessagePublisher()  {
+    void shouldSendSmallEhrMessageToSmallEhrMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "ehr-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
@@ -87,7 +87,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendLargeEhrMessageToLargeEhrMessagePublisher()  {
+    void shouldSendLargeEhrMessageToLargeEhrMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
@@ -99,7 +99,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendNegativeAcknowledgementToNegativeAcknowledgementMessagePublisher()  {
+    void shouldSendNegativeAcknowledgementToNegativeAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "nack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
@@ -111,7 +111,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendPositiveAcknowledgementToPositiveAcknowledgementMessagePublisher()  {
+    void shouldSendPositiveAcknowledgementToPositiveAcknowledgementMessagePublisher()  {
         var conversationId = UUID.randomUUID();
         var messageBody = "positive-ack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
@@ -123,7 +123,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldSendUnreckognizedMessagesToDlq()  {
+    void shouldSendUnreckognizedMessagesToDlq()  {
         var conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("something-unreckognizable", "some-ack", conversationId);
 
@@ -134,7 +134,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
+    void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
@@ -147,7 +147,7 @@ public class BrokerTest {
     }
 
     @Test
-    public void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
+    void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);

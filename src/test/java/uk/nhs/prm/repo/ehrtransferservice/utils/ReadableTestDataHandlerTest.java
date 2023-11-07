@@ -10,7 +10,7 @@ class ReadableTestDataHandlerTest {
     private ReadableTestDataHandler readableHandler = new ReadableTestDataHandler();
 
     @Test
-    public void splitMessageShouldCreateReadableXmlEnvelopeFromMessage_soThatItCanBeUsedToMakeTestDataReadable() throws Exception {
+    void splitMessageShouldCreateReadableXmlEnvelopeFromMessage_soThatItCanBeUsedToMakeTestDataReadable() throws Exception {
         readableHandler.splitMessage("readabletestdataXReadableTestDataHandlerTestData");
 
         var readableEnvelope = rawLoader.getDataAsString("readable/readabletestdataX/ReadableTestDataHandlerTestData/envelope.xml");
@@ -21,7 +21,7 @@ class ReadableTestDataHandlerTest {
     }
 
     @Test
-    public void readMessageShouldCreateMessageBodyFromReadablePartsThatIsIdenticalToTheUnreadableOriginal() throws Exception {
+    void readMessageShouldCreateMessageBodyFromReadablePartsThatIsIdenticalToTheUnreadableOriginal() throws Exception {
         var unreadableMessage = rawLoader.getDataAsString("readabletestdataXReadableTestDataHandlerTestData");
 
         var messageFromReadableLoader = readableHandler.readMessage("readabletestdataX", "ReadableTestDataHandlerTestData");

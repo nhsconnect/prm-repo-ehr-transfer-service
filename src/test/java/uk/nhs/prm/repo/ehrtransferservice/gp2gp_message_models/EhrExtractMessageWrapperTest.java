@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.equalTo;
 @Tag("unit")
 public class EhrExtractMessageWrapperTest {
     @Test
-    public void shouldRetrieveNHSNumberFromEHRExtract() throws JsonProcessingException {
+    void shouldRetrieveNHSNumberFromEHRExtract() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN030000UK06 xmlns=\"urn:hl7-org:v3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"urn:hl7-org:v3 ..SchemasRCMR_IN030000UK06.xsd\">\n" +
                 "    <ControlActEvent classCode=\"CACT\" moodCode=\"EVN\">\n" +

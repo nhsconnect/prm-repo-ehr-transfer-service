@@ -53,7 +53,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     }
 
     @Test
-    public void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
+    void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
         var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13Failure");
         UUID transferConversationId = createTransferRecord();
 

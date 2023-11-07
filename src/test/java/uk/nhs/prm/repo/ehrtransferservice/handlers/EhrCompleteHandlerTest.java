@@ -51,19 +51,19 @@ class EhrCompleteHandlerTest {
     }
 
     @Test
-    public void shouldCallGp2gpMessengerServiceToSendPositiveAcknowledgement() throws Exception {
+    void shouldCallGp2gpMessengerServiceToSendPositiveAcknowledgement() throws Exception {
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
         verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transfer);
     }
 
     @Test
-    public void shouldUpdateDbWithEhrTransferStatusWhenEhrRequestSentSuccessfully() throws Exception {
+    void shouldUpdateDbWithEhrTransferStatusWhenEhrRequestSentSuccessfully() throws Exception {
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
         verify(transferStore).handleEhrTransferStateUpdate(conversationId.toString(), "some-nems-message-id", "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
     }
 
     @Test
-    public void shouldThrowErrorAndNotUpdateDbWhenFailsToSendPositiveAcknowledgement() throws Exception {
+    void shouldThrowErrorAndNotUpdateDbWhenFailsToSendPositiveAcknowledgement() throws Exception {
         doThrow(Exception.class).when(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, transfer);
 
         assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));
@@ -71,7 +71,7 @@ class EhrCompleteHandlerTest {
     }
 
     @Test
-    public void shouldPublishTransferCompleteMessageToTransferCompleteTopic() throws Exception {
+    void shouldPublishTransferCompleteMessageToTransferCompleteTopic() throws Exception {
         var transferComplete = new TransferCompleteEvent("nemsEventLastUpdated", "some-ods-code", "SUSPENSION", "some-nems-message-id", "some-nhs-number");
 //        when(transferTrackerDbEntry.getNhsNumber()).thenReturn("some-nhs-number");
 //        when(transferTrackerDbEntry.getSourceGP()).thenReturn("some-ods-code");
@@ -82,7 +82,7 @@ class EhrCompleteHandlerTest {
     }
 
     @Test
-    public void shouldThrowErrorAndNotSendMessageWhenDbFailsTOUpdate() {
+    void shouldThrowErrorAndNotSendMessageWhenDbFailsTOUpdate() {
         doThrow(TransferTrackerDbException.class).when(transferStore).handleEhrTransferStateUpdate(conversationId.toString(),"nemsMessageId","ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", false);
 
         assertThrows(Exception.class, () -> ehrCompleteHandler.handleMessage(ehrCompleteEvent));

@@ -28,7 +28,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getErrorDisplayNameFromReasonShouldReturnItsCodeDisplayName() {
+    void getErrorDisplayNameFromReasonShouldReturnItsCodeDisplayName() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = anEventCode();
@@ -38,7 +38,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getErrorDisplayNameFromReasonWithoutEventShouldReturnNull() {
+    void getErrorDisplayNameFromReasonWithoutEventShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = null;
 
@@ -46,7 +46,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getErrorDisplayNameFromReasonWithAnEventWithoutACodeShouldReturnNull() {
+    void getErrorDisplayNameFromReasonWithAnEventWithoutACodeShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = null;
@@ -55,7 +55,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getCodeFromReasonShouldReturnTheCodeOfItsCode() {
+    void getCodeFromReasonShouldReturnTheCodeOfItsCode() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         var eventCode = anEventCode();
@@ -66,7 +66,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getCodeFromReasonWithoutEventShouldReturnNull() {
+    void getCodeFromReasonWithoutEventShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = null;
 
@@ -74,7 +74,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getCodeFromReasonWithEventButNoEventCodeShouldReturnNull() {
+    void getCodeFromReasonWithEventButNoEventCodeShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = null;
@@ -83,7 +83,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getCodeSystemFromReasonShouldReturnItWhenPresent() {
+    void getCodeSystemFromReasonShouldReturnItWhenPresent() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         var eventCode = anEventCode();
@@ -94,7 +94,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getCodeSystemFromReasonWithoutEventCodeShouldReturnNull() {
+    void getCodeSystemFromReasonWithoutEventCodeShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = null;
@@ -103,7 +103,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getQualifierFromReasonShouldReturnItWhenPresent() {
+    void getQualifierFromReasonShouldReturnItWhenPresent() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = anEventCode();
@@ -114,7 +114,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getQualifierFromReasonWithoutQualifierShouldReturnNull() {
+    void getQualifierFromReasonWithoutQualifierShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = anEventCode();
@@ -124,7 +124,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void getQualifierFromReasonWithoutEventCodeShouldReturnNull() {
+    void getQualifierFromReasonWithoutEventCodeShouldReturnNull() {
         var reason = new AcknowledgementMessageWrapper.ControlActEvent.Reason();
         reason.justifyingDetectedIssueEvent = anEvent();
         reason.justifyingDetectedIssueEvent.code = null;
@@ -133,7 +133,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void reasonsShouldBeEmptyWhenThereIsNoControlActElementThen(){
+    void reasonsShouldBeEmptyWhenThereIsNoControlActElementThen(){
         var wrapper = new AcknowledgementMessageWrapper();
         wrapper.controlActEvent = null;
 
@@ -141,7 +141,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void acknowledgementDetailsShouldBeEmptyWhenThereIsNoAcknowledgementDetailsInAcknowledgement(){
+    void acknowledgementDetailsShouldBeEmptyWhenThereIsNoAcknowledgementDetailsInAcknowledgement(){
         var wrapper = new AcknowledgementMessageWrapper();
         wrapper.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
         wrapper.acknowledgement.acknowledgementDetail = null;
@@ -150,7 +150,7 @@ class AcknowledgementMessageWrapperTest {
     }
 
     @Test
-    public void acknowledgementDetailPropertiesReturnNullWhenCodeElementIsMissing(){
+    void acknowledgementDetailPropertiesReturnNullWhenCodeElementIsMissing(){
         var wrapper = new AcknowledgementMessageWrapper();
         wrapper.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
 

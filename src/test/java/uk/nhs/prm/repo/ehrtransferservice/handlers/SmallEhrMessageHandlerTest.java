@@ -39,14 +39,14 @@ class SmallEhrMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoServiceToStoreMessageForSmallEhr() throws Exception {
+    void shouldCallEhrRepoServiceToStoreMessageForSmallEhr() throws Exception {
         smallEhrMessageHandler.handleMessage(parsedMessage);
         verify(ehrRepoService).storeMessage(parsedMessage);
     }
 
 
     @Test
-    public void shouldPublishSmallEhrMessageToEhrCompleteTopic() throws Exception {
+    void shouldPublishSmallEhrMessageToEhrCompleteTopic() throws Exception {
         var ehrCompleteEvent = new EhrCompleteEvent(conversationId, messageId);
         when(parsedMessage.getConversationId()).thenReturn(conversationId);
         when(parsedMessage.getMessageId()).thenReturn(messageId);
