@@ -9,7 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tag("unit")
-public class EhrRequestMessageWrapperTest {
+class EhrRequestMessageWrapperTest {
     @Test
     void shouldRetrieveNHSNumberFromEhrRequest() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

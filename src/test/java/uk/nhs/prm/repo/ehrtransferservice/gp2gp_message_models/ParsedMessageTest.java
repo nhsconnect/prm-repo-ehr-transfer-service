@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tag("unit")
-public class ParsedMessageTest {
+class ParsedMessageTest {
     private final Reference mid;
     private final Reference othermid;
     private final Reference cid;
