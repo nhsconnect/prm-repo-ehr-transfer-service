@@ -3,9 +3,11 @@ package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.DuplicateMessageException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrDeleteRequestException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
@@ -13,21 +15,27 @@ import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessa
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class EhrRepoClient {
-    private final URL ehrRepoUrl;
     private final String ehrRepoAuthKey;
+    private final URL ehrRepoUrl;
     private final Tracer tracer;
 
-
-    public EhrRepoClient(@Value("${ehrRepoUrl}") String ehrRepoUrl, @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey, Tracer tracer) throws MalformedURLException {
+    public EhrRepoClient(
+            @Value("${ehrRepoUrl}") String ehrRepoUrl,
+            @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey,
+            Tracer tracer
+    ) throws MalformedURLException {
         this.ehrRepoUrl = new URL(ehrRepoUrl);
         this.ehrRepoAuthKey = ehrRepoAuthKey;
         this.tracer = tracer;
@@ -84,6 +92,31 @@ public class EhrRepoClient {
             throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
         }
         return parseResponse(response);
+    }
+
+    public void softDeleteEhrRecord(String nhsNumber) {
+        try {
+            final String endpoint = String.format("/patients/%s", nhsNumber);
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URL(ehrRepoUrl, endpoint).toURI())
+                    .header("Authorization", ehrRepoAuthKey)
+                    .header("traceId", tracer.getTraceId())
+                    .DELETE()
+                    .build();
+
+            final HttpResponse<String> response = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new EhrDeleteRequestException(
+                        String.format("soft deletion failed with HTTP status %s, and response %s.",
+                                response.statusCode(),
+                                response.body())
+                );
+            }
+        } catch (IOException | URISyntaxException | InterruptedException | EhrDeleteRequestException exception) {
+            log.error(exception.getMessage());
+        }
     }
 
     private static StoreMessageResponseBody parseResponse(HttpResponse<String> response) throws JsonProcessingException {
