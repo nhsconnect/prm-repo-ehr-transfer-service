@@ -12,6 +12,20 @@ pipelines:
       - build:
           clean_workspace: true
           jobs:
+            sonar_analysis:
+              environment_variables:
+                NHS_ENVIRONMENT: dev
+              resources:
+                - docker
+              artifacts:
+                - build:
+                    source: build
+              tasks:
+                - exec:
+                    command: /bin/bash
+                    arguments:
+                      - -c
+                      - ./tasks run_sonar
             test_unit:
               resources:
                 - docker
