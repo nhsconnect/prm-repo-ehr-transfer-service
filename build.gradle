@@ -55,7 +55,7 @@ dependencies {
     implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
     implementation 'org.apache.activemq:activemq-broker:5.16.4'
-    implementation 'org.apache.activemq:activemq-client:5.16.4'
+    implementation 'org.apache.activemq:activemq-client:5.18.2'
     implementation 'com.sun.mail:javax.mail:1.6.2'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
