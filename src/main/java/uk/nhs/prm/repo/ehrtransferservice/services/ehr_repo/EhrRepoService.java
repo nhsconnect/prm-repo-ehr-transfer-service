@@ -24,4 +24,7 @@ public class EhrRepoService {
         return new StoreMessageResult(confirmedMessageStored);
     }
 
+    public void softDeleteEhrRecord(String nhsNumber) {
+        this.ehrRepoClient.softDeleteEhrRecord(nhsNumber);
+    }
 }

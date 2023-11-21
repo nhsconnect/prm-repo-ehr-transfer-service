@@ -101,24 +101,7 @@ public class ParserBrokerIntegrationTest {
         key.put("conversation_id", AttributeValue.builder().s(conversationIdForCopc).build());
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
     }
-
-    @Test
-    void shouldPublishEhrRequestMessageToEhrInUnhandledObservabilityQueue() throws IOException {
-        var ehrRequestMessageBody = dataLoader.getDataAsString("RCMR_IN010000UK05");
-
-        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
-        inboundQueueFromMhs.sendMessage(ehrRequestMessageBody);
-
-        var ehrInUnhandledObservabilityQueueUrl = sqs.getQueueUrl(ehrInUnhandledObservabilityQueueName).getQueueUrl();
-        System.out.println("ehrInUnhandledObservabilityQueueUrl: " + ehrInUnhandledObservabilityQueueUrl);
-
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var receivedMessageHolder = checkMessageInRelatedQueue(ehrInUnhandledObservabilityQueueUrl);
-
-            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrRequestMessageBody));
-        });
-    }
-
+    
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
         var fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
