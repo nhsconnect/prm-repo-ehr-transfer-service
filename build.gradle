@@ -51,12 +51,11 @@ dependencies {
     implementation('io.netty:netty-transport') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
     implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
-
-
+    implementation 'org.apache.activemq:activemq-broker:5.18.2'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.2'
-    implementation 'org.apache.activemq:activemq-broker:5.16.4'
     implementation 'org.apache.activemq:activemq-client:5.18.2'
+
     implementation 'com.sun.mail:javax.mail:1.6.2'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'com.github.spotbugs:spotbugs-annotations:4.7.3'
