@@ -33,8 +33,6 @@ public class Tracer {
         return new ReadOnlyTraceContext().getTraceId();
     }
 
-    // oops, coming in backdoor? - chat with team
-
     public void directlyUpdateTraceIdButNotConversationId(String traceId) {
         new UpdateableTraceContext().setTraceIdNotThroughUpdateTraceId(traceId);
     }

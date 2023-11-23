@@ -31,11 +31,13 @@ public class NegativeAcknowledgementHandler {
                 conversationId.toString(),
                 transferStore.findTransfer(conversationId.toString()).getNemsMessageId(),
                 createState(acknowledgement),
-                isActive);
+                isActive
+        );
 
         publishTransferCompleteEvent(
                 transferStore.findTransfer(conversationId.toString()),
-                conversationId);
+                conversationId
+        );
     }
 
     private String createState(Acknowledgement acknowledgement) {

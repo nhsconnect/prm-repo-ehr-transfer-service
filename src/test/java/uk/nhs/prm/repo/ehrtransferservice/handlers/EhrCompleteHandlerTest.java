@@ -73,10 +73,6 @@ class EhrCompleteHandlerTest {
     @Test
     void shouldPublishTransferCompleteMessageToTransferCompleteTopic() throws Exception {
         var transferComplete = new TransferCompleteEvent("nemsEventLastUpdated", "some-ods-code", "SUSPENSION", "some-nems-message-id", "some-nhs-number");
-//        when(transferTrackerDbEntry.getNhsNumber()).thenReturn("some-nhs-number");
-//        when(transferTrackerDbEntry.getSourceGP()).thenReturn("some-ods-code");
-//        when(transferTrackerDbEntry.getNemsMessageId()).thenReturn("some-nems-message-id");
-//        when(transferTrackerDbEntry.getNemsEventLastUpdated()).thenReturn("last-updated");
         ehrCompleteHandler.handleMessage(ehrCompleteEvent);
         verify(transferCompleteMessagePublisher).sendMessage(transferComplete, conversationId);
     }

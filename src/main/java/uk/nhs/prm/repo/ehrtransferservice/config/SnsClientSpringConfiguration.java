@@ -20,7 +20,9 @@ public class SnsClientSpringConfiguration {
 
     @Bean
     public AmazonSNS snsClient() {
-        return AmazonSNSClientBuilder.standard().withRegion(awsRegion).build();
+        return AmazonSNSClientBuilder.standard()
+                .withRegion(awsRegion)
+                .build();
     }
 
     @Bean
