@@ -42,3 +42,12 @@ variable "timeout_scheduler_fixed_rate_in_seconds" {
   default = "3600"
 }
 
+variable "emis_processing_period_milliseconds" {
+  type = number
+  default = 10000 # 10 Seconds
+}
+
+variable "ehr_response_poll_limit" {
+  type = number
+  default = 60
+}
