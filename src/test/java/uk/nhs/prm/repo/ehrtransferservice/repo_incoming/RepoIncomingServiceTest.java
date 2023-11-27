@@ -1,24 +1,30 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mock;
+import org.mockito.InjectMocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.context.TestPropertySource;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseFailedException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseTimedOutException;
+import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@TestPropertySource(locations = "classpath:application.properties")
 @ExtendWith(MockitoExtension.class)
 class RepoIncomingServiceTest {
 
@@ -31,19 +37,13 @@ class RepoIncomingServiceTest {
     @Mock
     SplunkAuditPublisher splunkAuditPublisher;
 
-    @Mock
-    Integer ehrResponsePollLimit = new Integer(10);
-
     @InjectMocks
     RepoIncomingService repoIncomingService;
 
-//    @BeforeEach
-//    public void setUp() {
-//        ReflectionTestUtils.setField(repoIncomingService, "ehrResponsePollLimit", "5");
-//        ReflectionTestUtils.setField(repoIncomingService, "ehrResponsePollPeriod", "100");
-//    }
-
     private static final String TRANSFER_STARTED_STATE = "ACTION:TRANSFER_TO_REPO_STARTED";
+    private static final String TRANSFER_COMPLETE_STATE = "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE";
+    private static final String TRANSFER_FAILED_STATE = "ACTION:EHR_TRANSFER_FAILED";
+    private static final String TRANSFER_TIMEOUT_STATE = "ACTION:EHR_TRANSFER_TIMEOUT";
 
     @Test
     void shouldMakeInitialDbUpdateWhenRepoIncomingEventReceived() throws Exception {
@@ -109,6 +109,8 @@ class RepoIncomingServiceTest {
     @Test
     void shouldWaitForTransferTrackerDbToUpdate() throws Exception {
         // given
+        configureEmisTimeouts(10, 10);
+
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
         final String conversationId = repoIncomingEvent.getConversationId();
         final Transfer transfer = new Transfer(
@@ -117,18 +119,15 @@ class RepoIncomingServiceTest {
                 repoIncomingEvent.getSourceGp(),
                 repoIncomingEvent.getNemsMessageId(),
                 repoIncomingEvent.getNemsEventLastUpdated(),
-                TRANSFER_STARTED_STATE,
+                TRANSFER_COMPLETE_STATE,
                 LocalDateTime.now().toString(),
                 LocalDateTime.now().toString(),
-                "",
+                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
                 true
         );
 
         // when
-        when(transferStore.findTransfer(conversationId))
-                .thenReturn(transfer);
-
-        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
 
         // then
         assertDoesNotThrow(() -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
@@ -137,6 +136,64 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferFailed() throws Exception {
         // given
+        configureEmisTimeouts(10, 10);
+
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final String conversationId = repoIncomingEvent.getConversationId();
+        final Transfer transfer = new Transfer(
+                conversationId,
+                repoIncomingEvent.getNhsNumber(),
+                repoIncomingEvent.getSourceGp(),
+                repoIncomingEvent.getNemsMessageId(),
+                repoIncomingEvent.getNemsEventLastUpdated(),
+                TRANSFER_FAILED_STATE,
+                LocalDateTime.now().toString(),
+                LocalDateTime.now().toString(),
+                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
+                true
+        );
+
+        // when
+        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
+
+        // then
+        assertThrows(EhrResponseFailedException.class,
+                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+    }
+
+    @Test
+    void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTimeout() throws Exception {
+        // given
+        configureEmisTimeouts(10, 10);
+
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final String conversationId = repoIncomingEvent.getConversationId();
+        final Transfer transfer = new Transfer(
+                conversationId,
+                repoIncomingEvent.getNhsNumber(),
+                repoIncomingEvent.getSourceGp(),
+                repoIncomingEvent.getNemsMessageId(),
+                repoIncomingEvent.getNemsEventLastUpdated(),
+                TRANSFER_TIMEOUT_STATE,
+                LocalDateTime.now().toString(),
+                LocalDateTime.now().toString(),
+                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
+                true
+        );
+
+        // when
+        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
+
+        // then
+        assertThrows(EhrResponseFailedException.class,
+                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+    }
+
+    @Test
+    void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() throws NoSuchFieldException, IllegalAccessException {
+        // given
+        configureEmisTimeouts(10, 10);
+
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
         final String conversationId = repoIncomingEvent.getConversationId();
         final Transfer transfer = new Transfer(
@@ -148,39 +205,16 @@ class RepoIncomingServiceTest {
                 TRANSFER_STARTED_STATE,
                 LocalDateTime.now().toString(),
                 LocalDateTime.now().toString(),
-                "",
+                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
                 true
         );
 
         // when
-        when(transferStore.findTransfer(conversationId))
-                .thenReturn(transfer);
-
-        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
 
         // then
-
-    }
-
-    @Test
-    void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferTimeout() {
-        // given
-        // when
-        // then
-    }
-
-    @Test
-    void shouldThrowAnEhrResponseFailedExceptionIfStateEhrTransferTimeout() {
-        // given
-        // when
-        // then
-    }
-
-    @Test
-    void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() {
-        // given
-        // when
-        // then
+        assertThrows(EhrResponseTimedOutException.class,
+                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
     }
 
     /**
@@ -196,5 +230,16 @@ class RepoIncomingServiceTest {
                 "last-updated",
                 "conversation-id"
         );
+    }
+
+    private void configureEmisTimeouts(int ehrResponsePollLimit, int ehrResponsePollPeriod) throws NoSuchFieldException, IllegalAccessException {
+        final Field ehrResponsePollLimitField = RepoIncomingService.class.getDeclaredField("ehrResponsePollLimit");
+        final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriod");
+
+        ehrResponsePollLimitField.setAccessible(true);
+        ehrResponsePollPeriodField.setAccessible(true);
+
+        ehrResponsePollLimitField.set(this.repoIncomingService, ehrResponsePollLimit);
+        ehrResponsePollPeriodField.set(this.repoIncomingService, ehrResponsePollPeriod);
     }
 }
