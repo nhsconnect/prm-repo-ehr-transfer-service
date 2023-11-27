@@ -29,6 +29,8 @@ public class RepoIncomingService {
     @Value("${ehrResponsePollPeriodMilliseconds}")
     private int ehrResponsePollPeriod;
 
+    private final float MAXIMUM_TIME_MINUTES = (float) ((ehrResponsePollPeriod * ehrResponsePollLimit) / (1000 * 60));
+
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         boolean isActive = true;
         transferStore.createEhrTransfer(repoIncomingEvent, TRANSFER_TO_REPO_STARTED);
@@ -43,14 +45,26 @@ public class RepoIncomingService {
         int pollCount = 0;
         String transferState = "";
 
+        log.info(String.format(
+                "Polling the TransferTrackerDB every %f seconds up to a maximum of %d times, this could take up to %f minutes",
+                (double) ehrResponsePollPeriod / 1000,
+                ehrResponsePollLimit,
+                MAXIMUM_TIME_MINUTES));
+
         while (pollCount < ehrResponsePollLimit) {
             Thread.sleep(ehrResponsePollPeriod);
 
-            log.info("Retrieving TransferTrackerDB record for conversationId " + conversationId);
+            log.info(String.format(
+                    "Retrieving TransferTrackerDB record for conversationId %s attempt %d of %d",
+                    conversationId,
+                    pollCount + 1,
+                    ehrResponsePollLimit));
+
             Transfer transfer = transferStore.findTransfer(conversationId);
             transferState = transfer.getState();
 
             if (transferState.equals("ACTION:EHR_TRANSFER_TO_REPO_COMPLETE")) {
+                log.info("Successful transfer found for conversationId " + conversationId);
                 return;
             }
 

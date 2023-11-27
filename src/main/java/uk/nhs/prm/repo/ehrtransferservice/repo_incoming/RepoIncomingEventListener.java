@@ -1,12 +1,8 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jms.annotation.JmsListener;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.JMSException;
@@ -47,8 +43,11 @@ public class RepoIncomingEventListener implements MessageListener {
         return parsedMessage;
     }
 
-    @SneakyThrows
     private void waitForEmisProcessingPeriod() {
-        Thread.sleep(emisProcessingPeriod);
+        try {
+            Thread.sleep(emisProcessingPeriod);
+        } catch (InterruptedException e) {
+            log.error("Caught interruptedException waiting for EMIS processing period", e);
+        }
     }
 }
