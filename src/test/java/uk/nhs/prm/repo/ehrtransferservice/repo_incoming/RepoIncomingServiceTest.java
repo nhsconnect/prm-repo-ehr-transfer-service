@@ -111,9 +111,8 @@ class RepoIncomingServiceTest {
     @Test
     void shouldWaitForTransferTrackerDbToUpdate() throws Exception {
         // given
-        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
-        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
-        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent);
 
         transfer.setState(TRANSFER_COMPLETE_STATE);
 
@@ -129,9 +128,8 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferFailed() throws Exception {
         // given
-        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
-        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
-        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent);
 
         transfer.setState(TRANSFER_FAILED_STATE);
 
@@ -148,9 +146,8 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTimeout() throws Exception {
         // given
-        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
-        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
-        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent);
 
         transfer.setState(TRANSFER_TIMEOUT_STATE);
 
@@ -167,9 +164,8 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() throws NoSuchFieldException, IllegalAccessException {
         // given
-        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
-        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
-        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent);
 
         // when
         configureEmisTimeouts(10, 10);
@@ -181,9 +177,8 @@ class RepoIncomingServiceTest {
                 () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
     }
 
-    private Pair<RepoIncomingEvent, Transfer> createRepoIncomingEventAndTransfer() {
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = new Transfer(
+    private Transfer createTransfer(RepoIncomingEvent repoIncomingEvent) {
+        return new Transfer(
                 repoIncomingEvent.getConversationId(),
                 repoIncomingEvent.getNhsNumber(),
                 repoIncomingEvent.getSourceGp(),
@@ -195,8 +190,6 @@ class RepoIncomingServiceTest {
                 UUID.randomUUID().toString(),
                 true
         );
-
-        return Pair.of(repoIncomingEvent, transfer);
     }
 
     private RepoIncomingEvent createIncomingEvent() {
