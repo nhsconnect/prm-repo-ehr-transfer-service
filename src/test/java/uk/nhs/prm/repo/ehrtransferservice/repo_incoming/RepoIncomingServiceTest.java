@@ -112,9 +112,7 @@ class RepoIncomingServiceTest {
     void shouldWaitForTransferTrackerDbToUpdate() throws Exception {
         // given
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent);
-
-        transfer.setState(TRANSFER_COMPLETE_STATE);
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
 
         // when
         configureEmisTimeouts(10, 10);
@@ -129,9 +127,7 @@ class RepoIncomingServiceTest {
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferFailed() throws Exception {
         // given
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent);
-
-        transfer.setState(TRANSFER_FAILED_STATE);
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_FAILED_STATE);
 
         // when
         configureEmisTimeouts(10, 10);
@@ -147,9 +143,7 @@ class RepoIncomingServiceTest {
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTimeout() throws Exception {
         // given
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent);
-
-        transfer.setState(TRANSFER_TIMEOUT_STATE);
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_TIMEOUT_STATE);
 
         // when
         configureEmisTimeouts(10, 10);
@@ -165,7 +159,7 @@ class RepoIncomingServiceTest {
     void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() throws NoSuchFieldException, IllegalAccessException {
         // given
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent);
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_STARTED_STATE);
 
         // when
         configureEmisTimeouts(10, 10);
@@ -177,14 +171,14 @@ class RepoIncomingServiceTest {
                 () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
     }
 
-    private Transfer createTransfer(RepoIncomingEvent repoIncomingEvent) {
+    private Transfer createTransfer(RepoIncomingEvent repoIncomingEvent, String initialState) {
         return new Transfer(
                 repoIncomingEvent.getConversationId(),
                 repoIncomingEvent.getNhsNumber(),
                 repoIncomingEvent.getSourceGp(),
                 repoIncomingEvent.getNemsMessageId(),
                 repoIncomingEvent.getNemsEventLastUpdated(),
-                TRANSFER_STARTED_STATE,
+                initialState,
                 LocalDateTime.now().toString(),
                 LocalDateTime.now().toString(),
                 UUID.randomUUID().toString(),
