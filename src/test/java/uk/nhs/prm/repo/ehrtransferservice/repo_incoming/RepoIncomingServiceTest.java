@@ -1,6 +1,5 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mock;
 import org.mockito.InjectMocks;
 import org.junit.jupiter.api.Test;
@@ -197,14 +196,14 @@ class RepoIncomingServiceTest {
         );
     }
 
-    private void configureEmisTimeouts(int ehrResponsePollLimit, int ehrResponsePollPeriod) throws NoSuchFieldException, IllegalAccessException {
+    private void configureEmisTimeouts(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds) throws NoSuchFieldException, IllegalAccessException {
         final Field ehrResponsePollLimitField = RepoIncomingService.class.getDeclaredField("ehrResponsePollLimit");
-        final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriod");
+        final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriodMilliseconds");
 
         ehrResponsePollLimitField.setAccessible(true);
         ehrResponsePollPeriodField.setAccessible(true);
 
         ehrResponsePollLimitField.set(this.repoIncomingService, ehrResponsePollLimit);
-        ehrResponsePollPeriodField.set(this.repoIncomingService, ehrResponsePollPeriod);
+        ehrResponsePollPeriodField.set(this.repoIncomingService, ehrResponsePollPeriodMilliseconds);
     }
 }

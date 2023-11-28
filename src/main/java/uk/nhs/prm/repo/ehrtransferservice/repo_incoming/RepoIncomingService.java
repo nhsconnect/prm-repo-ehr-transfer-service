@@ -27,9 +27,7 @@ public class RepoIncomingService {
     private int ehrResponsePollLimit;
 
     @Value("${ehrResponsePollPeriodMilliseconds}")
-    private int ehrResponsePollPeriod;
-
-    private final float MAXIMUM_TIME_MINUTES = (float) ((ehrResponsePollPeriod * ehrResponsePollLimit) / (1000 * 60));
+    private int ehrResponsePollPeriodMilliseconds;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         boolean isActive = true;
@@ -42,17 +40,19 @@ public class RepoIncomingService {
 
     private void waitForTransferTrackerDbToUpdate(String conversationId)
             throws InterruptedException, EhrResponseFailedException, EhrResponseTimedOutException {
+        final float timeoutMinutes = ((float) ehrResponsePollLimit * ehrResponsePollPeriodMilliseconds) / (60 * 1000);
+        final float pollLimitSeconds = (float) ehrResponsePollPeriodMilliseconds / 1000;
         int pollCount = 0;
         String transferState = "";
 
         log.info(String.format(
                 "Polling the TransferTrackerDB every %f seconds up to a maximum of %d times, this could take up to %f minutes",
-                (double) ehrResponsePollPeriod / 1000,
+                pollLimitSeconds,
                 ehrResponsePollLimit,
-                MAXIMUM_TIME_MINUTES));
+                timeoutMinutes));
 
         while (pollCount < ehrResponsePollLimit) {
-            Thread.sleep(ehrResponsePollPeriod);
+            Thread.sleep(ehrResponsePollPeriodMilliseconds);
 
             log.info(String.format(
                     "Retrieving TransferTrackerDB record for conversationId %s attempt %d of %d",
