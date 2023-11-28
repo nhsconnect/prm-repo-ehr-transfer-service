@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mock;
 import org.mockito.InjectMocks;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -109,25 +111,16 @@ class RepoIncomingServiceTest {
     @Test
     void shouldWaitForTransferTrackerDbToUpdate() throws Exception {
         // given
-        configureEmisTimeouts(10, 10);
+        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
+        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
+        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
 
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final String conversationId = repoIncomingEvent.getConversationId();
-        final Transfer transfer = new Transfer(
-                conversationId,
-                repoIncomingEvent.getNhsNumber(),
-                repoIncomingEvent.getSourceGp(),
-                repoIncomingEvent.getNemsMessageId(),
-                repoIncomingEvent.getNemsEventLastUpdated(),
-                TRANSFER_COMPLETE_STATE,
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
-                true
-        );
+        transfer.setState(TRANSFER_COMPLETE_STATE);
 
         // when
-        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
+        configureEmisTimeouts(10, 10);
+        when(transferStore.findTransfer(transfer.getConversationId()))
+                .thenReturn(transfer);
 
         // then
         assertDoesNotThrow(() -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
@@ -136,25 +129,16 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferFailed() throws Exception {
         // given
-        configureEmisTimeouts(10, 10);
+        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
+        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
+        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
 
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final String conversationId = repoIncomingEvent.getConversationId();
-        final Transfer transfer = new Transfer(
-                conversationId,
-                repoIncomingEvent.getNhsNumber(),
-                repoIncomingEvent.getSourceGp(),
-                repoIncomingEvent.getNemsMessageId(),
-                repoIncomingEvent.getNemsEventLastUpdated(),
-                TRANSFER_FAILED_STATE,
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
-                true
-        );
+        transfer.setState(TRANSFER_FAILED_STATE);
 
         // when
-        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
+        configureEmisTimeouts(10, 10);
+        when(transferStore.findTransfer(transfer.getConversationId()))
+                .thenReturn(transfer);
 
         // then
         assertThrows(EhrResponseFailedException.class,
@@ -164,25 +148,16 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTimeout() throws Exception {
         // given
-        configureEmisTimeouts(10, 10);
+        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
+        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
+        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
 
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final String conversationId = repoIncomingEvent.getConversationId();
-        final Transfer transfer = new Transfer(
-                conversationId,
-                repoIncomingEvent.getNhsNumber(),
-                repoIncomingEvent.getSourceGp(),
-                repoIncomingEvent.getNemsMessageId(),
-                repoIncomingEvent.getNemsEventLastUpdated(),
-                TRANSFER_TIMEOUT_STATE,
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
-                true
-        );
+        transfer.setState(TRANSFER_TIMEOUT_STATE);
 
         // when
-        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
+        configureEmisTimeouts(10, 10);
+        when(transferStore.findTransfer(transfer.getConversationId()))
+                .thenReturn(transfer);
 
         // then
         assertThrows(EhrResponseFailedException.class,
@@ -192,12 +167,24 @@ class RepoIncomingServiceTest {
     @Test
     void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() throws NoSuchFieldException, IllegalAccessException {
         // given
-        configureEmisTimeouts(10, 10);
+        final Pair<RepoIncomingEvent, Transfer> transferAndRepoIncomingEvent = createRepoIncomingEventAndTransfer();
+        final Transfer transfer = transferAndRepoIncomingEvent.getRight();
+        final RepoIncomingEvent repoIncomingEvent = transferAndRepoIncomingEvent.getLeft();
 
+        // when
+        configureEmisTimeouts(10, 10);
+        when(transferStore.findTransfer(transfer.getConversationId()))
+                .thenReturn(transfer);
+
+        // then
+        assertThrows(EhrResponseTimedOutException.class,
+                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+    }
+
+    private Pair<RepoIncomingEvent, Transfer> createRepoIncomingEventAndTransfer() {
         final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final String conversationId = repoIncomingEvent.getConversationId();
         final Transfer transfer = new Transfer(
-                conversationId,
+                repoIncomingEvent.getConversationId(),
                 repoIncomingEvent.getNhsNumber(),
                 repoIncomingEvent.getSourceGp(),
                 repoIncomingEvent.getNemsMessageId(),
@@ -205,22 +192,13 @@ class RepoIncomingServiceTest {
                 TRANSFER_STARTED_STATE,
                 LocalDateTime.now().toString(),
                 LocalDateTime.now().toString(),
-                "2ff5b99f-a530-4866-89a7-e5ac3d97470b",
+                UUID.randomUUID().toString(),
                 true
         );
 
-        // when
-        when(transferStore.findTransfer(conversationId)).thenReturn(transfer);
-
-        // then
-        assertThrows(EhrResponseTimedOutException.class,
-                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+        return Pair.of(repoIncomingEvent, transfer);
     }
 
-    /**
-     * Utility function to generate a RepoIncomingEvent.
-     * @return RepoIncomingEvent
-     */
     private RepoIncomingEvent createIncomingEvent() {
         return new RepoIncomingEvent(
                 "123456765",
