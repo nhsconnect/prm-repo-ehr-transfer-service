@@ -45,7 +45,7 @@ public class TransferTrackerDbTest {
     String createdAt = "2017-11-01T15:00:33+00:00";
     String lastUpdatedAt = "2017-11-01T15:00:33+00:00";
     String largeEhrCoreMessageId = "large ehr core message Id";
-    Boolean active = true;
+    boolean active = true;
 
 
     @Value("${aws.transferTrackerDbTableName}")
@@ -114,7 +114,7 @@ public class TransferTrackerDbTest {
         var newTimestamp = "2018-11-01T15:00:33+00:00";
         transferTrackerDb.save(new Transfer(conversationId, nhsNumber, sourceGP, nemsMessageId, nemsEventLastUpdated, state, newTimestamp, newTimestamp, largeEhrCoreMessageId, active));
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
-        assertThat(transferTrackerDbData.getIsActive()).isTrue();
+        assertThat(transferTrackerDbData.isActive()).isTrue();
     }
 
     @Test
@@ -122,7 +122,7 @@ public class TransferTrackerDbTest {
         var newTimestamp = "2222-11-01T15:00:33+00:00";
         transferTrackerDb.update(conversationId, "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE", newTimestamp, false);
         var transferTrackerDbData = transferTrackerDb.getByConversationId(conversationId);
-        assertThat(transferTrackerDbData.getIsActive()).isFalse();
+        assertThat(transferTrackerDbData.isActive()).isFalse();
         assertThat(transferTrackerDbData.getLastUpdatedAt()).isEqualTo(newTimestamp);
     }
 

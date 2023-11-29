@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-public class PresignedUrlTest {
+class PresignedUrlTest {
 
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();

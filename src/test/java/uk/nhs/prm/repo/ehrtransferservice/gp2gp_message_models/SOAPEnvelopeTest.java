@@ -13,10 +13,10 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @Tag("unit")
-public class SOAPEnvelopeTest {
+class SOAPEnvelopeTest {
 
     @Test
-    public void shouldPopulateActionInEnvelope() throws JsonProcessingException {
+    void shouldPopulateActionInEnvelope() throws JsonProcessingException {
         String envelopeText = "\n" +
                 "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
@@ -50,7 +50,7 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
-    public void shouldPopulateConversationIdInEnvelope() throws JsonProcessingException {
+    void shouldPopulateConversationIdInEnvelope() throws JsonProcessingException {
         String envelopeText = "\n" +
                 "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
@@ -84,7 +84,7 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
-    public void shouldPopulateMessageIdInEnvelope() throws JsonProcessingException {
+    void shouldPopulateMessageIdInEnvelope() throws JsonProcessingException {
         String envelopeText = "\n" +
                 "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
@@ -118,7 +118,7 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
-    public void shouldPopulateReferencesInManifestWhenThereAreCIDsAndMIDs() throws JsonProcessingException {
+    void shouldPopulateReferencesInManifestWhenThereAreCIDsAndMIDs() throws JsonProcessingException {
         String envelopeText = "\n" +
                 "    <soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
@@ -149,7 +149,7 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
-    public void shouldPopulateReferencesInManifestWhenThereAreOnlyCIDs() throws JsonProcessingException {
+    void shouldPopulateReferencesInManifestWhenThereAreOnlyCIDs() throws JsonProcessingException {
         String envelopeText = "<soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                       xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
                 "                       xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
@@ -171,7 +171,7 @@ public class SOAPEnvelopeTest {
     }
 
     @Test
-    public void shouldPopulateReferencesInManifestWhenThereAreMultipleMIDs() throws JsonProcessingException {
+    void shouldPopulateReferencesInManifestWhenThereAreMultipleMIDs() throws JsonProcessingException {
         String envelopeText = "<soap:Envelope xmlns:eb=\"http://www.oasis-open.org/committees/ebxml-msg/schema/msg-header-2_0.xsd\"\n" +
                 "                   xmlns:hl7ebxml=\"urn:hl7-org:transport/ebxml/DSTUv1.0\"\n" +
                 "                   xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +

@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.conversationId;
-import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.traceId;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.TRACE_ID;
 
 @Slf4j
 @Configuration
@@ -19,8 +19,8 @@ public class Tracer {
     public void setMDCContextFromSqs(Message message) throws JMSException {
         UpdateableTraceContext context = createNewContext();
 
-        context.updateTraceId(message.getStringProperty(traceId.toString()));
-        context.updateConversationId(message.getStringProperty(conversationId.toString()));
+        context.updateTraceId(message.getStringProperty(TRACE_ID.toString()));
+        context.updateConversationId(message.getStringProperty(CONVERSATION_ID.toString()));
     }
 
     public UpdateableTraceContext createNewContext() {
@@ -33,13 +33,11 @@ public class Tracer {
         return new ReadOnlyTraceContext().getTraceId();
     }
 
-    // oops, coming in backdoor? - chat with team
-
     public void directlyUpdateTraceIdButNotConversationId(String traceId) {
         new UpdateableTraceContext().setTraceIdNotThroughUpdateTraceId(traceId);
     }
 
     public static void directlyRemoveTraceId() {
-        MDC.remove(traceId.toString());
+        MDC.remove(TRACE_ID.toString());
     }
 }

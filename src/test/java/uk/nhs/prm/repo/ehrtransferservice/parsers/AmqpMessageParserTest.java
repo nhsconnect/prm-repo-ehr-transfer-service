@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AmqpMessageParserTest {
+class AmqpMessageParserTest {
     private final AmqpMessageParser amqpMessageParser = new AmqpMessageParser();
 
     private Message createAmqpMessage(String messageBody){

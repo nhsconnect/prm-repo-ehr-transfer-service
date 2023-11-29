@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-public class EhrRepoClientTest {
+class EhrRepoClientTest {
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
     static Tracer tracer = mock(Tracer.class);
@@ -49,7 +49,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldFetchStorageUrlFromEhrRepo() throws Exception {
+    void shouldFetchStorageUrlFromEhrRepo() throws Exception {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
@@ -70,11 +70,11 @@ public class EhrRepoClientTest {
                 .withHeader("Authorization", matching("secret"))
                 .withHeader("traceId", matching(String.valueOf(traceId))));
 
-        assertThat(response.presignedUrl, Matchers.equalTo(new URL("https://fake-presigned-url")));
+        assertThat(response.getUrl(), Matchers.equalTo(new URL("https://fake-presigned-url")));
     }
 
     @Test
-    public void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
+    void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
@@ -96,7 +96,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldThrowDuplicateMessageExceptionWhenReceiving409() throws MalformedURLException {
+    void shouldThrowDuplicateMessageExceptionWhenReceiving409() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
@@ -115,7 +115,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldThrowErrorWhenCannotStoreMessageInEhrRepo() throws MalformedURLException {
+    void shouldThrowErrorWhenCannotStoreMessageInEhrRepo() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
@@ -140,7 +140,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldConfirmMessageStoredInEhrRepo() throws Exception {
+    void shouldConfirmMessageStoredInEhrRepo() throws Exception {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();

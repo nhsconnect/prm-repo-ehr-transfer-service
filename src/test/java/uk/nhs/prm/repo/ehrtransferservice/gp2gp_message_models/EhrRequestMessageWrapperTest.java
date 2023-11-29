@@ -9,9 +9,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @Tag("unit")
-public class EhrRequestMessageWrapperTest {
+class EhrRequestMessageWrapperTest {
     @Test
-    public void shouldRetrieveNHSNumberFromEhrRequest() throws JsonProcessingException {
+    void shouldRetrieveNHSNumberFromEhrRequest() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
                 "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
@@ -35,7 +35,7 @@ public class EhrRequestMessageWrapperTest {
     }
 
     @Test
-    public void shouldRetrieveOdsCodeFromEhrRequest() throws JsonProcessingException {
+    void shouldRetrieveOdsCodeFromEhrRequest() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
                 "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +
@@ -60,7 +60,7 @@ public class EhrRequestMessageWrapperTest {
     }
 
     @Test
-    public void shouldRetrieveEhrRequestId() throws JsonProcessingException {
+    void shouldRetrieveEhrRequestId() throws JsonProcessingException {
         String extract = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                 "<RCMR_IN010000UK05 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" type=\"Message\" xmlns=\"urn:hl7-org:v3\">\n" +
                 "<ControlActEvent type=\"ControlAct\" classCode=\"CACT\" moodCode=\"EVN\">\n" +

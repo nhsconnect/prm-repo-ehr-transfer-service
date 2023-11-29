@@ -13,8 +13,8 @@ import java.util.UUID;
 public class UpdateableTraceContext extends ReadOnlyTraceContext {
 
     public void clear() {
-        MDC.remove(TraceKey.traceId.toString());
-        MDC.remove(TraceKey.conversationId.toString());
+        MDC.remove(TraceKey.TRACE_ID.toString());
+        MDC.remove(TraceKey.CONVERSATION_ID.toString());
     }
 
     public void updateTraceId(String traceId) {
@@ -39,11 +39,11 @@ public class UpdateableTraceContext extends ReadOnlyTraceContext {
     }
 
     private static void setTraceId(String traceId) {
-        MDC.put(TraceKey.traceId.toString(), traceId);
+        MDC.put(TraceKey.TRACE_ID.toString(), traceId);
     }
 
     private void setConversationId(String conversationId) {
-        MDC.put(TraceKey.conversationId.toString(), conversationId);
+        MDC.put(TraceKey.CONVERSATION_ID.toString(), conversationId);
     }
 
     private String createRandomUUID() {

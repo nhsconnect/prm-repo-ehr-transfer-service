@@ -27,7 +27,7 @@ public class EhrRequestTimeoutHandler {
     private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
 
     @Value("${timeOutDurationInSeconds}")
-    String timeoutInSeconds;
+    private String timeoutInSeconds;
 
 
     @Scheduled(fixedRateString = "${timeOutFixedScheduleInSeconds}",  timeUnit = TimeUnit.SECONDS)
@@ -37,10 +37,10 @@ public class EhrRequestTimeoutHandler {
             log.info("timeout duration in seconds is : {}", timeoutInSeconds);
             var timedOutRecords = transferTrackerDb.getTimedOutRecords(getTimeOutTimeStamp());
             log.info("Number of timed-out records are: {}", timedOutRecords.size());
-            timedOutRecords.forEach(record -> {
-                tracer.directlyUpdateTraceIdButNotConversationId(record.getConversationId());
-                updateAllTimedOutRecordsInDb(record.getConversationId());
-                sendMessageToTransferCompleteQueue(record);
+            timedOutRecords.forEach(timedOutRecord -> {
+                tracer.directlyUpdateTraceIdButNotConversationId(timedOutRecord.getConversationId());
+                updateAllTimedOutRecordsInDb(timedOutRecord.getConversationId());
+                sendMessageToTransferCompleteQueue(timedOutRecord);
                 Tracer.directlyRemoveTraceId();
             });
         } catch (Exception e) {
@@ -53,15 +53,19 @@ public class EhrRequestTimeoutHandler {
         return now.minus(Integer.valueOf(timeoutInSeconds), ChronoUnit.SECONDS).toString();
     }
 
-    private void sendMessageToTransferCompleteQueue(Transfer record) {
-        log.info("Sending message with conversationId : {} to transfer complete queue for timed-out records", record.getConversationId());
-        transferCompleteMessagePublisher.sendMessage(new TransferCompleteEvent(
-                        record.getNemsEventLastUpdated(),
-                        record.getSourceGP(),
-                        "SUSPENSION",
-                        record.getNemsMessageId(),
-                        record.getNhsNumber()),
-                UUID.fromString(record.getConversationId()));
+    private void sendMessageToTransferCompleteQueue(Transfer message) {
+        log.info("Sending message with conversationId : {} to transfer complete queue for timed-out records", message.getConversationId());
+
+        TransferCompleteEvent transferCompleteEvent = new TransferCompleteEvent(
+                message.getNemsEventLastUpdated(),
+                message.getSourceGP(),
+                "SUSPENSION",
+                message.getNemsMessageId(),
+                message.getNhsNumber());
+
+        UUID conversationId = UUID.fromString(message.getConversationId());
+
+        transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
     }
 
     private void updateAllTimedOutRecordsInDb(String conversationId) {

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
-public class Gp2gpMessengerServiceTest {
+class Gp2gpMessengerServiceTest {
     @Mock
     Gp2gpMessengerClient gp2gpMessengerClient;
     @Mock

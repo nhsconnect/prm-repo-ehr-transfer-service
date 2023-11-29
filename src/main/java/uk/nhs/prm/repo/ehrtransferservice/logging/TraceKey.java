@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.logging;
 
 public enum TraceKey {
-    traceId, conversationId
+    TRACE_ID,
+    CONVERSATION_ID
 }

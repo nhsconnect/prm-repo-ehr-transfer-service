@@ -1,5 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.services;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 import java.io.IOException;
@@ -9,18 +11,16 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@Getter
+@AllArgsConstructor
 public class PresignedUrl {
-    public URL presignedUrl;
-
-    public PresignedUrl(URL presignedUrl) {
-        this.presignedUrl = presignedUrl;
-    }
+    private final URL url;
 
     public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, IOException, InterruptedException {
         var message = HttpRequest.BodyPublishers.ofString(parsedMessage.getMessageBody());
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(presignedUrl.toURI())
+                .uri(url.toURI())
                 .PUT(message).build();
         var response = HttpClient.newBuilder()
                 .build()

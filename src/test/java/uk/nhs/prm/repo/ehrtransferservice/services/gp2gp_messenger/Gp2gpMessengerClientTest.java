@@ -22,7 +22,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-public class Gp2gpMessengerClientTest {
+class Gp2gpMessengerClientTest {
 
     @RegisterExtension
     WireMockExtension wireMock = new WireMockExtension();
@@ -42,7 +42,7 @@ public class Gp2gpMessengerClientTest {
     }
 
     @Test
-    public void shouldCallGP2GpMessengerEHRRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
+    void shouldCallGP2GpMessengerEHRRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
 
         Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody("", "", "", "");
 
@@ -68,7 +68,7 @@ public class Gp2gpMessengerClientTest {
     }
 
     @Test
-    public void shouldCallGP2GpMessengerPositiveRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
+    void shouldCallGP2GpMessengerPositiveRequest() throws IOException, URISyntaxException, InterruptedException, HttpException {
 
         Gp2gpMessengerPositiveAcknowledgementRequestBody requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody("", "", "", "");
 

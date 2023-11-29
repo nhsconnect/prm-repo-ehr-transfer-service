@@ -27,7 +27,7 @@ class HealthCheckStatusPublisherTest {
     }
 
     @Test
-    public void shouldSetHealthMetricToZeroForUnhealthyIfAnyConnectionIsUnhealthy() {
+    void shouldSetHealthMetricToZeroForUnhealthyIfAnyConnectionIsUnhealthy() {
         when(transferCompleteSnsHealthProbe.isHealthy()).thenReturn(false);
 
         HealthCheckStatusPublisher healthPublisher = new HealthCheckStatusPublisher(metricPublisher, probe);
@@ -37,7 +37,7 @@ class HealthCheckStatusPublisherTest {
     }
 
     @Test
-    public void shouldSetHealthMetricToOneIfAllConnectionsAreHealthy() {
+    void shouldSetHealthMetricToOneIfAllConnectionsAreHealthy() {
         when(transferCompleteSnsHealthProbe.isHealthy()).thenReturn(true);
 
         HealthCheckStatusPublisher healthPublisher = new HealthCheckStatusPublisher(metricPublisher, probe);

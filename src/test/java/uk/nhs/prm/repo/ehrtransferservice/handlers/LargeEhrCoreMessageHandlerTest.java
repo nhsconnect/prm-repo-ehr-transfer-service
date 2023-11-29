@@ -47,28 +47,28 @@ class LargeEhrCoreMessageHandlerTest {
     }
 
     @Test
-    public void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
+    void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
         when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(ehrRepoService).storeMessage(largeSqsMessage);
     }
 
     @Test
-    public void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
+    void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
         when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, transfer);
     }
 
     @Test
-    public void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
+    void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
         when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(transferStore).handleEhrTransferStateUpdate(largeSqsMessage.getConversationId().toString(), "nemsMessageId" ,"ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT", true);
     }
 
     @Test
-    public void shouldCallTransferTrackerDbToUpdateWithLargeEhrCoreMessageId() throws Exception {
+    void shouldCallTransferTrackerDbToUpdateWithLargeEhrCoreMessageId() throws Exception {
         when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
         verify(transferStore).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
