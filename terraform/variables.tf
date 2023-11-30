@@ -55,18 +55,20 @@ variable "scale_down_expression" {
 variable "enable_scale_action" {
   type    = bool
   default = true
-  
-variable "processing_period_milliseconds" {
-  type = number
-  default = 10000
 }
 
-variable "ehr_response_poll_period_milliseconds" {
-  type = number
-  default = 10000
-}
-
-variable "ehr_response_poll_limit" {
-  type = number
-  default = 60
-}
+# TODO PRMT-4204 - After FoT have discussions if this is required.
+#variable "processing_period_milliseconds" {
+#  type = string
+#  default = "10000"
+#}
+#
+#variable "ehr_response_poll_period_milliseconds" {
+#  type = string
+#  default = "10000"
+#}
+#
+#variable "ehr_response_poll_limit" {
+#  type = string
+#  default = "60"
+#}
