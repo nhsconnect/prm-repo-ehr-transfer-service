@@ -43,7 +43,7 @@ public class RepoIncomingService {
         final float timeoutMinutes = ((float) ehrResponsePollLimit * ehrResponsePollPeriodMilliseconds) / (60 * 1000);
         final float pollLimitSeconds = (float) ehrResponsePollPeriodMilliseconds / 1000;
         int pollCount = 0;
-        String transferState = "";
+        String transferState;
 
         log.info(String.format(
                 "Polling the TransferTrackerDB every %f seconds up to a maximum of %d times, this could take up to %f minutes",
@@ -51,7 +51,7 @@ public class RepoIncomingService {
                 ehrResponsePollLimit,
                 timeoutMinutes));
 
-        while (pollCount < ehrResponsePollLimit) {
+        do {
             Thread.sleep(ehrResponsePollPeriodMilliseconds);
 
             log.info(String.format(
@@ -76,7 +76,7 @@ public class RepoIncomingService {
 
             log.info("Still awaiting EHR response for conversationId " + conversationId);
             pollCount++;
-        }
+        } while (pollCount < ehrResponsePollLimit);
 
         throw new EhrResponseTimedOutException(transferState);
     }
