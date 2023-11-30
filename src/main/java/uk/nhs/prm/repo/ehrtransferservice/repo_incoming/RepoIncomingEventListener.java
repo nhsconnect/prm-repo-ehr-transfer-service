@@ -17,6 +17,7 @@ public class RepoIncomingEventListener implements MessageListener {
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser parser;
 
+    // time gap between our EHR requests to allow Foundation Suppliers to process other requests they might receive
     @Value("${processingPeriodMilliseconds}")
     private int processingPeriodMilliseconds;
 
