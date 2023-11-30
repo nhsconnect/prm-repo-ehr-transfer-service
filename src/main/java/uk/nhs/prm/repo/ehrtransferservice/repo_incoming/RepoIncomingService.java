@@ -23,9 +23,11 @@ public class RepoIncomingService {
     private final SplunkAuditPublisher splunkAuditPublisher;
     private final Gp2gpMessengerService gp2gpMessengerService;
 
+    // the number of times we will poll the TransferTrackerDB to check that we've received the EHR response before timing out
     @Value("${ehrResponsePollLimit}")
     private int ehrResponsePollLimit;
 
+    // how frequently we will poll the TransferTrackerDB to check that we've received the EHR response
     @Value("${ehrResponsePollPeriodMilliseconds}")
     private int ehrResponsePollPeriodMilliseconds;
 
