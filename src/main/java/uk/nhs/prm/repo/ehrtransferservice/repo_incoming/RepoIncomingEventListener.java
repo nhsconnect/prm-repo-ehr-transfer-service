@@ -17,9 +17,8 @@ public class RepoIncomingEventListener implements MessageListener {
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser parser;
 
-    // time gap between our EHR requests to allow EMIS to process other requests they might receive
-    @Value("${emisProcessingPeriodMilliseconds}")
-    private int emisProcessingPeriodMilliseconds;
+    @Value("${processingPeriodMilliseconds}")
+    private int processingPeriodMilliseconds;
 
     @Override
     public void onMessage(Message message) {
@@ -45,7 +44,7 @@ public class RepoIncomingEventListener implements MessageListener {
 
     private void waitForEmisProcessingPeriod() {
         try {
-            Thread.sleep(emisProcessingPeriodMilliseconds);
+            Thread.sleep(processingPeriodMilliseconds);
         } catch (InterruptedException e) {
             log.error("Caught interruptedException waiting for EMIS processing period", e);
         }
