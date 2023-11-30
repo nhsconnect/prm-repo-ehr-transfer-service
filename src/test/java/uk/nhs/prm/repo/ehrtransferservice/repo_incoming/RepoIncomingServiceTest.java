@@ -48,34 +48,66 @@ class RepoIncomingServiceTest {
 
     @Test
     void shouldMakeInitialDbUpdateWhenRepoIncomingEventReceived() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        repoIncomingService.processIncomingEvent(incomingEvent);
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
 
-        verify(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
+        // when
+        configureProcessingParameters(10, 10);
+        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+
+        // then
+        verify(transferStore).createEhrTransfer(repoIncomingEvent, TRANSFER_STARTED_STATE);
     }
 
     @Test
     void shouldCallGp2gpMessengerServiceToSendEhrRequest() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        repoIncomingService.processIncomingEvent(incomingEvent);
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
 
-        verify(gp2gpMessengerService).sendEhrRequest(incomingEvent);
+        // when
+        configureProcessingParameters(10, 10);
+        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+
+        // then
+        verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
     }
 
     @Test
     void shouldUpdateDbWithEhrRequestSendStatusWhenEhrRequestSentSuccessfully() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        repoIncomingService.processIncomingEvent(incomingEvent);
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
 
+        // when
+        configureProcessingParameters(10, 10);
+        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+
+        // then
         verify(transferStore).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT", true);
     }
 
     @Test
     void shouldSendMessageToAuditSplunkWithCorrectStatusWhenTransferToRepoIsStarted() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:TRANSFER_TO_REPO_STARTED");
-        repoIncomingService.processIncomingEvent(incomingEvent);
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
+        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
+        final SplunkAuditMessage splunkAuditMessage = new SplunkAuditMessage(
+                repoIncomingEvent.getConversationId(),
+                repoIncomingEvent.getNemsMessageId(),
+                TRANSFER_STARTED_STATE
+        );
 
+        // when
+        configureProcessingParameters(10, 10);
+        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+
+        // then
         verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
     }
 
