@@ -114,7 +114,7 @@ class RepoIncomingServiceTest {
         final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
 
         // when
-        configureEmisTimeouts(10, 10);
+        configureProcessingParameters(10, 10);
         when(transferStore.findTransfer(transfer.getConversationId()))
                 .thenReturn(transfer);
 
@@ -129,7 +129,7 @@ class RepoIncomingServiceTest {
         final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_FAILED_STATE);
 
         // when
-        configureEmisTimeouts(10, 10);
+        configureProcessingParameters(10, 10);
         when(transferStore.findTransfer(transfer.getConversationId()))
                 .thenReturn(transfer);
 
@@ -145,7 +145,7 @@ class RepoIncomingServiceTest {
         final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_TIMEOUT_STATE);
 
         // when
-        configureEmisTimeouts(10, 10);
+        configureProcessingParameters(10, 10);
         when(transferStore.findTransfer(transfer.getConversationId()))
                 .thenReturn(transfer);
 
@@ -161,7 +161,7 @@ class RepoIncomingServiceTest {
         final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_STARTED_STATE);
 
         // when
-        configureEmisTimeouts(10, 10);
+        configureProcessingParameters(10, 10);
         when(transferStore.findTransfer(transfer.getConversationId()))
                 .thenReturn(transfer);
 
@@ -196,7 +196,7 @@ class RepoIncomingServiceTest {
         );
     }
 
-    private void configureEmisTimeouts(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds) throws NoSuchFieldException, IllegalAccessException {
+    private void configureProcessingParameters(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds) throws NoSuchFieldException, IllegalAccessException {
         final Field ehrResponsePollLimitField = RepoIncomingService.class.getDeclaredField("ehrResponsePollLimit");
         final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriodMilliseconds");
 
