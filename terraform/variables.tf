@@ -51,3 +51,8 @@ variable "scale_down_expression" {
   type    = string
   default = "((HOUR(m1)==5 && MINUTE(m1)==58)),10,0"
 }
+
+variable "enable_scale_action" {
+  type    = bool
+  default = true
+}

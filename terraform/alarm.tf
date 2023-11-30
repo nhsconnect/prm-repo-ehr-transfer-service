@@ -342,7 +342,7 @@ resource "aws_cloudwatch_metric_alarm" "splunk_uploader_sns_topic_error_log_alar
   ok_actions          = [data.aws_sns_topic.alarm_notifications.arn]
 }
 
-resource "aws_cloudwatch_metric_alarm" "ehr_transfer_service_scale_up" {
+resource "aws_cloudwatch_metric_alarm" "scale_up" {
   alarm_name          = "${var.environment}-${var.component_name}-scale-up"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
@@ -375,13 +375,13 @@ resource "aws_cloudwatch_metric_alarm" "ehr_transfer_service_scale_up" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "ehr_transfer_service_scale_down" {
+resource "aws_cloudwatch_metric_alarm" "scale_down" {
   alarm_name          = "${var.environment}-${var.component_name}-scale-down"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
   threshold           = "10"
   alarm_description   = "Scale down alarm for ehr-transfer-service"
-  actions_enabled     = true
+  actions_enabled     = var.enable_scale_action
   alarm_actions       = [aws_appautoscaling_policy.scale_down.arn]
 
   metric_query {
