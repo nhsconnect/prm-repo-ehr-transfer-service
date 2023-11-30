@@ -55,4 +55,18 @@ variable "scale_down_expression" {
 variable "enable_scale_action" {
   type    = bool
   default = true
+  
+variable "processing_period_milliseconds" {
+  type = number
+  default = 10000
+}
+
+variable "ehr_response_poll_period_milliseconds" {
+  type = number
+  default = 10000
+}
+
+variable "ehr_response_poll_limit" {
+  type = number
+  default = 60
 }
