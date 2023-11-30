@@ -42,6 +42,21 @@ variable "timeout_scheduler_fixed_rate_in_seconds" {
   default = "3600"
 }
 
+variable "scale_up_expression" {
+  type    = string
+  default = "((HOUR(m1)==17 && MINUTE(m1)==58)),10,0"
+}
+
+variable "scale_down_expression" {
+  type    = string
+  default = "((HOUR(m1)==5 && MINUTE(m1)==58)),10,0"
+}
+
+variable "enable_scale_action" {
+  type    = bool
+  default = true
+}
+
 # TODO PRMT-4204 - After FoT have discussions if this is required.
 #variable "processing_period_milliseconds" {
 #  type = string
