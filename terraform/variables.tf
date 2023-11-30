@@ -42,17 +42,18 @@ variable "timeout_scheduler_fixed_rate_in_seconds" {
   default = "3600"
 }
 
-variable "processing_period_milliseconds" {
-  type = string
-  default = "10000"
-}
-
-variable "ehr_response_poll_period_milliseconds" {
-  type = string
-  default = "10000"
-}
-
-variable "ehr_response_poll_limit" {
-  type = string
-  default = "60"
-}
+# TODO PRMT-4204 - After FoT have discussions if this is required.
+#variable "processing_period_milliseconds" {
+#  type = string
+#  default = "10000"
+#}
+#
+#variable "ehr_response_poll_period_milliseconds" {
+#  type = string
+#  default = "10000"
+#}
+#
+#variable "ehr_response_poll_limit" {
+#  type = string
+#  default = "60"
+#}

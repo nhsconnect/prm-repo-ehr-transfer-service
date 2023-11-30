@@ -38,10 +38,11 @@ locals {
     { name = "TRANSFER_COMPLETE_TOPIC_ARN", value = aws_sns_topic.transfer_complete.arn },
     { name = "SPLUNK_UPLOADER_TOPIC_ARN", value = aws_sns_topic.splunk_uploader.arn },
     { name = "TIMEOUT_DURATION_IN_SECONDS", value = var.timeout_in_seconds},
-    { name = "TIMEOUT_SCHEDULER_FIXED_RATE_IN_SECONDS", value = var.timeout_scheduler_fixed_rate_in_seconds},
-    { name = "PROCESSING_PERIOD_MILLISECONDS", value = var.processing_period_milliseconds },
-    { name = "EHR_RESPONSE_POLL_PERIOD_MILLISECONDS", value = var.ehr_response_poll_period_milliseconds },
-    { name = "EHR_RESPONSE_POLL_LIMIT", value = var.ehr_response_poll_limit }
+    { name = "TIMEOUT_SCHEDULER_FIXED_RATE_IN_SECONDS", value = var.timeout_scheduler_fixed_rate_in_seconds}
+# TODO PRMT-4204 - After FoT have discussions if this is required.
+#    { name = "PROCESSING_PERIOD_MILLISECONDS", value = var.processing_period_milliseconds },
+#    { name = "EHR_RESPONSE_POLL_PERIOD_MILLISECONDS", value = var.ehr_response_poll_period_milliseconds },
+#    { name = "EHR_RESPONSE_POLL_LIMIT", value = var.ehr_response_poll_limit }
   ]
   secret_environment_variables = [
     { name = "EHR_TRANSFER_SERVICE_MHS_QUEUE_USERNAME", valueFrom = data.aws_ssm_parameter.amq-username.arn },
