@@ -43,16 +43,16 @@ variable "timeout_scheduler_fixed_rate_in_seconds" {
 }
 
 variable "processing_period_milliseconds" {
-  type = number
-  default = 10000
+  type = string
+  default = "10000"
 }
 
 variable "ehr_response_poll_period_milliseconds" {
-  type = number
-  default = 10000
+  type = string
+  default = "10000"
 }
 
 variable "ehr_response_poll_limit" {
-  type = number
-  default = 60
+  type = string
+  default = "60"
 }
