@@ -20,14 +20,6 @@ public class ParsedMessage {
         this.messageBody = messageBody;
     }
 
-    public BytesMessage getBytesMessage() throws JMSException {
-        final byte[] bytesArray = this.messageBody.getBytes(StandardCharsets.UTF_8);
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(bytesArray);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     public String getMessageBody() {
         return messageBody;
     }

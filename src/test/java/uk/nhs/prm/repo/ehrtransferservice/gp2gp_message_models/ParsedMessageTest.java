@@ -88,6 +88,14 @@ class ParsedMessageTest {
     }
 
     @Test
+    void getEhrRequestIdShouldReturnNullWhenMessageContentIsNotOfTypeEhrRequestMessageWrapper() {
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
+
+        ParsedMessage message = new ParsedMessage(null, ehrExtractMessageWrapper, null);
+        assertThat(message.getEhrRequestId(), equalTo(null));
+    }
+
+    @Test
     void shouldReturnNhsNumberForEhrRequest() {
         EhrRequestMessageWrapper ehrRequestMessageWrapper = new EhrRequestMessageWrapper();
         ehrRequestMessageWrapper.controlActEvent = new EhrRequestMessageWrapper.ControlActEvent();
@@ -100,6 +108,14 @@ class ParsedMessageTest {
 
         ParsedMessage message = new ParsedMessage(null, ehrRequestMessageWrapper, null);
         assertThat(message.getNhsNumber(), equalTo("1234567890"));
+    }
+
+    @Test
+    void getOdsCodeShouldReturnNullIfMessageContentIsNotOfTypeEhrRequestMessageWrapper() {
+        EhrExtractMessageWrapper ehrExtractMessageWrapper = new EhrExtractMessageWrapper();
+
+        ParsedMessage message = new ParsedMessage(null, ehrExtractMessageWrapper, null);
+        assertThat(message.getOdsCode(), equalTo(null));
     }
 
     @Test
