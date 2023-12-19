@@ -36,22 +36,20 @@ configurations {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-activemq'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    // CVE-2022-1471 false positive as spring boot uses safe constructor in snakeyaml
-    // https://github.com/spring-projects/spring-boot/issues/33457
-    implementation 'org.yaml:snakeyaml:1.33'
+    implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-common') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-handler') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-resolver') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.104.Final' } }
+    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.104.Final' } }
 
-    implementation('io.netty:netty-buffer') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-codec-http2') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-common') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-handler') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-resolver') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-classes-epoll') { version { strictly '4.1.86.Final' } }
-    implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.86.Final' } }
-
+    implementation 'org.yaml:snakeyaml:2.2'
     implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.2'
     implementation 'org.apache.activemq:activemq-broker:5.16.4'
@@ -82,7 +80,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
