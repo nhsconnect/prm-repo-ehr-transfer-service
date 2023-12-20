@@ -36,7 +36,6 @@ configurations {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-activemq'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
     implementation('io.netty:netty-codec') { version { strictly '4.1.104.Final' } }
@@ -60,6 +59,7 @@ dependencies {
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.33.10'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
     implementation 'ch.qos.logback:logback-core:1.4.14'
 
     implementation platform('software.amazon.awssdk:bom:2.20.130')
@@ -81,12 +81,15 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok'
 
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.1"
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
+    testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
 }
