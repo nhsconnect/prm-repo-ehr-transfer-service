@@ -60,7 +60,6 @@ dependencies {
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.33.10'
     implementation 'ch.qos.logback:logback-classic:1.4.14'
-    implementation 'ch.qos.logback:logback-core:1.4.14'
 
     implementation platform('software.amazon.awssdk:bom:2.20.130')
     implementation 'software.amazon.awssdk:cloudwatch'
@@ -90,6 +89,7 @@ dependencies {
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'ch.qos.logback:logback-core:1.4.14'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
 }
