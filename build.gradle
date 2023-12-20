@@ -59,7 +59,7 @@ dependencies {
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.33.10'
-    implementation 'ch.qos.logback:logback-core:1.4.14'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
     implementation 'ch.qos.logback:logback-core:1.4.14'
 
     implementation platform('software.amazon.awssdk:bom:2.20.130')
@@ -86,7 +86,7 @@ dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.1"
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
