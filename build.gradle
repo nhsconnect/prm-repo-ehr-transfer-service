@@ -63,7 +63,7 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
     implementation 'org.apache.commons:commons-compress:1.25.0'
 
-    implementation platform('software.amazon.awssdk:bom:2.20.130')
+    implementation platform('software.amazon.awssdk:bom:2.22.2')
     implementation 'software.amazon.awssdk:cloudwatch'
     implementation 'software.amazon.awssdk:sns'
     implementation 'software.amazon.awssdk:sqs'
