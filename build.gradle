@@ -60,7 +60,6 @@ dependencies {
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.33.10'
-    implementation 'ch.qos.logback:logback-core:1.4.14'
 
     implementation platform('software.amazon.awssdk:bom:2.20.130')
     implementation 'software.amazon.awssdk:cloudwatch'
@@ -86,7 +85,6 @@ dependencies {
     testImplementation('org.junit.jupiter:junit-jupiter')
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.1"
-    testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
