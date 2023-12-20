@@ -36,6 +36,7 @@ configurations {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-activemq'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
     implementation('io.netty:netty-codec') { version { strictly '4.1.104.Final' } }
@@ -80,16 +81,13 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok'
 
-    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
-
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation(platform('org.junit:junit-bom:5.7.2'))
     testImplementation('org.junit.jupiter:junit-jupiter')
-    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.1'
+    spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
+    testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.1"
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.awaitility:awaitility:4.2.0'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'ch.qos.logback:logback-core:1.4.14'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
 }
@@ -171,18 +169,18 @@ dependencyCheck {
     failBuildOnCVSS = 7
     suppressionFile = './dependency-checks-suppression.xml'
     analyzers {
-          assemblyEnabled = false
-          ossIndexEnabled = false
+        assemblyEnabled = false
+        ossIndexEnabled = false
     }
 
 }
 
 sonar {
-  properties {
-    property 'sonar.projectKey', 'prm-orphaned-record-continuity_prm-repo-ehr-transfer-service'
-    property 'sonar.organization', 'prm-orphaned-record-continuity'
-    property 'sonar.host.url', 'https://sonarcloud.io'
-  }
+    properties {
+        property 'sonar.projectKey', 'prm-orphaned-record-continuity_prm-repo-ehr-transfer-service'
+        property 'sonar.organization', 'prm-orphaned-record-continuity'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+    }
 }
 
 check.dependsOn integration
