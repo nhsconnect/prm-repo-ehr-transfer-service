@@ -57,7 +57,7 @@ dependencies {
     implementation 'com.github.spotbugs:spotbugs-annotations:4.8.3'
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
-    implementation 'org.apache.qpid:proton-j:0.33.10'
+    implementation 'org.apache.qpid:proton-j:0.34.1'
     implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
     implementation 'org.apache.commons:commons-compress:1.25.0'
 
