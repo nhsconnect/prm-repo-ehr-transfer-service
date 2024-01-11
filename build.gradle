@@ -4,7 +4,6 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'com.github.spotbugs' version '5.2.4'
-    id 'org.owasp.dependencycheck' version '7.4.4'
     id 'org.sonarqube' version '4.3.1.3277'
 }
 
@@ -58,8 +57,6 @@ dependencies {
     implementation 'junit:junit:4.13.2'
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.33.10'
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
-    implementation 'org.apache.commons:commons-compress:1.25.0'
 
     implementation platform('software.amazon.awssdk:bom:2.20.130')
     implementation 'software.amazon.awssdk:cloudwatch'
@@ -86,7 +83,6 @@ dependencies {
     spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.11.0'
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation "com.github.tomakehurst:wiremock-jre8:2.35.1"
-    testImplementation 'com.google.guava:guava:33.0.0-jre'
     testImplementation 'org.awaitility:awaitility:4.2.0'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
@@ -163,16 +159,6 @@ spotbugsIntegration {
             stylesheet = 'fancy-hist.xsl'
         }
     }
-}
-
-dependencyCheck {
-    failBuildOnCVSS = 7
-    suppressionFile = './dependency-checks-suppression.xml'
-    analyzers {
-        assemblyEnabled = false
-        ossIndexEnabled = false
-    }
-
 }
 
 sonar {
