@@ -1,12 +1,11 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.MockitoAnnotations;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
@@ -18,27 +17,42 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
 class Gp2gpMessengerClientTest {
-
-    @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension();
+    WireMockServer wireMockServer;
 
     private AutoCloseable closeable;
 
     Tracer tracer = new Tracer();
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
+        wireMockServer = initializeWebServer();
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    public void tearDown() throws Exception {
         closeable.close();
+        wireMockServer.resetAll();
+        wireMockServer.stop();
+    }
+
+    private WireMockServer initializeWebServer() {
+        final WireMockServer wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+        return wireMockServer;
     }
 
     @Test
@@ -48,7 +62,7 @@ class Gp2gpMessengerClientTest {
 
         String jsonPayloadString = new Gson().toJson(requestBody);
 
-        wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890"))
+        wireMockServer.stubFor(post(urlEqualTo("/health-record-requests/1234567890"))
                 .withHeader("Authorization", matching("secret"))
                 .willReturn(aResponse()
                         .withStatus(204)
@@ -57,7 +71,7 @@ class Gp2gpMessengerClientTest {
 
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
-        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendGp2gpMessengerEhrRequest("1234567890", requestBody);
 
         verify(postRequestedFor(urlMatching("/health-record-requests/1234567890"))
@@ -74,7 +88,7 @@ class Gp2gpMessengerClientTest {
 
         String jsonPayloadString = new Gson().toJson(requestBody);
 
-        wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
+        wireMockServer.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
                 .withHeader("Authorization", matching("secret"))
                 .withRequestBody(equalTo(jsonPayloadString))
                 .willReturn(aResponse()
@@ -83,7 +97,7 @@ class Gp2gpMessengerClientTest {
 
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
-        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody);
 
         verify(postRequestedFor(urlMatching("/health-record-requests/1234567890/acknowledgement"))
@@ -98,7 +112,7 @@ class Gp2gpMessengerClientTest {
 
         String jsonPayloadString = new Gson().toJson(requestBody);
 
-        wireMock.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
+        wireMockServer.stubFor(post(urlEqualTo("/health-record-requests/1234567890/acknowledgement"))
                 .withHeader("Authorization", matching("secret"))
                 .withRequestBody(equalTo(jsonPayloadString))
                 .willReturn(aResponse()
@@ -107,7 +121,7 @@ class Gp2gpMessengerClientTest {
 
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
-        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
         assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody));
     }
 
@@ -117,7 +131,7 @@ class Gp2gpMessengerClientTest {
         UUID ehrExtractMessageId = UUID.randomUUID();
         Gp2gpMessengerContinueMessageRequestBody continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(conversationId, "gp-ods-code", ehrExtractMessageId);
         var jsonPayloadString = new Gson().toJson(continueMessageRequestBody);
-        wireMock.stubFor(post(urlEqualTo("/health-record-requests/continue-message"))
+        wireMockServer.stubFor(post(urlEqualTo("/health-record-requests/continue-message"))
                 .withHeader("Authorization", matching("secret"))
                 .willReturn(aResponse()
                         .withStatus(204)
@@ -126,7 +140,7 @@ class Gp2gpMessengerClientTest {
 
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
-        var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
 
         verify(postRequestedFor(urlMatching("/health-record-requests/continue-message"))
@@ -141,7 +155,7 @@ class Gp2gpMessengerClientTest {
         UUID ehrExtractMessageId = UUID.randomUUID();
         Gp2gpMessengerContinueMessageRequestBody continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(conversationId, "gp-ods-code", ehrExtractMessageId);
         var jsonPayloadString = new Gson().toJson(continueMessageRequestBody);
-        wireMock.stubFor(post(urlEqualTo("/health-record-requests/continue-message"))
+        wireMockServer.stubFor(post(urlEqualTo("/health-record-requests/continue-message"))
                 .withHeader("Authorization", matching("secret"))
                 .willReturn(aResponse()
                         .withStatus(500)
@@ -150,7 +164,7 @@ class Gp2gpMessengerClientTest {
 
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
-        var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMock.baseUrl(), "secret", tracer);
+        var gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
         assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody));
     }
 }
