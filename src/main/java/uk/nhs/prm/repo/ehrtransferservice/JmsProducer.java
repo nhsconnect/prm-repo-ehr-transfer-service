@@ -1,11 +1,11 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import jakarta.jms.JMSException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.jms.JMSException;
 import java.nio.charset.StandardCharsets;
 
 @Component
