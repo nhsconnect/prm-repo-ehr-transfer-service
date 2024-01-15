@@ -49,7 +49,7 @@ dependencies {
     implementation('io.netty:netty-transport-native-unix-common') { version { strictly '4.1.104.Final' } }
 
     implementation 'org.yaml:snakeyaml:2.2'
-    implementation 'net.logstash.logback:logstash-logback-encoder:7.0.1'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.2'
     implementation 'com.sun.mail:javax.mail:1.6.2'
     implementation 'com.google.code.gson:gson:2.10.1'
