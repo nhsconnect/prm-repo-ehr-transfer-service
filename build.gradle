@@ -67,7 +67,7 @@ dependencies {
 
     implementation 'com.amazonaws:amazon-sqs-java-extended-client-lib:1.2.2'
     implementation 'software.amazon.sns:sns-extended-client:1.1.3'
-    implementation 'software.amazon.payloadoffloading:payloadoffloading-common:1.1.1'
+    implementation 'software.amazon.payloadoffloading:payloadoffloading-common:1.1.3'
 
     // Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
