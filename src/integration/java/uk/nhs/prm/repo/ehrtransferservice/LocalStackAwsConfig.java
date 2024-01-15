@@ -11,6 +11,8 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import jakarta.annotation.PostConstruct;
+import jakarta.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,11 +41,13 @@ import software.amazon.payloadoffloading.S3Dao;
 import software.amazon.sns.AmazonSNSExtendedClient;
 import software.amazon.sns.SNSExtendedClientConfiguration;
 
-import javax.annotation.PostConstruct;
-import javax.jms.ConnectionFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
 

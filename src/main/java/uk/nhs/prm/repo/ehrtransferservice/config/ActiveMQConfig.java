@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.config;
 
+import jakarta.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -7,8 +8,6 @@ import org.springframework.boot.autoconfigure.jms.DefaultJmsListenerContainerFac
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
-
-import javax.jms.ConnectionFactory;
 
 @Configuration
 public class ActiveMQConfig {
@@ -30,7 +29,7 @@ public class ActiveMQConfig {
 
     @Bean
     public DefaultJmsListenerContainerFactory myFactory(ConnectionFactory connectionFactory,
-                                                    DefaultJmsListenerContainerFactoryConfigurer configurer) {
+                                                        DefaultJmsListenerContainerFactoryConfigurer configurer) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setSessionAcknowledgeMode(ActiveMQSession.INDIVIDUAL_ACKNOWLEDGE);
         // This provides all boot's default to this factory, including the message converter

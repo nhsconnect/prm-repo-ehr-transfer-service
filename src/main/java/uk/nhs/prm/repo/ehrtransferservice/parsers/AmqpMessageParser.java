@@ -1,13 +1,12 @@
 package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
+import jakarta.jms.BytesMessage;
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.codec.ReadableBuffer;
 import org.springframework.stereotype.Component;
-
-import javax.jms.BytesMessage;
-import javax.jms.JMSException;
-import javax.jms.Message;
 
 @Component
 @Slf4j

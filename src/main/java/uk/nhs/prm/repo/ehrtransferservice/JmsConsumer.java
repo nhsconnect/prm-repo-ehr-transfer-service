@@ -1,5 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
@@ -11,8 +13,6 @@ import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
