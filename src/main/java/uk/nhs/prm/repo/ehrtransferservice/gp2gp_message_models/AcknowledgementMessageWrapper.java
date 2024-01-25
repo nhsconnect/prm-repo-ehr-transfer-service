@@ -10,51 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AcknowledgementMessageWrapper extends MessageContent {
+public class AcknowledgementMessageWrapper implements MessageContent {
 
     public Acknowledgement acknowledgement;
 
     public AcknowledgementTypeCode getTypeCode() {
         return AcknowledgementTypeCode.parse(acknowledgement.typeCode);
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Acknowledgement {
-        @JacksonXmlElementWrapper(useWrapping = false)
-        public List<AcknowledgementDetail> acknowledgementDetail;
-        public String typeCode;
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public static class AcknowledgementDetail {
-            public String typeCode;
-            public AcknowledgementDetailCode code;
-
-            @JsonIgnoreProperties(ignoreUnknown = true)
-            public static class AcknowledgementDetailCode {
-                public String displayName;
-                public String code;
-                public String codeSystem;
-            }
-
-            public String getDisplayName() {
-                return code == null ? null : code.displayName;
-            }
-
-            public String getCode() {
-                return code == null ? null : code.code;
-            }
-
-            public String getCodeSystem() {
-                return code == null ? null : code.codeSystem;
-            }
-
-            public String getTypeCode() {
-                return typeCode;
-            }
-        }
     }
 
     @JacksonXmlProperty(localName = "ControlActEvent")
@@ -140,6 +102,42 @@ public class AcknowledgementMessageWrapper extends MessageContent {
                         public String code;
                     }
                 }
+            }
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Acknowledgement {
+        @JacksonXmlElementWrapper(useWrapping = false)
+        public List<AcknowledgementDetail> acknowledgementDetail;
+        public String typeCode;
+
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class AcknowledgementDetail {
+            public String typeCode;
+            public AcknowledgementDetailCode code;
+
+            @JsonIgnoreProperties(ignoreUnknown = true)
+            public static class AcknowledgementDetailCode {
+                public String displayName;
+                public String code;
+                public String codeSystem;
+            }
+
+            public String getDisplayName() {
+                return code == null ? null : code.displayName;
+            }
+
+            public String getCode() {
+                return code == null ? null : code.code;
+            }
+
+            public String getCodeSystem() {
+                return code == null ? null : code.codeSystem;
+            }
+
+            public String getTypeCode() {
+                return typeCode;
             }
         }
     }

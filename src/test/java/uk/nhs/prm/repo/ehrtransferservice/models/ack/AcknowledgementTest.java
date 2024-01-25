@@ -1,45 +1,33 @@
 package uk.nhs.prm.repo.ehrtransferservice.models.ack;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.AcknowledgementMessageWrapper;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AcknowledgementTest {
-    private AcknowledgementMessageWrapper acknowledgementMessageWrapper;
-
-    @BeforeEach
-    void setUp() {
-        acknowledgementMessageWrapper = new AcknowledgementMessageWrapper();
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForAcknowledgementType")
+    void acknowledgementTypeCodeShouldBeNegativeAcknowledgement(String typeCode, boolean expected) {
+        // given
+        AcknowledgementMessageWrapper acknowledgementMessageWrapper = new AcknowledgementMessageWrapper();
         acknowledgementMessageWrapper.acknowledgement = new AcknowledgementMessageWrapper.Acknowledgement();
+        acknowledgementMessageWrapper.acknowledgement.typeCode = typeCode;
+        var ack = new Acknowledgement(null, acknowledgementMessageWrapper, "bob");
+
+        // then
+        assertThat(ack.isNegativeAcknowledgement()).isEqualTo(expected);
     }
 
-    @Test
-    public void shouldBeAPositiveAcknowledgementIfTypeIsAA() {
-        acknowledgementMessageWrapper.acknowledgement.typeCode = "AA";
-        var ack = new Acknowledgement(null, acknowledgementMessageWrapper, "bob");
-        assertThat(ack.isNegativeAcknowledgement()).isFalse();
-    }
-
-    @Test
-    public void shouldBeANegativeAcknowledgementIfTypeIsAE() {
-        acknowledgementMessageWrapper.acknowledgement.typeCode = "AE";
-        var ack = new Acknowledgement(null, acknowledgementMessageWrapper, "bob");
-        assertThat(ack.isNegativeAcknowledgement()).isTrue();
-    }
-
-    @Test
-    public void shouldBeANegativeAcknowledgementIfTypeIsAR() {
-        acknowledgementMessageWrapper.acknowledgement.typeCode = "AR";
-        var ack = new Acknowledgement(null, acknowledgementMessageWrapper, "bob");
-        assertThat(ack.isNegativeAcknowledgement()).isTrue();
-    }
-
-    @Test
-    public void shouldBeANegativeAcknowledgementIfTypeIsUnknown() {
-        acknowledgementMessageWrapper.acknowledgement.typeCode = "something that should never be set";
-        var ack = new Acknowledgement(null, acknowledgementMessageWrapper, "bob");
-        assertThat(ack.isNegativeAcknowledgement()).isTrue();
+    private static Stream<Arguments> provideArgumentsForAcknowledgementType() {
+        return Stream.of(
+                Arguments.of("AA", false),
+                Arguments.of("AE", true),
+                Arguments.of("AR", true),
+                Arguments.of("something that should never be set", true));
     }
 }

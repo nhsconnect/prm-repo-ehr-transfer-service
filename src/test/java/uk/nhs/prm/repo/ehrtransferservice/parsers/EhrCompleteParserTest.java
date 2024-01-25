@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EhrCompleteParserTest {
@@ -20,4 +21,14 @@ class EhrCompleteParserTest {
         assertEquals(conversationId, parsedMessage.getConversationId());
         assertEquals(messageId, parsedMessage.getMessageId());
     }
+
+    @Test
+    void shouldThrowExceptionWhenParsingIncorrectlyFormattedMessage() {
+        String invalidIncomingMessage = "invalid";
+
+        EhrCompleteParser ehrCompleteParser = new EhrCompleteParser();
+
+        assertThrows(RuntimeException.class, () -> ehrCompleteParser.parse(invalidIncomingMessage));
+    }
+
 }

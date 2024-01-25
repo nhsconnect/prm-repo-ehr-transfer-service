@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
-public class EhrRepoServiceTest {
+class EhrRepoServiceTest {
     EhrRepoService ehrRepoService;
     @Mock
     EhrRepoClient mockEhrRepoClient;

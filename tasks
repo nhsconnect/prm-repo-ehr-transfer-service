@@ -259,12 +259,6 @@ case "${command}" in
       configure_sonar_environment_variable
       dojo -c Dojofile-itest "./tasks _run_sonar"
       ;;
-  _dep)
-      gradle dependencyCheckAnalyze
-      ;;
-  dep)
-      dojo "./tasks _dep"
-      ;;
   tf)
       check_env
       dojo -c Dojofile-infra "bash"

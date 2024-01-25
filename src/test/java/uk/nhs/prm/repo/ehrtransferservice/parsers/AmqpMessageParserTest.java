@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.parsers;
 
+import jakarta.jms.JMSException;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.apache.qpid.proton.amqp.messaging.AmqpValue;
 import org.apache.qpid.proton.codec.WritableBuffer;
@@ -7,13 +8,12 @@ import org.apache.qpid.proton.message.Message;
 import org.apache.qpid.proton.message.ProtonJMessage;
 import org.junit.jupiter.api.Test;
 
-import javax.jms.JMSException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class AmqpMessageParserTest {
+class AmqpMessageParserTest {
     private final AmqpMessageParser amqpMessageParser = new AmqpMessageParser();
 
     private Message createAmqpMessage(String messageBody){
@@ -30,8 +30,7 @@ public class AmqpMessageParserTest {
         amqp.encode(new WritableBuffer.ByteBufferWrapper(buffer));
         var writableBuffer = new WritableBuffer.ByteBufferWrapper(buffer);
         message.encode(writableBuffer);
-        var bytes = writableBuffer.toReadableBuffer().array();
-        return bytes;
+        return writableBuffer.toReadableBuffer().array();
     }
 
     private ActiveMQBytesMessage bytesToBytesMessage(byte[] bytes) throws JMSException {

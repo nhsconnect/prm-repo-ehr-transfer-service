@@ -30,6 +30,7 @@ public class Parser {
                 return new Acknowledgement(envelope, message, messageBodyAsString);
             case "COPC_IN000001UK01":
                 log.info("COPC message received in Parser");
+                break;
             default:
                 log.warn("No interaction ID match found for current message");
                 break;

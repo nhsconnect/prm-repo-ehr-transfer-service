@@ -12,8 +12,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
-import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.conversationId;
-import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.traceId;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.logging.TraceKey.TRACE_ID;
 
 class TracerTest {
 
@@ -21,8 +21,8 @@ class TracerTest {
     private static final String SOME_CONVERSATION_ID = "someConversationId";
     private static Tracer tracer;
 
-    public static final String TRACE_ID_KEY = traceId.toString();
-    public static final String CONVERSATION_ID_KEY = conversationId.toString();
+    public static final String TRACE_ID_KEY = TRACE_ID.toString();
+    public static final String CONVERSATION_ID_KEY = CONVERSATION_ID.toString();
 
     @BeforeAll
     static void setUp() {
@@ -60,6 +60,6 @@ class TracerTest {
         UpdateableTraceContext traceContext = tracer.createNewContext();
 
         assertThat(traceContext).isNotNull();
-        assertThat(MDC.get(conversationId.toString())).isNull();
+        assertThat(MDC.get(CONVERSATION_ID.toString())).isNull();
     }
 }

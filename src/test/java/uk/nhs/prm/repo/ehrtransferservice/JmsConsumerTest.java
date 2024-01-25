@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import jakarta.jms.JMSException;
 import org.apache.activemq.command.ActiveMQBytesMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -17,7 +18,6 @@ import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 
-import javax.jms.JMSException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
-public class JmsConsumerTest {
+class JmsConsumerTest {
     @Mock
     AmqpMessageParser amqpMessageParser;
     @Mock

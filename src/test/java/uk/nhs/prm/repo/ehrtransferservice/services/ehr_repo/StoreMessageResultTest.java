@@ -1,33 +1,27 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StoreMessageResultTest {
-
-    @Test
-    public void ehrIsCompleteIfHealthRecordStatusIsComplete() {
-        var result = new StoreMessageResult(new StoreMessageResponseBody("complete"));
-        assertThat(result.isEhrComplete()).isTrue();
+    @ParameterizedTest
+    @MethodSource("provideArgumentsForHealthRecordStatus")
+    void ehrIsCompleteIfHealthRecordStatusIsComplete(String healthRecordStatus, boolean expected) {
+        var result = new StoreMessageResult(new StoreMessageResponseBody(healthRecordStatus));
+        assertThat(result.isEhrComplete()).isEqualTo(expected);
     }
 
-    @Test
-    public void ehrIsNotCompleteIfHealthRecordStatusIsAnythingOtherThanComplete() {
-        var result = new StoreMessageResult(new StoreMessageResponseBody("not complete"));
-        assertThat(result.isEhrComplete()).isFalse();
-    }
-
-    @Test
-    public void ehrIsNotCompleteIfHealthRecordStatusIsMissing() {
-        var result = new StoreMessageResult(new StoreMessageResponseBody(null));
-        assertThat(result.isEhrComplete()).isFalse();
-    }
-
-    @Test
-    public void ehrIsNotCompleteIfHealthRecordStatusIsEmpty() {
-        var result = new StoreMessageResult(new StoreMessageResponseBody(""));
-        assertThat(result.isEhrComplete()).isFalse();
+    private static Stream<Arguments> provideArgumentsForHealthRecordStatus() {
+        return Stream.of(
+                Arguments.of("complete", true),
+                Arguments.of("not complete", false),
+                Arguments.of("", false),
+                Arguments.of(null, false));
     }
 }
