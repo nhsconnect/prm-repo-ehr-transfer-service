@@ -1,5 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice;
 
+import jakarta.jms.JMSException;
+import jakarta.jms.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
@@ -11,8 +13,6 @@ import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +27,7 @@ public class JmsConsumer {
     private final Broker broker;
     private final Tracer tracer;
     private final ParsingDlqPublisher parsingDlqPublisher;
-    private final String unprocessableMessageBody = "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY";
+    private static final String UNPROCESSABLE_MESSAGE_BODY = "NO_ACTION:UNPROCESSABLE_MESSAGE_BODY";
 
     @JmsListener(destination = "${activemq.inboundQueue}")
     public void onMessage(Message message,
@@ -55,7 +55,7 @@ public class JmsConsumer {
 
             broker.sendMessageToEhrInOrUnhandled(parsedMessage);
         } catch (Exception e) {
-            var toBeSentToDlq = messageBody != null ? messageBody : unprocessableMessageBody;
+            var toBeSentToDlq = messageBody != null ? messageBody : UNPROCESSABLE_MESSAGE_BODY;
             log.error("Failed to process message - sending to dlq");
             parsingDlqPublisher.sendMessage(toBeSentToDlq);
         }
@@ -80,7 +80,12 @@ public class JmsConsumer {
         log.debug("JMS_AMQP_ContentType property: " + message.getStringProperty("JMS_AMQP_ContentType"));
         log.debug("JMS_AMQP_HEADER property: " + message.getStringProperty("JMS_AMQP_HEADER"));
 
-        log.debug("headers: " + headers.entrySet().stream().map(kv -> kv.getKey() + ":" + kv.getValue()).collect(Collectors.joining(", ")));
+        log.debug("headers: " + headers
+                .entrySet()
+                .stream()
+                .map(kv -> kv.getKey() + ":" + kv.getValue())
+                .collect(Collectors.joining(", "))
+        );
 
         log.debug("correlation-id header: " + headers.get("correlation-id"));
         log.debug("JMS_AMQP_NATIVE header: " + headers.get("JMS_AMQP_NATIVE"));

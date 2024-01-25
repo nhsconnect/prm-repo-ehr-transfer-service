@@ -20,14 +20,6 @@ public class ParsedMessage {
         this.messageBody = messageBody;
     }
 
-    public BytesMessage getBytesMessage() throws JMSException {
-        final byte[] bytesArray = this.messageBody.getBytes(StandardCharsets.UTF_8);
-        ActiveMQBytesMessage bytesMessage = new ActiveMQBytesMessage();
-        bytesMessage.writeBytes(bytesArray);
-        bytesMessage.reset();
-        return bytesMessage;
-    }
-
     public String getMessageBody() {
         return messageBody;
     }
@@ -52,7 +44,6 @@ public class ParsedMessage {
     }
 
     public String getInteractionId() {
-        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;
         }
@@ -60,7 +51,6 @@ public class ParsedMessage {
     }
 
     public UUID getConversationId() {
-        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null) {
             return null;
         }
@@ -68,7 +58,6 @@ public class ParsedMessage {
     }
 
     public UUID getMessageId() {
-        SOAPEnvelope soapEnvelope = getSoapEnvelope();
         if (soapEnvelope.header == null || soapEnvelope.header.messageHeader == null || soapEnvelope.header.messageHeader.messageData == null) {
             return null;
         }
@@ -90,8 +79,6 @@ public class ParsedMessage {
     }
 
     public boolean isLargeMessage() {
-        SOAPEnvelope soapEnvelope = getSoapEnvelope();
-
         for (Reference reference : soapEnvelope.body.manifest) {
             if (reference.href.contains("mid")) {
                 return true;
@@ -102,7 +89,6 @@ public class ParsedMessage {
 
     public List<UUID> getFragmentMessageIds() {
         List<UUID> fragmentMessageIds = new ArrayList<>();
-        SOAPEnvelope soapEnvelope = getSoapEnvelope();
 
         soapEnvelope.body.manifest.forEach(reference -> {
             if (reference.href.contains("mid")) {

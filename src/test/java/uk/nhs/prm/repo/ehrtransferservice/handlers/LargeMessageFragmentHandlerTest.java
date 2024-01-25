@@ -60,7 +60,7 @@ class LargeMessageFragmentHandlerTest {
         when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResult(new StoreMessageResponseBody("complete")));
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
         verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
-        assertThat(largeMessageFragmentsArgumentCaptor.getValue().getNhsNumber()).isEqualTo("");
+        assertThat(largeMessageFragmentsArgumentCaptor.getValue().getNhsNumber()).isEmpty();
     }
 
     @Test

@@ -33,7 +33,7 @@ class MetricPublisherTest {
     private ArgumentCaptor<PutMetricDataRequest> putRequestCaptor;
 
     @Test
-    public void shouldSetHealthMetricDimensionToAppropriateEnvironment() {
+    void shouldSetHealthMetricDimensionToAppropriateEnvironment() {
         when(config.environment()).thenReturn("local");
 
         metricPublisher.publishMetric("Health", 1.0);
@@ -48,7 +48,7 @@ class MetricPublisherTest {
     }
 
     @Test
-    public void shouldPublisherMetricValuesToCloudwatch() {
+    void shouldPublisherMetricValuesToCloudwatch() {
         when(config.environment()).thenReturn("local");
 
         metricPublisher.publishMetric("Health", 1.0);

@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class NegativeAcknowledgementHandlerTest {
+class NegativeAcknowledgementHandlerTest {
 
     @Mock
     TransferStore transferStore;

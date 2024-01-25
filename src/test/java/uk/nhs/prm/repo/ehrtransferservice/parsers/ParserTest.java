@@ -19,7 +19,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Tag("unit")
-public class ParserTest {
+class ParserTest {
 
     private final Parser parser = new Parser();
     private final TestDataLoader rawLoader = new TestDataLoader();
@@ -31,7 +31,7 @@ public class ParserTest {
             "RCMR_IN030000UK06, MessageBody",
             "PRPA_IN000202UK01, MessageBody"
     })
-    public void shouldExtractActionNameFromMessageBodyMessage(String interactionId, String variant) throws IOException {
+    void shouldExtractActionNameFromMessageBodyMessage(String interactionId, String variant) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -43,7 +43,7 @@ public class ParserTest {
             "RCMR_IN030000UK06, WithMidMessageBody, true",
             "RCMR_IN030000UK06, MessageBody, false"
     })
-    public void shouldCheckIfMessageIsLarge(String interactionId, String variant, boolean isLargeMessage) throws IOException {
+    void shouldCheckIfMessageIsLarge(String interactionId, String variant, boolean isLargeMessage) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -56,7 +56,7 @@ public class ParserTest {
             "RCMR_IN030000UK06, MessageBody, ff27abc3-9730-40f7-ba82-382152e6b90a",
             "PRPA_IN000202UK01, MessageBody, 723c5f3a-1ab8-4515-a582-3e5cc600bf59"
     })
-    public void shouldExtractConversationIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedConversationId) throws IOException {
+    void shouldExtractConversationIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedConversationId) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -69,7 +69,7 @@ public class ParserTest {
             "RCMR_IN030000UK06, MessageBody, 1C66BB0E-811E-4956-8F9C-33424695B75F",
             "PRPA_IN000202UK01, MessageBody, 11F4D7DF-EB49-45A5-A310-59FFFCF98C2A"
     })
-    public void shouldExtractMessageIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedMessageId) throws IOException {
+    void shouldExtractMessageIdFromMessageBodyMessage(String interactionId, String variant, UUID expectedMessageId) throws IOException {
         String messageAsString = readableReader.readMessage(interactionId, variant);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 
@@ -77,7 +77,7 @@ public class ParserTest {
     }
 
     @Test
-    public void shouldExtractNhsNumberFromEhrExtract() throws IOException {
+    void shouldExtractNhsNumberFromEhrExtract() throws IOException {
         String fileName = "RCMR_IN030000UK06";
         String messageAsString = rawLoader.getDataAsString(fileName);
         ParsedMessage parsedMessage = parser.parse(messageAsString);
@@ -86,7 +86,7 @@ public class ParserTest {
     }
 
     @Test
-    public void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
+    void shouldParseMessageWithUnexpectedBackslashInNhsNumber() throws IOException {
         String messageAsString = readableReader.readMessage("RCMR_IN030000UK06", "MessageBodyWithUnexpectedBackslash");
         ParsedMessage parsedMessage = parser.parse(messageAsString);
 

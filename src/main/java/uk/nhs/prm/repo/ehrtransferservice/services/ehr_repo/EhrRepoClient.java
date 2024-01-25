@@ -41,7 +41,7 @@ public class EhrRepoClient {
         this.tracer = tracer;
     }
 
-    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws Exception {
+    public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws DuplicateMessageException, RuntimeException, IOException, URISyntaxException, InterruptedException {
         String endpoint = "/messages/" + conversationId + "/" + messageId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
@@ -53,7 +53,6 @@ public class EhrRepoClient {
         HttpResponse<String> response = HttpClient.newBuilder()
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
-
 
         if (response.statusCode() == 409) {
             throw new DuplicateMessageException("Tried to store and already existing message in EHR Repo.");

@@ -45,17 +45,20 @@ class TransferStoreTest {
         assertThat(value.getSourceGP()).isEqualTo("source-gp");
         assertThat(value.getNhsNumber()).isEqualTo("123456765");
         assertThat(value.getNemsEventLastUpdated()).isEqualTo("last-updated");
-        assertThat(value.getLargeEhrCoreMessageId()).isEqualTo("");
-        assertThat(value.getIsActive()).isEqualTo(true);
+        assertThat(value.getLargeEhrCoreMessageId()).isEmpty();
+        assertThat(value.isActive()).isTrue();
         assertThat(Instant.parse(value.getLastUpdatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
         assertThat(Instant.parse(value.getCreatedAt())).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
     }
 
     @Test
     void shouldThrowExceptionWhenFailsToMakeInitialSaveInDb() {
+        RepoIncomingEvent incomingEvent = createIncomingEvent();
+
         doThrow(RuntimeException.class).when(transferTrackerDb).save(trackerDbEntryArgumentCaptor.capture());
 
-        assertThrows(TransferTrackerDbException.class, () -> transferStore.createEhrTransfer(createIncomingEvent(), "ACTION:TRANSFER_TO_REPO_STARTED"));
+        assertThrows(TransferTrackerDbException.class,
+                () -> transferStore.createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED"));
     }
 
     @Test
@@ -77,12 +80,12 @@ class TransferStoreTest {
     void shouldCallDbWithExpectedValuesToUpdateWithNewLargeEhrCoreMessageId() {
         transferStore.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id");
 
-        verify(transferTrackerDb).updateLargeEhrCoreMessageId(eq("conversation-id"), eq("large-ehr-core-message-id"));
+        verify(transferTrackerDb).updateLargeEhrCoreMessageId("conversation-id", "large-ehr-core-message-id");
     }
 
     @Test
     void shouldThrowExceptionWhenFailsToUpdateWithNewLargeEhrCoreMessageId() {
-        doThrow(RuntimeException.class).when(transferTrackerDb).updateLargeEhrCoreMessageId(eq("conversation-id"), eq("large-ehr-core-message-id"));
+        doThrow(RuntimeException.class).when(transferTrackerDb).updateLargeEhrCoreMessageId("conversation-id", "large-ehr-core-message-id");
 
         assertThrows(TransferTrackerDbException.class, () -> transferStore.updateLargeEhrCoreMessageId("conversation-id","large-ehr-core-message-id"));
     }
@@ -99,7 +102,7 @@ class TransferStoreTest {
 
     @Test
     void shouldThrowExceptionWhenFailsToGetDbInformationForSpecifiedConversationId() {
-        when(transferTrackerDb.getByConversationId(eq("conversation-id"))).thenReturn(null);
+        when(transferTrackerDb.getByConversationId("conversation-id")).thenReturn(null);
 
         assertThrows(TransferTrackerDbException.class, () -> transferStore.findTransfer("conversation-id"));
     }

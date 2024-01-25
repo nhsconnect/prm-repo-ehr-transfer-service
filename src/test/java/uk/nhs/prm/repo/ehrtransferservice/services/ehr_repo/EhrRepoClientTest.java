@@ -1,11 +1,11 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.DuplicateMessageException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
@@ -28,7 +28,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -37,24 +47,37 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Tag("unit")
-public class EhrRepoClientTest {
-    @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension();
+class EhrRepoClientTest {
+    WireMockServer wireMockServer;
+
     static Tracer tracer = mock(Tracer.class);
     static UUID traceId = UUID.randomUUID();
 
-    @BeforeAll
-    static void setUp() {
+    @BeforeEach
+    public void setUp() {
         when(tracer.getTraceId()).thenReturn(String.valueOf(traceId));
+        wireMockServer = initializeWebServer();
+    }
+
+    @AfterEach
+    public void tearDown() throws Exception {
+        wireMockServer.resetAll();
+        wireMockServer.stop();
+    }
+
+    private WireMockServer initializeWebServer() {
+        final WireMockServer wireMockServer = new WireMockServer(8080);
+        wireMockServer.start();
+        return wireMockServer;
     }
 
     @Test
-    public void shouldFetchStorageUrlFromEhrRepo() throws Exception {
+    void shouldFetchStorageUrlFromEhrRepo() throws Exception {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
-        wireMock.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
                 .withHeader("traceId", equalTo(String.valueOf(traceId)))
                 .willReturn(aResponse()
@@ -62,7 +85,7 @@ public class EhrRepoClientTest {
                         .withBody(presignedUrl)
                         .withHeader("Content-Type", "application/json")));
 
-        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
         PresignedUrl response = ehrRepoClient.fetchStorageUrl(conversationId, messageId);
 
         verify(getRequestedFor(urlMatching("/messages/" + conversationId + "/" + messageId))
@@ -70,21 +93,21 @@ public class EhrRepoClientTest {
                 .withHeader("Authorization", matching("secret"))
                 .withHeader("traceId", matching(String.valueOf(traceId))));
 
-        assertThat(response.presignedUrl, Matchers.equalTo(new URL("https://fake-presigned-url")));
+        assertThat(response.getUrl(), Matchers.equalTo(new URL("https://fake-presigned-url")));
     }
 
     @Test
-    public void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
+    void shouldThrowErrorWhenCannotFetchStorageUrlFromEhrRepo() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
-        wireMock.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
                         .withHeader("Content-Type", "application/json")));
 
-        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
         Exception expected = assertThrows(Exception.class, () ->
                 ehrRepoClient.fetchStorageUrl(conversationId, messageId)
         );
@@ -96,18 +119,18 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldThrowDuplicateMessageExceptionWhenReceiving409() throws MalformedURLException {
+    void shouldThrowDuplicateMessageExceptionWhenReceiving409() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
-        wireMock.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(409)
                         .withHeader("Content-Type", "application/json")));
 
-        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
         Exception expected = assertThrows(DuplicateMessageException.class, () ->
                 ehrRepoClient.fetchStorageUrl(conversationId, messageId)
         );
@@ -115,11 +138,11 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldThrowErrorWhenCannotStoreMessageInEhrRepo() throws MalformedURLException {
+    void shouldThrowErrorWhenCannotStoreMessageInEhrRepo() throws MalformedURLException {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
-        wireMock.stubFor(post(urlEqualTo("/messages"))
+        wireMockServer.stubFor(post(urlEqualTo("/messages"))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
@@ -132,7 +155,7 @@ public class EhrRepoClientTest {
         when(mockParsedMessage.getInteractionId()).thenReturn("RCMR_IN030000UK06");
         when(mockParsedMessage.getFragmentMessageIds()).thenReturn(Collections.emptyList());
 
-        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
         Exception expected = assertThrows(HttpException.class, () ->
                 ehrRepoClient.confirmMessageStored(mockParsedMessage)
         );
@@ -140,7 +163,7 @@ public class EhrRepoClientTest {
     }
 
     @Test
-    public void shouldConfirmMessageStoredInEhrRepo() throws Exception {
+    void shouldConfirmMessageStoredInEhrRepo() throws Exception {
         // Setup
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
@@ -153,14 +176,14 @@ public class EhrRepoClientTest {
         //TODO: Refactor the below json body
         String responseBody = "{\"healthRecordStatus\":\"complete\"}";
         // Mock request
-        wireMock.stubFor(post(urlEqualTo("/messages"))
+        wireMockServer.stubFor(post(urlEqualTo("/messages"))
                 .withHeader("Authorization", equalTo("secret"))
                 .withHeader("traceId", equalTo(String.valueOf(traceId)))
                 .willReturn(aResponse()
                         .withStatus(201)
                         .withHeader("Content-Type", "application/json").withBody(responseBody)));
 
-        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMock.baseUrl(), "secret", tracer);
+        EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
 
         // Create parsed message to store
         SOAPEnvelope envelope = getSoapEnvelope(conversationId, messageId, fragmentId, interactionId);

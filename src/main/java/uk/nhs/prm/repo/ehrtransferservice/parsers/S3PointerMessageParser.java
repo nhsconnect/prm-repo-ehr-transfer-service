@@ -11,8 +11,8 @@ import uk.nhs.prm.repo.ehrtransferservice.models.enums.Status;
 @Slf4j
 @Component
 public class S3PointerMessageParser {
-    private final Integer S3_POINTER_MESSAGE_CONTENT_INDEX = 1;
-    private final String s3PointerHeader = "software.amazon.payloadoffloading.PayloadS3Pointer";
+    private static final Integer S3_POINTER_MESSAGE_CONTENT_INDEX = 1;
+    private static final String S3_POINTER_HEADER = "software.amazon.payloadoffloading.PayloadS3Pointer";
 
     public ParsingResult<S3PointerMessage> parse(String payload) {
         try {
@@ -46,7 +46,7 @@ public class S3PointerMessageParser {
         var firstObjInArr = payloadAsJsonArray.get(0);
         var secondObjInArr = payloadAsJsonArray.get(1);
 
-        if (!s3PointerHeader.equals(firstObjInArr.getAsString())) {
+        if (!S3_POINTER_HEADER.equals(firstObjInArr.getAsString())) {
             return false;
         }
 
@@ -54,10 +54,6 @@ public class S3PointerMessageParser {
             return false;
         }
 
-        if (secondObjInArr.getAsJsonObject().get(S3PointerMessage.S3_KEY_PROPERTY) == null) {
-            return false;
-        }
-
-        return true;
+        return secondObjInArr.getAsJsonObject().get(S3PointerMessage.S3_KEY_PROPERTY) != null;
     }
 }

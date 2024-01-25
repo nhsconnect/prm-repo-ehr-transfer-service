@@ -12,13 +12,13 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Tag("unit")
-public class MCCIUK13AcknowledgementParsingTest {
+class MCCIUK13AcknowledgementParsingTest {
 
     private final Parser parser = new Parser();
     private final ReadableTestDataHandler readableReader = new ReadableTestDataHandler();
 
     @Test
-    public void shouldNotFailToParseWhenFailedToExtractFailureDetailsFromNegativeAcknowledgement() throws IOException {
+    void shouldNotFailToParseWhenFailedToExtractFailureDetailsFromNegativeAcknowledgement() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "EmptyFailure");
         var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
@@ -26,13 +26,13 @@ public class MCCIUK13AcknowledgementParsingTest {
     }
 
     @Test
-    public void shouldExtractFailureDetailsFromTheReasonsFor_AE_TypeFailure() throws IOException {
+    void shouldExtractFailureDetailsFromTheReasonsFor_AE_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure");
         var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
         assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AE);
 
-        assertThat(parsedAcknowledgement.getFailureDetails().size()).isEqualTo(2);
+        assertThat(parsedAcknowledgement.getFailureDetails()).hasSize(2);
         var firstReasonFailure = parsedAcknowledgement.getFailureDetails().get(0);
         assertThat(firstReasonFailure.displayName()).isEqualTo("Update Failed");
         assertThat(firstReasonFailure.code()).isEqualTo("15");
@@ -46,7 +46,7 @@ public class MCCIUK13AcknowledgementParsingTest {
     }
 
     @Test
-    public void shouldNotFailToParseWhenReasonQualifierHasSomeExtraFieldsOnIt() throws IOException {
+    void shouldNotFailToParseWhenReasonQualifierHasSomeExtraFieldsOnIt() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AE_TypeFailure_ExtraQualifierFields");
         var parsed = (Acknowledgement) parser.parse(messageAsString);
 
@@ -54,13 +54,13 @@ public class MCCIUK13AcknowledgementParsingTest {
     }
 
     @Test
-    public void shouldExtractFailureDetailsFromTheReasonsFor_AR_TypeFailure() throws IOException {
+    void shouldExtractFailureDetailsFromTheReasonsFor_AR_TypeFailure() throws IOException {
         String messageAsString = readableReader.readMessage("MCCI_IN010000UK13", "AR_TypeFailure");
         var parsedAcknowledgement = (Acknowledgement) parser.parse(messageAsString);
 
         assertThat(parsedAcknowledgement.getTypeCode()).isEqualTo(AcknowledgementTypeCode.AR);
 
-        assertThat(parsedAcknowledgement.getFailureDetails().size()).isEqualTo(2);
+        assertThat(parsedAcknowledgement.getFailureDetails()).hasSize(2);
         var firstReasonFailure = parsedAcknowledgement.getFailureDetails().get(0);
         assertThat(firstReasonFailure.displayName()).isEqualTo("Access denied");
         assertThat(firstReasonFailure.code()).isEqualTo("1");

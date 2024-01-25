@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class ConfirmMessageStoredTest {
+class ConfirmMessageStoredTest {
     UUID messageId = UUID.randomUUID();
     UUID conversationId = UUID.randomUUID();
     String nhsNumber = "1234567890";
@@ -21,14 +21,14 @@ public class ConfirmMessageStoredTest {
     UUID secondFragmentMessageID = UUID.randomUUID();
 
     @Test
-    public void shouldSerializeToJson() {
+    void shouldSerializeToJson() {
         String expectedJson = "{\"data\":{\"type\":\"messages\",\"id\":\"" + messageId + "\",\"attributes\":{\"conversationId\":\"" + conversationId + "\",\"messageType\":\"" + messageType + "\",\"nhsNumber\":\"" + nhsNumber + "\",\"fragmentMessageIds\":[]}}}";
         String jsonText = new Gson().toJson(new StoreMessageRequestBody(messageId, conversationId, nhsNumber, messageType, fragmentMessageIds));
         assertThat(jsonText, equalTo(expectedJson));
     }
 
     @Test
-    public void shouldSerializeToJsonWithFragmentMessageIds() {
+    void shouldSerializeToJsonWithFragmentMessageIds() {
         fragmentMessageIds.add(fragmentMessageID);
         fragmentMessageIds.add(secondFragmentMessageID);
 
