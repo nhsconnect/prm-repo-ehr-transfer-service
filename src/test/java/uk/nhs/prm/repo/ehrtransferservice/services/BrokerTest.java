@@ -133,22 +133,21 @@ class BrokerTest {
         verify(parsingDlqPublisher).sendMessage(any());
     }
 
-    // TODO - Will be required when we revert back from PRMT-4201
-    //    @Test
-    //    void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
-    //        String messageBody = "ehr-request";
-    //        UUID conversationId = UUID.randomUUID();
-    //        var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
-    //
-    //        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(false);
-    //
-    //        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
-    //
-    //        verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
-    //    }
+    @Test
+    public void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
+        String messageBody = "ehr-request";
+        UUID conversationId = UUID.randomUUID();
+        var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
+
+        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(false);
+
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
+
+        verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
+    }
 
     @Test
-    void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
+    public void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);

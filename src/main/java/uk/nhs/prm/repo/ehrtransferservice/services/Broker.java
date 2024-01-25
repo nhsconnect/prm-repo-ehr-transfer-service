@@ -5,12 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.FragmentMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.LargeEhrMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.NegativeAcknowledgementMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.PositiveAcknowledgementMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SmallEhrMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
@@ -28,7 +23,7 @@ public class Broker {
     private final NegativeAcknowledgementMessagePublisher negativeAcknowledgementMessagePublisher;
     private final PositiveAcknowledgementMessagePublisher positiveAcknowledgementMessagePublisher;
     private final ParsingDlqPublisher parsingDlqPublisher;
-    private final EhrRepoService ehrRepoService;
+    private final EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
 
     private final TransferStore transferStore;
 
@@ -74,12 +69,8 @@ public class Broker {
             log.info("Found Conversation ID '{}' in Transfer Tracker Database - received EHR IN message", parsedMessage.getConversationId());
             sendMessageToCorrespondingTopicPublisher(parsedMessage);
         } else {
-            log.info(
-                    "Did not find Conversation ID '{}' in Transfer Tracker Database - Sending DELETE request to EHR Repository based on NHS Number",
-                    parsedMessage.getConversationId()
-            );
-
-            ehrRepoService.softDeleteEhrRecord(parsedMessage.getNhsNumber());
+            log.info("Did not find conversation id in db - sending to EHR IN Unhandled topic");
+            ehrInUnhandledMessagePublisher.sendMessage(parsedMessage.getMessageBody(), parsedMessage.getConversationId());
         }
     }
 }
