@@ -134,7 +134,7 @@ public class BrokerTest {
     }
 
     @Test
-    void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
+    public void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
