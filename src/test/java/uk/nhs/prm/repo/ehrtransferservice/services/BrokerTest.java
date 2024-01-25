@@ -134,6 +134,19 @@ public class BrokerTest {
     }
 
     @Test
+    void shouldPublishMessageWithoutKnownConversationIdToEhrInUnhandledTopic() {
+        String messageBody = "ehr-request";
+        UUID conversationId = UUID.randomUUID();
+        var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
+
+        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(false);
+
+        broker.sendMessageToEhrInOrUnhandled(parsedMessage);
+
+        verify(ehrInUnhandledMessagePublisher).sendMessage("ehr-request", conversationId);
+    }
+
+    @Test
     public void shouldNotPublishMessageWithKnownConversationIdToEhrInUnhandledTopic() {
         String messageBody = "ehr-request";
         UUID conversationId = UUID.randomUUID();
