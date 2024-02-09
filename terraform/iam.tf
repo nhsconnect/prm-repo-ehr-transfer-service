@@ -1,6 +1,6 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  sns_topics = [
+  sns_topic_arns = [
     aws_sns_topic.parsing_dlq.arn,
     aws_sns_topic.positive_acks.arn,
     aws_sns_topic.large_message_fragments.arn,
@@ -279,13 +279,13 @@ resource "aws_iam_role_policy_attachment" "ehr_transfer_service_sns" {
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
     actions = ["sns:GetTopicAttributes"]
-    resources = local.sns_topics
+    resources = local.sns_topic_arns
   }
 
   statement {
     actions = ["sns:Publish"]
     effect = "Deny"
-    resources = local.sns_topics
+    resources = local.sns_topic_arns
 
     condition {
       test     = "Bool"
