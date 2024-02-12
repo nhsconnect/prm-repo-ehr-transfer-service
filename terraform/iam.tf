@@ -694,6 +694,8 @@ data "aws_iam_policy_document" "sns_topic_policy" {
   statement {
     actions = ["sns:Publish"]
     effect  = "Deny"
+    resources = local.sns_topic_arns
+
     condition {
       test     = "Bool"
       variable = "aws:SecureTransport"
