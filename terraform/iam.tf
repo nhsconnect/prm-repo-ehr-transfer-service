@@ -1,5 +1,17 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
+  sns_topic_arns = [
+    aws_sns_topic.parsing_dlq.arn,
+    aws_sns_topic.positive_acks.arn,
+    aws_sns_topic.large_message_fragments.arn,
+    aws_sns_topic.large_ehr.arn,
+    aws_sns_topic.small_ehr.arn,
+    aws_sns_topic.negative_acks.arn,
+    aws_sns_topic.ehr_complete.arn,
+    aws_sns_topic.transfer_complete.arn,
+    aws_sns_topic.splunk_uploader.arn,
+    aws_sns_topic.ehr_in_unhandled.arn
+  ]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -7,7 +19,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ecs-tasks.amazonaws.com"
       ]
@@ -120,7 +132,7 @@ resource "aws_iam_policy" "ehr_transfer_service_kms" {
 
 data "aws_iam_policy_document" "kms_policy_doc" {
   statement {
-    actions   = [
+    actions = [
       "kms:*"
     ]
     resources = [
@@ -269,18 +281,7 @@ data "aws_iam_policy_document" "sns_policy_doc" {
       "sns:Publish",
       "sns:GetTopicAttributes"
     ]
-    resources = [
-      aws_sns_topic.parsing_dlq.arn,
-      aws_sns_topic.positive_acks.arn,
-      aws_sns_topic.large_message_fragments.arn,
-      aws_sns_topic.large_ehr.arn,
-      aws_sns_topic.small_ehr.arn,
-      aws_sns_topic.negative_acks.arn,
-      aws_sns_topic.ehr_complete.arn,
-      aws_sns_topic.transfer_complete.arn,
-      aws_sns_topic.splunk_uploader.arn,
-      aws_sns_topic.ehr_in_unhandled.arn
-    ]
+    resources = local.sns_topic_arns
   }
 }
 
@@ -559,7 +560,7 @@ data "aws_iam_policy_document" "negative_acks_policy_doc" {
 
 data "aws_iam_policy_document" "sqs_large_message_bucket_access_policy_doc" {
   statement {
-    sid = ""
+    sid    = ""
     effect = "Allow"
     actions = [
       "s3:GetObject",
@@ -660,4 +661,43 @@ resource "aws_iam_policy" "cloudwatch_metrics_policy" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
+}
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "SNS:GetTopicAttributes",
+      "SNS:SetTopicAttributes",
+      "SNS:AddPermission",
+      "SNS:RemovePermission",
+      "SNS:DeleteTopic",
+      "SNS:Subscribe",
+      "SNS:ListSubscriptionsByTopic",
+      "SNS:Publish"
+    ]
+
+    resources = local.sns_topic_arns
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+
+  statement {
+    actions = ["sns:Publish"]
+    effect  = "Deny"
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
 }
