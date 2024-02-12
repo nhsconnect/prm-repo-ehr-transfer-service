@@ -1,17 +1,5 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  sns_topic_arns = [
-    aws_sns_topic.parsing_dlq.arn,
-    aws_sns_topic.positive_acks.arn,
-    aws_sns_topic.large_message_fragments.arn,
-    aws_sns_topic.large_ehr.arn,
-    aws_sns_topic.small_ehr.arn,
-    aws_sns_topic.negative_acks.arn,
-    aws_sns_topic.ehr_complete.arn,
-    aws_sns_topic.transfer_complete.arn,
-    aws_sns_topic.splunk_uploader.arn,
-    aws_sns_topic.ehr_in_unhandled.arn
-  ]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -227,7 +215,6 @@ resource "aws_iam_role" "sns_failure_feedback_role" {
     CreatedBy   = var.repo_name
   }
 }
-
 resource "aws_iam_policy" "sns_failure_feedback_policy" {
   name   = "${var.environment}-${var.component_name}-sns-failure-feedback"
   policy = data.aws_iam_policy_document.sns_failure_feedback_policy.json
@@ -278,20 +265,22 @@ resource "aws_iam_role_policy_attachment" "ehr_transfer_service_sns" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions = ["sns:GetTopicAttributes"]
-    resources = local.sns_topic_arns
-  }
-
-  statement {
-    actions = ["sns:Publish"]
-    effect = "Deny"
-    resources = local.sns_topic_arns
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
+    actions = [
+      "sns:Publish",
+      "sns:GetTopicAttributes"
+    ]
+    resources = [
+      aws_sns_topic.parsing_dlq.arn,
+      aws_sns_topic.positive_acks.arn,
+      aws_sns_topic.large_message_fragments.arn,
+      aws_sns_topic.large_ehr.arn,
+      aws_sns_topic.small_ehr.arn,
+      aws_sns_topic.negative_acks.arn,
+      aws_sns_topic.ehr_complete.arn,
+      aws_sns_topic.transfer_complete.arn,
+      aws_sns_topic.splunk_uploader.arn,
+      aws_sns_topic.ehr_in_unhandled.arn
+    ]
   }
 }
 
@@ -304,6 +293,7 @@ resource "aws_sqs_queue_policy" "large_message_fragments_observability" {
   queue_url = aws_sqs_queue.large_message_fragments_observability.id
   policy    = data.aws_iam_policy_document.large_message_fragments_policy_doc.json
 }
+
 
 resource "aws_sqs_queue_policy" "parsing_dlq" {
   queue_url = aws_sqs_queue.parsing_dlq.id
