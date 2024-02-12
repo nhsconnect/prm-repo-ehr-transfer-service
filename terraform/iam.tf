@@ -663,7 +663,17 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
 
-data "aws_iam_policy_document" "sns_topic_policy" {
+resource "aws_iam_policy" "sns_topic_policies" {
+  for_each = local.sns_topic_arns
+
+  name        = "${each.key}_sns_policy"
+  description = "IAM policy for SNS topic ${each.key}"
+  policy      = data.aws_iam_policy_document.sns_topic_policies[each.key].json
+}
+
+data "aws_iam_policy_document" "sns_topic_policies" {
+  for_each = local.sns_topic_arns
+
   statement {
     effect = "Allow"
     actions = [
@@ -677,7 +687,7 @@ data "aws_iam_policy_document" "sns_topic_policy" {
       "SNS:Publish"
     ]
 
-    resources = local.sns_topic_arns
+    resources = [each.value]
 
     principals {
       type        = "AWS"
@@ -692,9 +702,9 @@ data "aws_iam_policy_document" "sns_topic_policy" {
   }
 
   statement {
-    actions = ["sns:Publish"]
-    effect  = "Deny"
-    resources = local.sns_topic_arns
+    actions   = ["sns:Publish"]
+    effect    = "Deny"
+    resources = [each.value]
 
     condition {
       test     = "Bool"
@@ -702,4 +712,11 @@ data "aws_iam_policy_document" "sns_topic_policy" {
       values   = ["false"]
     }
   }
+}
+
+resource "aws_sns_topic_policy" "sns_topic_policies_attachment" {
+  for_each = local.sns_topic_arns
+
+  arn    = each.value
+  policy = aws_iam_policy.sns_topic_policies[each.key].policy
 }
