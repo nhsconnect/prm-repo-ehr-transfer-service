@@ -4,7 +4,7 @@ locals {
 
 resource "aws_iam_policy" "this" {
   name        = "${local.sns_topic_name}-sns-policy"
-  description = "IAM policy for SNS topic ${local.sns_topic_name}"
+  description = "IAM policy for SNS topic ${local.sns_topic_name} to enforce HTTPS"
   policy      = data.aws_iam_policy_document.enforce_https.json
 }
 
