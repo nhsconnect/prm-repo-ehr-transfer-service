@@ -12,8 +12,7 @@ locals {
     aws_sns_topic.splunk_uploader.arn,
     aws_sns_topic.ehr_in_unhandled.arn
   ]
-  sns_topic_names = [for arn in local.sns_topic_arns : element(split("/", element(split(":", arn), length(split(":", arn)) - 1)),
-  length(split("/", element(split(":", arn), length(split(":", arn)) - 1))) - 1)]
+  sns_topic_names = [for arn in local.sns_topic_arns : replace(arn, "/.*:/", "")]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
