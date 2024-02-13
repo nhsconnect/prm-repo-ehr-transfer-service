@@ -688,11 +688,6 @@ data "aws_iam_policy_document" "sns_topic_policies" {
 
     resources = [local.sns_topic_arns[count.index]]
 
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
-
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceOwner"
