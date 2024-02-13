@@ -12,7 +12,6 @@ locals {
     aws_sns_topic.splunk_uploader.arn,
     aws_sns_topic.ehr_in_unhandled.arn
   ]
-  sns_topic_names = [for arn in local.sns_topic_arns : replace(arn, "/.*:/", "")]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -667,7 +666,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
 resource "aws_iam_policy" "sns_topic_policies" {
   count = length(local.sns_topic_arns)
 
-  name        = "${local.sns_topic_names[count.index]}-sns-policy"
+  name        = "${replace(local.sns_topic_arns[count.index], "/.*:/", "")}-sns-policy"
   description = "IAM policy for SNS topic ${local.sns_topic_arns[count.index]}"
   policy      = data.aws_iam_policy_document.sns_topic_policies[count.index].json
 }
