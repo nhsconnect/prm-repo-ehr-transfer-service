@@ -666,7 +666,5 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
 module "sns_iam" {
   source = "./modules/sns_iam"
   count  = length(local.sns_topic_arns)
-
   sns_topic_arn = local.sns_topic_arns[count.index]
-  account_id    = data.aws_caller_identity.current.account_id
 }
