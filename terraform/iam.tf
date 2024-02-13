@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "ecs-assume-role-policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ecs-tasks.amazonaws.com"
       ]
@@ -132,7 +132,7 @@ resource "aws_iam_policy" "ehr_transfer_service_kms" {
 
 data "aws_iam_policy_document" "kms_policy_doc" {
   statement {
-    actions   = [
+    actions = [
       "kms:*"
     ]
     resources = [
@@ -227,7 +227,6 @@ resource "aws_iam_role" "sns_failure_feedback_role" {
     CreatedBy   = var.repo_name
   }
 }
-
 resource "aws_iam_policy" "sns_failure_feedback_policy" {
   name   = "${var.environment}-${var.component_name}-sns-failure-feedback"
   policy = data.aws_iam_policy_document.sns_failure_feedback_policy.json
@@ -278,20 +277,11 @@ resource "aws_iam_role_policy_attachment" "ehr_transfer_service_sns" {
 
 data "aws_iam_policy_document" "sns_policy_doc" {
   statement {
-    actions = ["sns:GetTopicAttributes"]
+    actions = [
+      "sns:Publish",
+      "sns:GetTopicAttributes"
+    ]
     resources = local.sns_topic_arns
-  }
-
-  statement {
-    actions = ["sns:Publish"]
-    effect = "Deny"
-    resources = local.sns_topic_arns
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
   }
 }
 
@@ -304,6 +294,7 @@ resource "aws_sqs_queue_policy" "large_message_fragments_observability" {
   queue_url = aws_sqs_queue.large_message_fragments_observability.id
   policy    = data.aws_iam_policy_document.large_message_fragments_policy_doc.json
 }
+
 
 resource "aws_sqs_queue_policy" "parsing_dlq" {
   queue_url = aws_sqs_queue.parsing_dlq.id
@@ -569,7 +560,7 @@ data "aws_iam_policy_document" "negative_acks_policy_doc" {
 
 data "aws_iam_policy_document" "sqs_large_message_bucket_access_policy_doc" {
   statement {
-    sid = ""
+    sid    = ""
     effect = "Allow"
     actions = [
       "s3:GetObject",
@@ -670,4 +661,61 @@ resource "aws_iam_policy" "cloudwatch_metrics_policy" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
+}
+
+resource "aws_iam_policy" "sns_topic_policies" {
+  for_each = local.sns_topic_arns
+
+  name        = "${each.key}_sns_policy"
+  description = "IAM policy for SNS topic ${each.key}"
+  policy      = data.aws_iam_policy_document.sns_topic_policies[each.key].json
+}
+
+data "aws_iam_policy_document" "sns_topic_policies" {
+  for_each = local.sns_topic_arns
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "sns:GetTopicAttributes",
+      "sns:SetTopicAttributes",
+      "sns:AddPermission",
+      "sns:RemovePermission",
+      "sns:DeleteTopic",
+      "sns:Subscribe",
+      "sns:ListSubscriptionsByTopic"
+    ]
+
+    resources = [each.value]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceOwner"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+
+  statement {
+    actions   = ["sns:Publish"]
+    effect    = "Deny"
+    resources = [each.value]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_sns_topic_policy" "sns_topic_policies_attachment" {
+  for_each = local.sns_topic_arns
+
+  arn    = each.value
+  policy = aws_iam_policy.sns_topic_policies[each.key].policy
 }
