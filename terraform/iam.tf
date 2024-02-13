@@ -664,15 +664,15 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
 }
 
 resource "aws_iam_policy" "sns_topic_policies" {
-  for_each = local.sns_topic_arns
+  count = length(local.sns_topic_arns)
 
-  name        = "${each.key}_sns_policy"
-  description = "IAM policy for SNS topic ${each.key}"
-  policy      = data.aws_iam_policy_document.sns_topic_policies[each.key].json
+  name        = "${local.sns_topic_arns[count.index]}_sns_policy"
+  description = "IAM policy for SNS topic ${local.sns_topic_arns[count.index]}"
+  policy      = data.aws_iam_policy_document.sns_topic_policies[count.index].json
 }
 
 data "aws_iam_policy_document" "sns_topic_policies" {
-  for_each = local.sns_topic_arns
+  count = length(local.sns_topic_arns)
 
   statement {
     effect = "Allow"
@@ -686,7 +686,7 @@ data "aws_iam_policy_document" "sns_topic_policies" {
       "sns:ListSubscriptionsByTopic"
     ]
 
-    resources = [each.value]
+    resources = [local.sns_topic_arns[count.index]]
 
     principals {
       type        = "AWS"
@@ -703,7 +703,7 @@ data "aws_iam_policy_document" "sns_topic_policies" {
   statement {
     actions   = ["sns:Publish"]
     effect    = "Deny"
-    resources = [each.value]
+    resources = [local.sns_topic_arns[count.index]]
 
     condition {
       test     = "Bool"
@@ -714,8 +714,8 @@ data "aws_iam_policy_document" "sns_topic_policies" {
 }
 
 resource "aws_sns_topic_policy" "sns_topic_policies_attachment" {
-  for_each = local.sns_topic_arns
+  count = length(local.sns_topic_arns)
 
-  arn    = each.value
-  policy = aws_iam_policy.sns_topic_policies[each.key].policy
+  arn    = local.sns_topic_arns[count.index]
+  policy = aws_iam_policy.sns_topic_policies[count.index].policy
 }
