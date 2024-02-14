@@ -1,17 +1,5 @@
 locals {
   account_id = data.aws_caller_identity.current.account_id
-  sns_topic_arns = [
-    aws_sns_topic.parsing_dlq.arn,
-    aws_sns_topic.positive_acks.arn,
-    aws_sns_topic.large_message_fragments.arn,
-    aws_sns_topic.large_ehr.arn,
-    aws_sns_topic.small_ehr.arn,
-    aws_sns_topic.negative_acks.arn,
-    aws_sns_topic.ehr_complete.arn,
-    aws_sns_topic.transfer_complete.arn,
-    aws_sns_topic.splunk_uploader.arn,
-    aws_sns_topic.ehr_in_unhandled.arn
-  ]
 }
 
 data "aws_iam_policy_document" "ecs-assume-role-policy" {
@@ -662,9 +650,3 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   role       = aws_iam_role.component-ecs-role.name
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
-
-#module "sns_enforce_https" {
-#  source        = "./modules/sns_enforce_https"
-#  for_each      = toset(local.sns_topic_arns)
-#  sns_topic_arn = each.value
-#}
