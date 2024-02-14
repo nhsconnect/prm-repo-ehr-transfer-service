@@ -663,54 +663,8 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
   policy_arn = aws_iam_policy.cloudwatch_metrics_policy.arn
 }
 
-resource "aws_iam_policy" "sns_topic_policies" {
-  count = length(local.sns_topic_arns)
-
-  name        = "${replace(local.sns_topic_arns[count.index], "/.*:/", "")}-sns-policy"
-  description = "IAM policy for SNS topic ${local.sns_topic_arns[count.index]}"
-  policy      = data.aws_iam_policy_document.sns_topic_policies[count.index].json
-}
-
-data "aws_iam_policy_document" "sns_topic_policies" {
-  count = length(local.sns_topic_arns)
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "sns:GetTopicAttributes",
-      "sns:SetTopicAttributes",
-      "sns:AddPermission",
-      "sns:RemovePermission",
-      "sns:DeleteTopic",
-      "sns:Subscribe",
-      "sns:ListSubscriptionsByTopic"
-    ]
-
-    resources = [local.sns_topic_arns[count.index]]
-
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceOwner"
-      values   = [data.aws_caller_identity.current.account_id]
-    }
-  }
-
-  statement {
-    actions   = ["sns:Publish"]
-    effect    = "Deny"
-    resources = [local.sns_topic_arns[count.index]]
-
-    condition {
-      test     = "Bool"
-      variable = "aws:SecureTransport"
-      values   = ["false"]
-    }
-  }
-}
-
-resource "aws_sns_topic_policy" "sns_topic_policies_attachment" {
-  count = length(local.sns_topic_arns)
-
-  arn    = local.sns_topic_arns[count.index]
-  policy = aws_iam_policy.sns_topic_policies[count.index].policy
+module "sns_enforce_https" {
+  source        = "modules/sns_enforce_https"
+  for_each      = toset(local.sns_topic_arns)
+  sns_topic_arn = each.value
 }
