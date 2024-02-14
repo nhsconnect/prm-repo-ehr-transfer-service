@@ -666,5 +666,5 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_metrics_policy_attach" {
 module "sns_enforce_https" {
   source        = "modules/sns_enforce_https"
   for_each      = toset(local.sns_topic_arns)
-  sns_topic_arn = each.key
+  sns_topic_arn = each.value
 }
