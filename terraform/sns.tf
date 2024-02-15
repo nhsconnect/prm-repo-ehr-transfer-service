@@ -161,7 +161,9 @@ resource "aws_sns_topic_policy" "deny_http" {
         "SNS:AddPermission",
         "SNS:RemovePermission",
         "SNS:DeleteTopic",
+        "SNS:Subscribe",
         "SNS:ListSubscriptionsByTopic",
+        "SNS:Publish",
         "SNS:Receive"
       ],
       "Resource": "${each.value}",
