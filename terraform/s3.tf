@@ -1,6 +1,6 @@
 locals {
   sqs_large_messages_bucket_name = "${var.environment}-${var.component_name}-sqs-large-messages"
-  sqs_large_messages_access_log_prefix = "s3-access-logs/"
+  sqs_large_messages_access_log_prefix = "${var.component_name}-sqs-large-messages/"
 }
 resource "aws_s3_bucket" "sqs_large_message_bucket" {
   bucket        = local.sqs_large_messages_bucket_name
@@ -11,8 +11,13 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
     enabled = false
   }
 
+#  logging {
+#    target_bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
+#    target_prefix = local.sqs_large_messages_access_log_prefix
+#  }
+
   logging {
-    target_bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
+    target_bucket = data.aws_ssm_parameter.access_logs_s3_bucket_id
     target_prefix = local.sqs_large_messages_access_log_prefix
   }
 
@@ -61,66 +66,48 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
   })
 }
 
-resource "aws_s3_bucket_public_access_block" "sqs_large_message_bucket" {
-  bucket = aws_s3_bucket.sqs_large_message_bucket.bucket
+#resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
+#  bucket        = "${local.sqs_large_messages_bucket_name}-access-logs"
+#  acl           = "private"
+#  force_destroy = true
+#  versioning {
+#    enabled = false
+#  }
+#  server_side_encryption_configuration {
+#    rule {
+#      apply_server_side_encryption_by_default {
+#        sse_algorithm = "AES256"
+#      }
+#    }
+#  }
+#  tags = {
+#    CreatedBy   = var.repo_name
+#    Environment = var.environment
+#  }
+#}
 
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
-  bucket        = "${local.sqs_large_messages_bucket_name}-access-logs"
-  acl           = "private"
-  force_destroy = true
-  versioning {
-    enabled = false
-  }
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
-      }
-    }
-  }
-  tags = {
-    CreatedBy   = var.repo_name
-    Environment = var.environment
-  }
-}
-
-resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_policy" {
-  bucket        = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
-  policy = jsonencode({
-    "Version": "2012-10-17",
-    "Statement": [
-    {
-      "Sid": "S3ServerAccessLogsPolicy",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "logging.s3.amazonaws.com"
-      },
-      "Action": "s3:PutObject",
-      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/${local.sqs_large_messages_access_log_prefix}*"
-      "Condition": {
-        "ArnLike": {
-          "aws:SourceArn": aws_s3_bucket.sqs_large_message_bucket.arn
-        },
-        "StringEquals": {
-          "aws:SourceAccount": local.account_id
-        }
-      }
-    }
-  ]
-})
-}
-
-resource "aws_s3_bucket_public_access_block" "sqs_large_messages_access_logs" {
-  bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.bucket
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
+#resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_policy" {
+#  bucket        = aws_s3_bucket.sqs_large_messages_s3_access_logs.id
+#  policy = jsonencode({
+#    "Version": "2012-10-17",
+#    "Statement": [
+#    {
+#      "Sid": "S3ServerAccessLogsPolicy",
+#      "Effect": "Allow",
+#      "Principal": {
+#        "Service": "logging.s3.amazonaws.com"
+#      },
+#      "Action": "s3:PutObject",
+#      "Resource": "${aws_s3_bucket.sqs_large_messages_s3_access_logs.arn}/${local.sqs_large_messages_access_log_prefix}*"
+#      "Condition": {
+#        "ArnLike": {
+#          "aws:SourceArn": aws_s3_bucket.sqs_large_message_bucket.arn
+#        },
+#        "StringEquals": {
+#          "aws:SourceAccount": local.account_id
+#        }
+#      }
+#    }
+#  ]
+#})
+#}

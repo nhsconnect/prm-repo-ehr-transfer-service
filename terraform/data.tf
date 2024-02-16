@@ -12,6 +12,10 @@ data "aws_ssm_parameter" "deductions_core_vpc_id" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/deductions-core-vpc-id"
 }
 
+data "aws_ssm_parameter" "access_logs_s3_bucket_id" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/access-logs-s3-bucket-id"
+}
+
 data "aws_ssm_parameter" "amq-username" {
   name = "/repo/${var.environment}/user-input/mq-app-username"
 }
