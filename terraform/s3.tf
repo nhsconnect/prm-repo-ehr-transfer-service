@@ -61,6 +61,15 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_policy" {
   })
 }
 
+resource "aws_s3_bucket_public_access_block" "sqs_large_message_bucket" {
+  bucket = aws_s3_bucket.sqs_large_message_bucket.bucket
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
   bucket        = "${local.sqs_large_messages_bucket_name}-access-logs"
   acl           = "private"
@@ -105,4 +114,13 @@ resource "aws_s3_bucket_policy" "ehr-repo-sqs_large_message_bucket_access_logs_p
     }
   ]
 })
+}
+
+resource "aws_s3_bucket_public_access_block" "sqs_large_messages_access_logs" {
+  bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.bucket
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
