@@ -43,7 +43,6 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,9 +127,9 @@ public class LocalStackAwsConfig {
     @Bean
     public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) throws URISyntaxException {
         return SqsClient.builder()
-                .credentialsProvider((()-> AwsBasicCredentials.create("FAKE", "FAKE")))
-                .endpointOverride(new URI(localstackUrl))
-                .build();
+            .credentialsProvider((()-> AwsBasicCredentials.create("FAKE", "FAKE")))
+            .endpointOverride(new URI(localstackUrl))
+            .build();
     }
 
     @Bean
@@ -156,9 +155,9 @@ public class LocalStackAwsConfig {
     @Bean
     public AmazonS3 amazonS3(@Value("${localstack.url}") String localstackUrl) {
         return AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
-                .build();
+            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
+            .build();
     }
 
     // TODO: this S3Client bean is used to setup large message bucket only.
@@ -168,21 +167,21 @@ public class LocalStackAwsConfig {
     @Bean
     public static S3Client s3Client(@Value("${localstack.url}") String localstackUrl) {
         return S3Client.builder()
-                .endpointOverride(URI.create(localstackUrl))
-                .forcePathStyle(true)
-                .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
-                    @Override
-                    public String accessKeyId() {
-                        return "FAKE";
-                    }
+            .endpointOverride(URI.create(localstackUrl))
+            .forcePathStyle(true)
+            .region(Region.EU_WEST_2)
+            .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                @Override
+                public String accessKeyId() {
+                    return "FAKE";
+                }
 
-                    @Override
-                    public String secretAccessKey() {
-                        return "FAKE";
-                    }
-                }))
-                .build();
+                @Override
+                public String secretAccessKey() {
+                    return "FAKE";
+                }
+            }))
+            .build();
     }
 
     private String failoverUrl() {
@@ -193,9 +192,9 @@ public class LocalStackAwsConfig {
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSQSAsyncClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
-                .build();
+            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
+            .build();
     }
 
     @Bean
@@ -206,9 +205,9 @@ public class LocalStackAwsConfig {
     @Bean
     public static AmazonSNS amazonSNS(@Value("${localstack.url}") String localstackUrl) {
         return AmazonSNSClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
-                .build();
+            .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials("FAKE", "FAKE")))
+            .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(localstackUrl, "eu-west-2"))
+            .build();
     }
 
     @Bean
@@ -219,9 +218,29 @@ public class LocalStackAwsConfig {
     @Bean
     public static SnsClient snsClient(@Value("${localstack.url}") String localstackUrl) {
         return SnsClient.builder()
-                .endpointOverride(URI.create(localstackUrl))
-                .region(Region.EU_WEST_2)
-                .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+            .endpointOverride(URI.create(localstackUrl))
+            .region(Region.EU_WEST_2)
+            .credentialsProvider(StaticCredentialsProvider.create(new AwsCredentials() {
+                @Override
+                public String accessKeyId() {
+                    return "FAKE";
+                }
+
+                @Override
+                public String secretAccessKey() {
+                    return "FAKE";
+                }
+            }))
+            .build();
+    }
+
+    @Bean
+    public static DynamoDbClient dynamoDbClient(@Value("${localstack.url}") String localstackUrl) {
+        return DynamoDbClient.builder()
+            .endpointOverride(URI.create(localstackUrl))
+            .region(Region.EU_WEST_2)
+            .credentialsProvider(
+                StaticCredentialsProvider.create(new AwsCredentials() {
                     @Override
                     public String accessKeyId() {
                         return "FAKE";
@@ -232,27 +251,7 @@ public class LocalStackAwsConfig {
                         return "FAKE";
                     }
                 }))
-                .build();
-    }
-
-    @Bean
-    public static DynamoDbClient dynamoDbClient(@Value("${localstack.url}") String localstackUrl) {
-        return DynamoDbClient.builder()
-                .endpointOverride(URI.create(localstackUrl))
-                .region(Region.EU_WEST_2)
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(new AwsCredentials() {
-                            @Override
-                            public String accessKeyId() {
-                                return "FAKE";
-                            }
-
-                            @Override
-                            public String secretAccessKey() {
-                                return "FAKE";
-                            }
-                        }))
-                .build();
+            .build();
     }
 
     @PostConstruct
@@ -313,9 +312,9 @@ public class LocalStackAwsConfig {
     private void setupS3Bucket() {
         var waiter = s3Client.waiter();
         var createBucketRequest = CreateBucketRequest.builder()
-                .bucket(sqsLargeMessageBucketName)
-                .grantFullControl("GrantFullControl")
-                .build();
+            .bucket(sqsLargeMessageBucketName)
+            .grantFullControl("GrantFullControl")
+            .build();
 
         for (var bucket: s3Client.listBuckets().buckets()) {
             if (Objects.equals(bucket.name(), sqsLargeMessageBucketName)) {
@@ -328,58 +327,90 @@ public class LocalStackAwsConfig {
     }
 
     private void setupDbAndTable() {
-        var waiter = dynamoDbClient.waiter();
-        var tableRequest = DescribeTableRequest.builder()
-                .tableName(transferTrackerDbTableName)
-                .build();
+        DynamoDbWaiter dynamoDbWaiter = dynamoDbClient.waiter();
+        DescribeTableRequest tableRequest = DescribeTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .build();
 
         if (dynamoDbClient.listTables().tableNames().contains(transferTrackerDbTableName)) {
-            resetTableForLocalEnvironment(waiter, tableRequest);
+            resetTable(dynamoDbWaiter, tableRequest);
         }
 
-        List<KeySchemaElement> keySchema = new ArrayList<>();
-        keySchema.add(KeySchemaElement.builder()
+        final List<KeySchemaElement> keySchema = List.of(
+            KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("conversation_id")
-                .build());
-        List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("conversation_id")
-                .build());
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("is_active")
-                .build());
+                .attributeName("InboundConversationId") // Partition Key
+                .build(),
+            KeySchemaElement.builder()
+                .keyType(KeyType.RANGE)
+                .attributeName("Layer") // Sort Key
+                .build()
+        );
 
-        GlobalSecondaryIndex globalSecondaryIndex = GlobalSecondaryIndex.builder()
-                .indexName("IsActiveSecondaryIndex")
-                .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("is_active").build())
-                .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
-                .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
+        final List<GlobalSecondaryIndex> globalSecondaryIndices = List.of(
+            GlobalSecondaryIndex.builder()
+                .indexName("NhsNumberSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName("NhsNumber")
+                    .build())
+                .projection(Projection.builder()
+                    .projectionType(ProjectionType.ALL)
+                    .build())
+                .build(),
+            GlobalSecondaryIndex.builder()
+                .indexName("OutboundConversationIdSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName("OutboundConversationId")
+                    .build())
+                .projection(Projection.builder()
+                    .projectionType(ProjectionType.ALL)
+                    .build())
+                .build()
+        );
 
-        var createTableRequest = CreateTableRequest.builder()
-                .tableName(transferTrackerDbTableName)
-                .keySchema(keySchema)
-                .globalSecondaryIndexes(globalSecondaryIndex)
-                .attributeDefinitions(attributeDefinitions)
-                .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
+        final List<AttributeDefinition> attributeDefinitions = List.of(
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("InboundConversationId")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("Layer")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("NhsNumber")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("OutboundConversationId")
+                .build()
+        );
+
+        CreateTableRequest createTableRequest = CreateTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .keySchema(keySchema)
+            .globalSecondaryIndexes(globalSecondaryIndices)
+            .attributeDefinitions(attributeDefinitions)
+            .provisionedThroughput(ProvisionedThroughput.builder()
+                .readCapacityUnits(5L)
+                .writeCapacityUnits(5L)
+                .build())
+            .build();
 
         dynamoDbClient.createTable(createTableRequest);
-        waiter.waitUntilTableExists(tableRequest);
+        dynamoDbWaiter.waitUntilTableExists(tableRequest);
     }
 
-    private void resetTableForLocalEnvironment(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
-        var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
+    private void resetTable(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
+        DeleteTableRequest deleteRequest = DeleteTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .build();
+
         dynamoDbClient.deleteTable(deleteRequest);
+
         waiter.waitUntilTableNotExists(tableRequest);
     }
 
@@ -387,11 +418,11 @@ public class LocalStackAwsConfig {
         final Map<String, String> attributes = new HashMap<>();
         attributes.put("RawMessageDelivery", "True");
         SubscribeRequest subscribeRequest = SubscribeRequest.builder()
-                .topicArn(topic.topicArn())
-                .protocol("sqs")
-                .endpoint(queueArn)
-                .attributes(attributes)
-                .build();
+            .topicArn(topic.topicArn())
+            .protocol("sqs")
+            .endpoint(queueArn)
+            .attributes(attributes)
+            .build();
 
         snsClient.subscribe(subscribeRequest);
     }
@@ -401,4 +432,3 @@ public class LocalStackAwsConfig {
         return queueAttributes.getAttributes().get("QueueArn");
     }
 }
-
