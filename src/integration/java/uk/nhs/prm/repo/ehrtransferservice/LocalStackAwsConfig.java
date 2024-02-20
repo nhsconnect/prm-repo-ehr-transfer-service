@@ -43,7 +43,6 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -328,44 +327,72 @@ public class LocalStackAwsConfig {
     }
 
     private void setupDbAndTable() {
-        var waiter = dynamoDbClient.waiter();
-        var tableRequest = DescribeTableRequest.builder()
+        DynamoDbWaiter dynamoDbWaiter = dynamoDbClient.waiter();
+        DescribeTableRequest tableRequest = DescribeTableRequest.builder()
                 .tableName(transferTrackerDbTableName)
                 .build();
 
         if (dynamoDbClient.listTables().tableNames().contains(transferTrackerDbTableName)) {
-            resetTableForLocalEnvironment(waiter, tableRequest);
+            resetTable(dynamoDbWaiter, tableRequest);
         }
 
-        List<KeySchemaElement> keySchema = new ArrayList<>();
-        keySchema.add(KeySchemaElement.builder()
+        final List<KeySchemaElement> keySchema = List.of(
+            KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("conversation_id")
-                .build());
-        List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("conversation_id")
-                .build());
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("is_active")
-                .build());
+                .attributeName("InboundConversationId") // Partition Key
+                .build(),
+            KeySchemaElement.builder()
+                .keyType(KeyType.RANGE)
+                .attributeName("Layer") // Sort Key
+                .build()
+        );
 
-        GlobalSecondaryIndex globalSecondaryIndex = GlobalSecondaryIndex.builder()
-                .indexName("IsActiveSecondaryIndex")
-                .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("is_active").build())
-                .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
-                .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
+        final List<GlobalSecondaryIndex> globalSecondaryIndices = List.of(
+            GlobalSecondaryIndex.builder()
+                .indexName("NhsNumberSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName("NhsNumber")
+                    .build())
+                .projection(Projection.builder()
+                    .projectionType(ProjectionType.ALL)
+                    .build())
+                .build(),
+            GlobalSecondaryIndex.builder()
+                .indexName("OutboundConversationIdSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName("OutboundConversationId")
+                    .build())
+                .projection(Projection.builder()
+                    .projectionType(ProjectionType.ALL)
+                    .build())
+                .build()
+        );
 
-        var createTableRequest = CreateTableRequest.builder()
+        final List<AttributeDefinition> attributeDefinitions = List.of(
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("InboundConversationId")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("Layer")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("NhsNumber")
+                .build(),
+            AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName("OutboundConversationId")
+                .build()
+        );
+
+        CreateTableRequest createTableRequest = CreateTableRequest.builder()
                 .tableName(transferTrackerDbTableName)
                 .keySchema(keySchema)
-                .globalSecondaryIndexes(globalSecondaryIndex)
+                .globalSecondaryIndexes(globalSecondaryIndices)
                 .attributeDefinitions(attributeDefinitions)
                 .provisionedThroughput(ProvisionedThroughput.builder()
                         .readCapacityUnits(5L)
@@ -374,12 +401,16 @@ public class LocalStackAwsConfig {
                 .build();
 
         dynamoDbClient.createTable(createTableRequest);
-        waiter.waitUntilTableExists(tableRequest);
+        dynamoDbWaiter.waitUntilTableExists(tableRequest);
     }
 
-    private void resetTableForLocalEnvironment(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
-        var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
+    private void resetTable(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
+        DeleteTableRequest deleteRequest = DeleteTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .build();
+
         dynamoDbClient.deleteTable(deleteRequest);
+
         waiter.waitUntilTableNotExists(tableRequest);
     }
 
