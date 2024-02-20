@@ -394,10 +394,6 @@ public class LocalStackAwsConfig {
             .keySchema(keySchema)
             .globalSecondaryIndexes(globalSecondaryIndices)
             .attributeDefinitions(attributeDefinitions)
-            .provisionedThroughput(ProvisionedThroughput.builder()
-                .readCapacityUnits(5L)
-                .writeCapacityUnits(5L)
-                .build())
             .build();
 
         dynamoDbClient.createTable(createTableRequest);
