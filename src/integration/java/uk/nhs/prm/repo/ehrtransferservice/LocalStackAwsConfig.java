@@ -49,6 +49,12 @@ import java.util.Map;
 import java.util.Objects;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerAttribute.INBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerAttribute.NHS_NUMBER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerAttribute.OUTBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerIndex.NHS_NUMBER_GSI;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerIndex.OUTBOUND_CONVERSATION_ID_GSI;
 
 @TestConfiguration
 public class LocalStackAwsConfig {
@@ -339,33 +345,41 @@ public class LocalStackAwsConfig {
         final List<KeySchemaElement> keySchema = List.of(
             KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("InboundConversationId") // Partition Key
+                .attributeName(INBOUND_CONVERSATION_ID.attributeName) // Partition Key
                 .build(),
             KeySchemaElement.builder()
                 .keyType(KeyType.RANGE)
-                .attributeName("Layer") // Sort Key
+                .attributeName(LAYER.attributeName) // Sort Key
                 .build()
         );
 
         final List<GlobalSecondaryIndex> globalSecondaryIndices = List.of(
             GlobalSecondaryIndex.builder()
-                .indexName("NhsNumberSecondaryIndex")
+                .indexName(NHS_NUMBER_GSI.indexName)
                 .keySchema(KeySchemaElement.builder()
                     .keyType(KeyType.HASH)
-                    .attributeName("NhsNumber")
+                    .attributeName(NHS_NUMBER.attributeName)
                     .build())
                 .projection(Projection.builder()
                     .projectionType(ProjectionType.ALL)
+                    .build())
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .writeCapacityUnits(10L)
+                    .readCapacityUnits(10L)
                     .build())
                 .build(),
             GlobalSecondaryIndex.builder()
-                .indexName("OutboundConversationIdSecondaryIndex")
+                .indexName(OUTBOUND_CONVERSATION_ID_GSI.indexName)
                 .keySchema(KeySchemaElement.builder()
                     .keyType(KeyType.HASH)
-                    .attributeName("OutboundConversationId")
+                    .attributeName(OUTBOUND_CONVERSATION_ID.attributeName)
                     .build())
                 .projection(Projection.builder()
                     .projectionType(ProjectionType.ALL)
+                    .build())
+                .provisionedThroughput(ProvisionedThroughput.builder()
+                    .writeCapacityUnits(10L)
+                    .readCapacityUnits(10L)
                     .build())
                 .build()
         );
@@ -373,19 +387,19 @@ public class LocalStackAwsConfig {
         final List<AttributeDefinition> attributeDefinitions = List.of(
             AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
-                .attributeName("InboundConversationId")
+                .attributeName(INBOUND_CONVERSATION_ID.attributeName)
                 .build(),
             AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
-                .attributeName("Layer")
+                .attributeName(LAYER.attributeName)
                 .build(),
             AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
-                .attributeName("NhsNumber")
+                .attributeName(NHS_NUMBER.attributeName)
                 .build(),
             AttributeDefinition.builder()
                 .attributeType(ScalarAttributeType.S)
-                .attributeName("OutboundConversationId")
+                .attributeName(OUTBOUND_CONVERSATION_ID.attributeName)
                 .build()
         );
 
@@ -394,6 +408,10 @@ public class LocalStackAwsConfig {
             .keySchema(keySchema)
             .globalSecondaryIndexes(globalSecondaryIndices)
             .attributeDefinitions(attributeDefinitions)
+            .provisionedThroughput(ProvisionedThroughput.builder()
+                .writeCapacityUnits(10L)
+                .readCapacityUnits(10L)
+                .build())
             .build();
 
         dynamoDbClient.createTable(createTableRequest);
