@@ -13,6 +13,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+@Deprecated
 @AllArgsConstructor
 @Service
 @Slf4j
