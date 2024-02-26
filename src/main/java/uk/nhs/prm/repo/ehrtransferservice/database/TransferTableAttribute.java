@@ -7,6 +7,7 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
  */
 public enum TransferTableAttribute {
     INBOUND_CONVERSATION_ID("InboundConversationId"),
+    LAYER("Layer"),
     OUTBOUND_CONVERSATION_ID("OutboundConversationId"),
     NHS_NUMBER("NhsNumber"),
     SOURCE_GP("SourceGp"),
