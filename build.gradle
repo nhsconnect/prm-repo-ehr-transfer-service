@@ -65,7 +65,7 @@ dependencies {
     implementation 'software.amazon.awssdk:s3'
     implementation 'software.amazon.awssdk:dynamodb'
 
-    implementation 'com.amazonaws:amazon-sqs-java-extended-client-lib:1.2.2'
+    implementation 'com.amazonaws:amazon-sqs-java-extended-client-lib:1.2.6'
     implementation 'software.amazon.sns:sns-extended-client:1.1.3'
     implementation 'software.amazon.payloadoffloading:payloadoffloading-common:1.1.1'
 
