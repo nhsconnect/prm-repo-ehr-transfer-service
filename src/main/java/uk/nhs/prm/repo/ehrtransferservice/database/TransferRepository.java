@@ -19,13 +19,9 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 @RequiredArgsConstructor
 public class TransferRepository {
     private final DynamoDbClient client;
-
     private final AppConfig config;
-
     private static final String CONVERSATION_LAYER = "CONVERSATION";
-
     private static final String CORE_LAYER = "CORE";
-
     private static final String FRAGMENT_LAYER = "FRAGMENT#%s";
 
     public void createConversation(ConversationRecord record) {
