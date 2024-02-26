@@ -7,9 +7,9 @@ import java.util.UUID;
 public record ConversationRecord(
     UUID inboundConversationId,
     Optional<UUID> outboundConversationId,
-    String nhsNumber,
+    Optional<String> nhsNumber,
     String sourceGp,
-    String destinationGp,
+    Optional<String> destinationGp,
     String state,
     Optional<UUID> meshMessageId,
     Optional<UUID> nemsMessageId,
