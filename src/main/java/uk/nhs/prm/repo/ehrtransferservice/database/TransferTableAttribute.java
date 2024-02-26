@@ -15,7 +15,7 @@ public enum TransferTableAttribute {
     MESH_MESSAGE_ID("MeshMessageId"),
     NEMS_MESSAGE_ID("NemsMessageId"),
     CREATED_AT("CreatedAt"),
-    UPDATED_UP("UpdatedAt"),
+    UPDATED_AT("UpdatedAt"),
     DELETED_AT("DeletedAt");
 
     public final String name;
