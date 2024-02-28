@@ -13,7 +13,6 @@ public enum TransferTableAttribute {
     SOURCE_GP("SourceGp"),
     DESTINATION_GP("DestinationGp"),
     STATE("State"),
-    MESH_MESSAGE_ID("MeshMessageId"),
     NEMS_MESSAGE_ID("NemsMessageId"),
     CREATED_AT("CreatedAt"),
     UPDATED_AT("UpdatedAt"),
