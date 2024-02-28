@@ -3,16 +3,22 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
-import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_REQUEST_SENT_TO_GP2GP_MESSENGER;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.*;
 
 @Component
@@ -24,54 +30,36 @@ class TransferRepository {
     private static final String CORE_LAYER = "CORE";
     private static final String FRAGMENT_LAYER = "FRAGMENT#%s";
 
-    void createConversation(ConversationRecord record) {
+    void createConversation(RepoIncomingEvent event) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
         final String creationTimestamp = LocalDateTime.now().toString();
 
         tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
-            .s(record.inboundConversationId().toString())
+            .s(event.getConversationId())
             .build());
 
         tableItem.put(LAYER.name, AttributeValue.builder()
             .s(CONVERSATION_LAYER).build());
 
-        if(record.outboundConversationId().isPresent()) {
-            tableItem.put(OUTBOUND_CONVERSATION_ID.name, AttributeValue.builder()
-                .s(record.outboundConversationId().get().toString())
-                .build());
-        }
-
-        if(record.nhsNumber().isPresent()) {
-            tableItem.put(NHS_NUMBER.name, AttributeValue.builder()
-                .s(record.nhsNumber().get())
-                .build());
-        }
+        tableItem.put(NHS_NUMBER.name, AttributeValue.builder()
+            .s(event.getNhsNumber())
+            .build());
 
         tableItem.put(SOURCE_GP.name, AttributeValue.builder()
-            .s(record.sourceGp())
+            .s(event.getSourceGp())
             .build());
 
-        if(record.destinationGp().isPresent()) {
-            tableItem.put(DESTINATION_GP.name, AttributeValue.builder()
-                .s(record.destinationGp().get())
-                .build());
-        }
+        tableItem.put(DESTINATION_GP.name, AttributeValue.builder()
+            .s(event.getDestinationGp())
+            .build());
 
         tableItem.put(STATE.name, AttributeValue.builder()
-            .s(record.status())
+            .s(EHR_REQUEST_SENT_TO_GP2GP_MESSENGER.name())
             .build());
 
-        if(record.meshMessageId().isPresent()) {
-            tableItem.put(MESH_MESSAGE_ID.name, AttributeValue.builder()
-                .s(record.meshMessageId().get().toString())
-                .build());
-        }
-
-        if(record.nemsMessageId().isPresent()) {
-            tableItem.put(NEMS_MESSAGE_ID.name, AttributeValue.builder()
-                .s(record.nemsMessageId().get().toString())
-                .build());
-        }
+        tableItem.put(NEMS_MESSAGE_ID.name, AttributeValue.builder()
+            .s(event.getNemsMessageId())
+            .build());
 
         tableItem.put(CREATED_AT.name, AttributeValue.builder()
             .s(creationTimestamp)
@@ -89,19 +77,45 @@ class TransferRepository {
         this.client.putItem(itemRequest);
     }
 
-    ConversationRecord findConversation() {
-        throw new UnsupportedOperationException();
+    GetItemResponse findConversationByInboundConversationId(UUID inboundConversationId) {
+        final Map<String, AttributeValue> keyItems = new HashMap<>();
+
+        keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+            .s(inboundConversationId.toString())
+            .build());
+
+        final GetItemRequest itemRequest = GetItemRequest.builder()
+            .tableName(this.config.transferTrackerDbTableName())
+            .key(keyItems)
+            .build();
+
+        return this.client.getItem(itemRequest);
     }
 
     boolean isInboundConversationIdPresent(UUID inboundConversationId) {
         throw new UnsupportedOperationException();
     }
 
-    String getConversationStatus(UUID inboundConversationId) {
-        throw new UnsupportedOperationException();
-    }
+    void updateConversationStatus(UUID inboundConversationId, TransferState status, String layer) {
+        final Map<String, AttributeValue> keyItems = new HashMap<>();
 
-    void updateConversationStatus(UUID inboundConversationId, TransferStatus status) {
-        throw new UnsupportedOperationException();
+        keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+            .s(inboundConversationId.toString())
+            .build());
+
+        keyItems.put(LAYER.name, AttributeValue.builder()
+            .s(CONVERSATION_LAYER)
+            .build());
+
+        final UpdateItemRequest itemRequest = UpdateItemRequest.builder()
+            .tableName(this.config.transferTrackerDbTableName())
+            .key(keyItems)
+            .attributeUpdates(Map.of(STATE.name, AttributeValueUpdate.builder()
+                .value(AttributeValue.builder().s(status.name()).build())
+                .action(AttributeAction.PUT)
+                .build()))
+            .build();
+
+        this.client.updateItem(itemRequest);
     }
 }
