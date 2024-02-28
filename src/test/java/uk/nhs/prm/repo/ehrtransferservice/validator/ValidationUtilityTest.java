@@ -16,7 +16,7 @@ class ValidationUtilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"9798546215", "1475854125", "4751425474"})
-    void given_validNhsNumber_when_isValidNhsNumberCalled_then_returnTrue(String nhsNumber) {
+    void isValidNhsNumber_ValidInput_returnTrue(String nhsNumber) {
         // when
         final boolean result = isValidNhsNumber(nhsNumber);
 
@@ -26,7 +26,7 @@ class ValidationUtilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"0147585412", "0000000000", "-1475845512"})
-    void given_invalidNhsNumber_when_isValidNhsNumberCalled_then_returnFalse(String nhsNumber) {
+    void isValidNhsNumber_InvalidInput_returnFalse(String nhsNumber) {
         // when
         final boolean result = isValidNhsNumber(nhsNumber);
 
@@ -36,7 +36,7 @@ class ValidationUtilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"M85019", "B85002", "N82668"})
-    void given_validOdsCode_when_isValidOdsCodeCalled_then_returnTrue(String odsCode) {
+    void isvalidOdsCode_ValidInput_returnTrue(String odsCode) {
         // when
         final boolean result = isValidOdsCode(odsCode);
 
@@ -46,7 +46,7 @@ class ValidationUtilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"B741", "B0.123", "0xFFFFF"})
-    void given_invalidOdsCode_when_isValidOdsCodeCalled_then_returnFalse(String odsCode) {
+    void isvalidOdsCode_InvalidInput_returnFalse(String odsCode) {
         // when
         final boolean result = isValidOdsCode(odsCode);
 
@@ -55,7 +55,7 @@ class ValidationUtilityTest {
     }
 
     @Test
-    void given_validStatus_when_isValidStatusCalled_then_returnTrue() {
+    void isValidStatus_ValidInput_returnTrue() {
         // when
         final boolean result = isValidState(VALID_STATE);
 
@@ -64,7 +64,7 @@ class ValidationUtilityTest {
     }
 
     @Test
-    void given_invalidStatus_when_isValidStatusCalled_then_returnFalse() {
+    void isValidStatus_InvalidInput_returnFalse() {
         // when
         final boolean result = isValidState(INVALID_STATE);
 
