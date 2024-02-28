@@ -9,7 +9,7 @@ import java.util.List;
 public final class ValidationUtility {
     private ValidationUtility() { }
 
-    private static final String NHS_NUMBER_REGEX = "\\b\\d{3}\\d{3}\\d{4}\\b";
+    private static final String NHS_NUMBER_REGEX = "\\b[1-9]\\d{2}\\d{3}\\d{4}\\b\n";
 
     private static final String ODS_CODE_REGEX = "(U\\d{5}|[AC]\\d{3}|V\\d{4}|[A-Za-z0-9]{5}\\d{3})$";
 
