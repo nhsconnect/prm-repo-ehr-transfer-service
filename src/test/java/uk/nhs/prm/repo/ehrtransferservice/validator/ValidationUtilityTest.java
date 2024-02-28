@@ -8,8 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.nhs.prm.repo.ehrtransferservice.validator.ValidationUtility.isValidNhsNumber;
 import static uk.nhs.prm.repo.ehrtransferservice.validator.ValidationUtility.isValidOdsCode;
+import static uk.nhs.prm.repo.ehrtransferservice.validator.ValidationUtility.isValidState;
 
 class ValidationUtilityTest {
+    private static final String VALID_STATE = "EHR_TRANSFER_STARTED";
+    private static final String INVALID_STATE = "EHR_DELETED_FROM_MESH_MAILBOX";
+
     @ParameterizedTest
     @ValueSource(strings = {"9798546215", "1475854125", "4751425474"})
     void given_validNhsNumber_when_isValidNhsNumberCalled_then_returnTrue(String nhsNumber) {
@@ -41,7 +45,7 @@ class ValidationUtilityTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"B741", "F4500I", "0xFFFFF"})
+    @ValueSource(strings = {"B741", "B0.123", "0xFFFFF"})
     void given_invalidOdsCode_when_isValidOdsCodeCalled_then_returnFalse(String odsCode) {
         // when
         final boolean result = isValidOdsCode(odsCode);
@@ -53,12 +57,18 @@ class ValidationUtilityTest {
     @Test
     void given_validStatus_when_isValidStatusCalled_then_returnTrue() {
         // when
+        final boolean result = isValidState(VALID_STATE);
+
         // then
+        assertTrue(result);
     }
 
     @Test
     void given_invalidStatus_when_isValidStatusCalled_then_returnFalse() {
         // when
+        final boolean result = isValidState(INVALID_STATE);
+
         // then
+        assertFalse(result);
     }
 }
