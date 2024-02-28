@@ -9,14 +9,14 @@ import java.util.List;
 public final class ValidationUtility {
     private ValidationUtility() { }
 
-    private static final String NHS_NUMBER_REGEX = "\\b[1-9]\\d{2}\\d{3}\\d{4}\\b\n";
+    private static final String NHS_NUMBER_REGEX = "\\b[1-9]\\d{2}\\d{3}\\d{4}\\b";
 
     private static final String ODS_CODE_REGEX = "^[A-Z][0-9]{4,5}[A-Z]?$";
 
-    private static final List<String> STATUSES;
+    private static final List<String> STATES;
 
     static {
-        STATUSES = Arrays.stream(TransferState.class.getDeclaredFields())
+        STATES = Arrays.stream(TransferState.class.getDeclaredFields())
             .map(Field::getName)
             .toList();
     }
@@ -40,11 +40,11 @@ public final class ValidationUtility {
     }
 
     /**
-     * Checks if a valid status is present.
-     * @param status The status to be validated.
-     * @return true if the status is valid, otherwise false.
+     * Checks if a valid state is present.
+     * @param state The state to be validated.
+     * @return true if the state is valid, otherwise false.
      */
-    public static boolean isValidStatus(String status) {
-        return STATUSES.contains(status);
+    public static boolean isValidState(String state) {
+        return STATES.contains(state);
     }
 }
