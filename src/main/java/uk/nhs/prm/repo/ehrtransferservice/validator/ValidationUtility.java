@@ -1,6 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.validator;
 
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferState;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ public final class ValidationUtility {
     private static final List<String> STATUSES;
 
     static {
-        STATUSES = Arrays.stream(TransferStatus.class.getDeclaredFields())
+        STATUSES = Arrays.stream(TransferState.class.getDeclaredFields())
             .map(Field::getName)
             .toList();
     }
