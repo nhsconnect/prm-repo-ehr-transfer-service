@@ -18,8 +18,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_REQUEST_SENT_TO_GP2GP_MESSENGER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_STARTED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.CREATED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.DESTINATION_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.INBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NEMS_MESSAGE_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NHS_NUMBER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.SOURCE_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.STATE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.UPDATED_AT;
 
 @Component
 @RequiredArgsConstructor
@@ -54,7 +62,7 @@ class TransferRepository {
             .build());
 
         tableItem.put(STATE.name, AttributeValue.builder()
-            .s(EHR_REQUEST_SENT_TO_GP2GP_MESSENGER.name())
+            .s(EHR_TRANSFER_STARTED.name())
             .build());
 
         tableItem.put(NEMS_MESSAGE_ID.name, AttributeValue.builder()
