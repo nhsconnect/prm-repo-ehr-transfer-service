@@ -17,14 +17,14 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 
 @Component
 @RequiredArgsConstructor
-public class TransferRepository {
+class TransferRepository {
     private final DynamoDbClient client;
     private final AppConfig config;
     private static final String CONVERSATION_LAYER = "CONVERSATION";
     private static final String CORE_LAYER = "CORE";
     private static final String FRAGMENT_LAYER = "FRAGMENT#%s";
 
-    public void createConversation(ConversationRecord record) {
+    void createConversation(ConversationRecord record) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
         final String creationTimestamp = LocalDateTime.now().toString();
 
@@ -58,7 +58,7 @@ public class TransferRepository {
         }
 
         tableItem.put(STATE.name, AttributeValue.builder()
-            .s(record.state())
+            .s(record.status())
             .build());
 
         if(record.meshMessageId().isPresent()) {
@@ -89,19 +89,19 @@ public class TransferRepository {
         this.client.putItem(itemRequest);
     }
 
-    public ConversationRecord findConversation() {
+    ConversationRecord findConversation() {
         throw new UnsupportedOperationException();
     }
 
-    public boolean isInboundConversationIdPresent(UUID inboundConversationId) {
+    boolean isInboundConversationIdPresent(UUID inboundConversationId) {
         throw new UnsupportedOperationException();
     }
 
-    public String getConversationStatus(UUID inboundConversationId) {
+    String getConversationStatus(UUID inboundConversationId) {
         throw new UnsupportedOperationException();
     }
 
-    public void updateConversationStatus(UUID inboundConversationId, TransferStatus status) {
+    void updateConversationStatus(UUID inboundConversationId, TransferStatus status) {
         throw new UnsupportedOperationException();
     }
 }
