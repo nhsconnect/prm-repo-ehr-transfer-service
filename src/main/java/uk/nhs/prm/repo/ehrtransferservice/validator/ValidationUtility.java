@@ -11,7 +11,7 @@ public final class ValidationUtility {
 
     private static final String NHS_NUMBER_REGEX = "\\b[1-9]\\d{2}\\d{3}\\d{4}\\b\n";
 
-    private static final String ODS_CODE_REGEX = "(U\\d{5}|[AC]\\d{3}|V\\d{4}|[A-Za-z0-9]{5}\\d{3})$";
+    private static final String ODS_CODE_REGEX = "^[A-Z][0-9]{4,5}[A-Z]?$";
 
     private static final List<String> STATUSES;
 
