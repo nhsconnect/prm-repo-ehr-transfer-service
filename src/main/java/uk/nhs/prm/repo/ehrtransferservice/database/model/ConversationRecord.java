@@ -9,9 +9,8 @@ public record ConversationRecord(
     Optional<UUID> outboundConversationId,
     Optional<String> nhsNumber,
     String sourceGp,
-    Optional<String> destinationGp,
+    String destinationGp,
     String state,
-    Optional<UUID> meshMessageId,
     Optional<UUID> nemsMessageId,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
