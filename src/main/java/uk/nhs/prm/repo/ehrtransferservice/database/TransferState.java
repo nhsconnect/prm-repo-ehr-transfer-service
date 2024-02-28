@@ -1,6 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.database;
 
-public enum TransferStatus {
+public enum TransferState {
     EHR_REQUEST_SENT(1),
     LARGE_EHR_CONTINUE_REQUEST_SENT(2),
     TRANSFER_TO_REPO_STARTED(3),
@@ -10,7 +10,7 @@ public enum TransferStatus {
 
     public final int code;
 
-    TransferStatus(int code) {
+    TransferState(int code) {
         this.code = code;
     }
 }
