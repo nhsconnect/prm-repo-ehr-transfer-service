@@ -18,7 +18,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
@@ -43,6 +43,9 @@ public class ParserBrokerIntegrationTest {
 
     @Autowired
     private DynamoDbClient dbClient;
+
+    @Autowired
+    private TransferService transferService;
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
@@ -70,9 +73,6 @@ public class ParserBrokerIntegrationTest {
 
     private final TestDataLoader dataLoader = new TestDataLoader();
 
-    @Autowired
-    private TransferStore transferStore;
-
     private static final String CONVERSATION_ID_FOR_SMALL_EHR = "ff27abc3-9730-40f7-ba82-382152e6b90a";
     private static final String CONVERSATION_ID_FOR_COPC = "ff1457fb-4f58-4870-8d90-24d9c3ef8b91";
 
@@ -80,8 +80,8 @@ public class ParserBrokerIntegrationTest {
     public void setup(){
         RepoIncomingEvent repoIncomingEventForSmallEhr = new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05", CONVERSATION_ID_FOR_SMALL_EHR);
         RepoIncomingEvent repoIncomingEventForCopc = new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05", CONVERSATION_ID_FOR_COPC);
-        transferStore.createEhrTransfer(repoIncomingEventForSmallEhr,"ACTION:EHR_REQUEST_SENT");
-        transferStore.createEhrTransfer(repoIncomingEventForCopc,"ACTION:EHR_REQUEST_SENT");
+        transferService.createConversation(repoIncomingEventForSmallEhr);
+        transferService.createConversation(repoIncomingEventForCopc);
     }
 
     @AfterEach
