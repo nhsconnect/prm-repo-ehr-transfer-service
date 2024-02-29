@@ -32,7 +32,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 @Component
 @RequiredArgsConstructor
 class TransferRepository {
-    private final DynamoDbClient client;
+    private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
     private static final String CONVERSATION_LAYER = "CONVERSATION";
     private static final String CORE_LAYER = "CORE";
@@ -82,7 +82,7 @@ class TransferRepository {
             .item(tableItem)
             .build();
 
-        this.client.putItem(itemRequest);
+        dynamoDbClient.putItem(itemRequest);
     }
 
     GetItemResponse findConversationByInboundConversationId(UUID inboundConversationId) {
@@ -93,19 +93,20 @@ class TransferRepository {
             .build());
 
         final GetItemRequest itemRequest = GetItemRequest.builder()
-            .tableName(this.config.transferTrackerDbTableName())
+            .tableName(config.transferTrackerDbTableName())
             .key(keyItems)
             .build();
 
-        return this.client.getItem(itemRequest);
+        return dynamoDbClient.getItem(itemRequest);
     }
 
     boolean isInboundConversationIdPresent(UUID inboundConversationId) {
         throw new UnsupportedOperationException();
     }
 
-    void updateConversationStatus(UUID inboundConversationId, TransferState status, String layer) {
+    void updateConversationStatus(UUID inboundConversationId, TransferState state) {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
+        final String updateTimestamp = LocalDateTime.now().toString();
 
         keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
             .s(inboundConversationId.toString())
@@ -115,15 +116,24 @@ class TransferRepository {
             .s(CONVERSATION_LAYER)
             .build());
 
+        final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
+
+        updateItems.put(STATE.name, AttributeValueUpdate.builder()
+            .value(AttributeValue.builder().s(state.name()).build())
+            .action(AttributeAction.PUT)
+            .build());
+
+        updateItems.put(UPDATED_AT.name, AttributeValueUpdate.builder()
+            .value(AttributeValue.builder().s(updateTimestamp).build())
+            .action(AttributeAction.PUT)
+            .build());
+
         final UpdateItemRequest itemRequest = UpdateItemRequest.builder()
-            .tableName(this.config.transferTrackerDbTableName())
+            .tableName(config.transferTrackerDbTableName())
             .key(keyItems)
-            .attributeUpdates(Map.of(STATE.name, AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(status.name()).build())
-                .action(AttributeAction.PUT)
-                .build()))
+            .attributeUpdates(updateItems)
             .build();
 
-        this.client.updateItem(itemRequest);
+        dynamoDbClient.updateItem(itemRequest);
     }
 }
