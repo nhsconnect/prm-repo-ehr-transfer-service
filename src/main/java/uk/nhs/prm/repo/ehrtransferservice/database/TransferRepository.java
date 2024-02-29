@@ -100,10 +100,6 @@ class TransferRepository {
         return dynamoDbClient.getItem(itemRequest);
     }
 
-    boolean isInboundConversationIdPresent(UUID inboundConversationId) {
-        throw new UnsupportedOperationException();
-    }
-
     void updateConversationStatus(UUID inboundConversationId, TransferState state) {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = LocalDateTime.now().toString();
