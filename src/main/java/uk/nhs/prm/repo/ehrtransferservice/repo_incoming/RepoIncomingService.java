@@ -33,11 +33,12 @@ public class RepoIncomingService {
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
+        final String nemsMessageId = repoIncomingEvent.getNemsMessageId();
 
         transferService.createConversation(repoIncomingEvent);
         splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(), EHR_TRANSFER_STARTED.name()));
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferService.updateConversationStatus(inboundConversationId, EHR_REQUEST_SENT_TO_GP2GP_MESSENGER);
+        transferService.updateConversationStatus(inboundConversationId, nemsMessageId, EHR_REQUEST_SENT_TO_GP2GP_MESSENGER);
         waitForTransferTrackerDbToUpdate(repoIncomingEvent.getConversationId());
     }
 

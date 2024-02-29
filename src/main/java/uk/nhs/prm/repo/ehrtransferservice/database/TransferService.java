@@ -6,8 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.util.UUID;
@@ -18,7 +21,9 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 @Service
 @RequiredArgsConstructor
 public class TransferService {
+
     private final TransferRepository transferRepository;
+    private final SplunkAuditPublisher splunkAuditPublisher;
 
     public void createConversation(RepoIncomingEvent event) {
         final UUID inboundConversationId = UUID.fromString(event.getConversationId());
@@ -47,11 +52,19 @@ public class TransferService {
             .hasItem();
     }
 
-    public void updateConversationStatus(UUID inboundConversationId, TransferState state) {
+    public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferState state) {
         try {
             transferRepository.updateConversationStatus(inboundConversationId, state);
+            log.info("Updated state of EHR transfer in DB to: " + state);
+            publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
         } catch (SdkClientException exception) {
+            log.error("Failed to update state of EHR Transfer: " + exception.getMessage());
             throw new TransferUnableToUpdateException(inboundConversationId, exception);
         }
+    }
+
+    private void publishAuditMessage(String conversationId, String nemsMessageId, String state) {
+        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(conversationId, nemsMessageId, state));
+        log.info("Published audit message with the status of: " + state);
     }
 }
