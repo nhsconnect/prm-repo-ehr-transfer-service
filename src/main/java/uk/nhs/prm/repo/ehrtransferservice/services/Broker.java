@@ -3,11 +3,10 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
-import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 
 @Slf4j
 @Component
@@ -25,7 +24,7 @@ public class Broker {
     private final ParsingDlqPublisher parsingDlqPublisher;
     private final EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
 
-    private final TransferStore transferStore;
+    private final TransferService transferService;
 
     private void sendMessageToCorrespondingTopicPublisher(ParsedMessage parsedMessage) {
         final var interactionId = parsedMessage.getInteractionId();
@@ -63,7 +62,8 @@ public class Broker {
     }
 
     public void sendMessageToEhrInOrUnhandled(ParsedMessage parsedMessage) {
-        boolean conversationIdPresent = transferStore.isConversationIdPresent(parsedMessage.getConversationId().toString());
+        boolean conversationIdPresent = transferService
+            .isInboundConversationIdPresent(parsedMessage.getConversationId());
 
         if (conversationIdPresent) {
             log.info("Found Conversation ID '{}' in Transfer Tracker Database - received EHR IN message", parsedMessage.getConversationId());
