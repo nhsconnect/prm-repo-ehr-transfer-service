@@ -5,15 +5,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.*;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrInUnhandledMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.FragmentMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.LargeEhrMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.NegativeAcknowledgementMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.PositiveAcknowledgementMessagePublisher;
+import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SmallEhrMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BrokerTest {
@@ -32,7 +41,7 @@ class BrokerTest {
     @Mock
     EhrInUnhandledMessagePublisher ehrInUnhandledMessagePublisher;
     @Mock
-    TransferStore transferStore;
+    TransferService transferService;
 
     @InjectMocks
     Broker broker;
@@ -66,7 +75,7 @@ class BrokerTest {
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("COPC_IN000001UK01", messageBody, conversationId);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
@@ -79,7 +88,7 @@ class BrokerTest {
         var messageBody = "ehr-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
@@ -92,7 +101,7 @@ class BrokerTest {
         var messageBody = "copc-message";
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
         when(parsedMessage.isLargeMessage()).thenReturn(true);
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
         verify(largeEhrMessagePublisher).sendMessage(messageBody, conversationId);
@@ -104,7 +113,7 @@ class BrokerTest {
         var messageBody = "nack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
         when(acknowledgement.isNegativeAcknowledgement()).thenReturn(true);
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(acknowledgement);
         verify(negativeAcknowledgementMessagePublisher).sendMessage("nack", conversationId);
@@ -116,7 +125,7 @@ class BrokerTest {
         var messageBody = "positive-ack";
         var acknowledgement = getMockParsedMessage("MCCI_IN010000UK13", messageBody, conversationId, Acknowledgement.class);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(acknowledgement);
         verify(positiveAcknowledgementMessagePublisher).sendMessage("positive-ack", conversationId);
@@ -127,7 +136,7 @@ class BrokerTest {
         var conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("something-unreckognizable", "some-ack", conversationId);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
         verify(parsingDlqPublisher).sendMessage(any());
@@ -139,7 +148,7 @@ class BrokerTest {
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessageWithoutInteractionId(messageBody, conversationId);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(false);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(false);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 
@@ -152,7 +161,7 @@ class BrokerTest {
         UUID conversationId = UUID.randomUUID();
         var parsedMessage = getMockParsedMessage("RCMR_IN030000UK06", messageBody, conversationId);
 
-        when(transferStore.isConversationIdPresent(conversationId.toString())).thenReturn(true);
+        when(transferService.isInboundConversationIdPresent(conversationId)).thenReturn(true);
 
         broker.sendMessageToEhrInOrUnhandled(parsedMessage);
 

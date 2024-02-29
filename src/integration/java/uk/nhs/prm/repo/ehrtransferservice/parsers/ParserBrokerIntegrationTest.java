@@ -93,7 +93,6 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(ehrCompleteQueueName);
         purgeQueue(ehrInUnhandledObservabilityQueueName);
 
-
         Map<String, AttributeValue> key = new HashMap<>();
         key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID_FOR_SMALL_EHR).build());
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
