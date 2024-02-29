@@ -327,6 +327,7 @@ public class LocalStackAwsConfig {
         waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
+    // TODO - Implement new logic here to reflect the up-to-date table.
     private void setupDbAndTable() {
         var waiter = dynamoDbClient.waiter();
         var tableRequest = DescribeTableRequest.builder()
