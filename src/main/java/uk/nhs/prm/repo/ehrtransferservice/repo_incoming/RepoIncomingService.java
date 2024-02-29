@@ -5,20 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseTimedOutException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
+import java.util.UUID;
+
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.*;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class RepoIncomingService {
-    private static final String TRANSFER_TO_REPO_STARTED = "ACTION:TRANSFER_TO_REPO_STARTED";
-    private static final String EHR_REQUEST_SENT = "ACTION:EHR_REQUEST_SENT";
-    private final TransferStore transferStore;
     private final TransferService transferService;
     private final SplunkAuditPublisher splunkAuditPublisher;
     private final Gp2gpMessengerService gp2gpMessengerService;
@@ -32,11 +32,12 @@ public class RepoIncomingService {
     private int ehrResponsePollPeriodMilliseconds;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
-        boolean isActive = true;
+        final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
+
         transferService.createConversation(repoIncomingEvent);
-        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(),TRANSFER_TO_REPO_STARTED));
+        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(repoIncomingEvent.getConversationId(),repoIncomingEvent.getNemsMessageId(), EHR_TRANSFER_STARTED.name()));
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferStore.handleEhrTransferStateUpdate(repoIncomingEvent.getConversationId(), repoIncomingEvent.getNemsMessageId(), EHR_REQUEST_SENT, isActive);
+        transferService.updateConversationStatus(inboundConversationId, EHR_REQUEST_SENT_TO_GP2GP_MESSENGER);
         waitForTransferTrackerDbToUpdate(repoIncomingEvent.getConversationId());
     }
 
@@ -62,16 +63,15 @@ public class RepoIncomingService {
                     pollCount + 1,
                     ehrResponsePollLimit));
 
-            Transfer transfer = transferStore.findTransfer(conversationId);
-            transferState = transfer.getState();
+            transferState = transferService.getConversationStatus(UUID.fromString(conversationId));
 
-            if (transferState.equals("ACTION:EHR_TRANSFER_TO_REPO_COMPLETE")) {
+            if (transferState.equals(EHR_TRANSFER_TO_REPO_COMPLETE.name())) {
                 log.info("Successful transfer found for conversationId " + conversationId);
                 return;
             }
 
-            if (transferState.startsWith("ACTION:EHR_TRANSFER_FAILED")
-                || transferState.equals("ACTION:EHR_TRANSFER_TIMEOUT")
+            if (transferState.startsWith(EHR_TRANSFER_FAILED.name())
+                || transferState.equals(EHR_TRANSFER_TIMEOUT.name())
             ) {
                 throw new EhrResponseFailedException(transferState);
             }
