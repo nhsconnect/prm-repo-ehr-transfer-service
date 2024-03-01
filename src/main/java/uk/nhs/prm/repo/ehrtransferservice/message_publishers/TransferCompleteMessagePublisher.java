@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
+@Deprecated
 public class TransferCompleteMessagePublisher {
     private final String transferCompleteTopicArn;
     private final MessagePublisher messagePublisher;

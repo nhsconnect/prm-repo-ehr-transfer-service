@@ -4,9 +4,7 @@ import com.amazonaws.SdkClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
@@ -14,8 +12,6 @@ import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.util.UUID;
-
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.STATE;
 
 @Slf4j
 @Service
@@ -36,25 +32,46 @@ public class TransferService {
         }
     }
 
-    public String getConversationStatus(UUID inboundConversationId) {
-        GetItemResponse response = transferRepository.findConversationByInboundConversationId(inboundConversationId);
+    public ConversationRecord getConversation(UUID inboundConversationId) {
+        return transferRepository.findConversationByInboundConversationId(inboundConversationId);
+    }
 
-        if (response.hasItem()) {
-            return response.item().get(STATE.name).s();
-        } else {
-            throw new TransferRecordNotPresentException(inboundConversationId);
-        }
+    public String getNemsMessageIdAsString(UUID inboundConversationId) {
+        ConversationRecord conversation = transferRepository.findConversationByInboundConversationId(inboundConversationId);
+
+        return String.valueOf(conversation.nemsMessageId()
+                .orElse(null));
+    }
+
+    public String getConversationState(UUID inboundConversationId) {
+        ConversationRecord conversation = transferRepository.findConversationByInboundConversationId(inboundConversationId);
+
+        return conversation.state();
     }
 
     public boolean isInboundConversationIdPresent(UUID inboundConversationId) {
-        return transferRepository
-            .findConversationByInboundConversationId(inboundConversationId)
-            .hasItem();
+        return transferRepository.isInboundConversationIdPresent(inboundConversationId);
     }
 
     public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferState state) {
         try {
             transferRepository.updateConversationStatus(inboundConversationId, state);
+            log.info("Updated state of EHR transfer in DB to: " + state);
+            publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
+        } catch (SdkClientException exception) {
+            log.error("Failed to update state of EHR Transfer: " + exception.getMessage());
+            throw new TransferUnableToUpdateException(inboundConversationId, exception);
+        }
+    }
+
+    public void updateConversationStatusWithFailure(
+            UUID inboundConversationId,
+            String nemsMessageId,
+            TransferState state,
+            String failureCode
+    ) {
+        try {
+            transferRepository.updateConversationStatusWithFailure(inboundConversationId, state, failureCode);
             log.info("Updated state of EHR transfer in DB to: " + state);
             publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
         } catch (SdkClientException exception) {

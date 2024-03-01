@@ -4,7 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
@@ -13,10 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Deprecated
+@Slf4j
 @Component
 @RequiredArgsConstructor
-@Slf4j
+@Deprecated(forRemoval = true, since = "01/03/2024")
 public class TransferTrackerDb {
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;

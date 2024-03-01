@@ -2,14 +2,16 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
@@ -21,90 +23,55 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_FAILED;
 
 @ExtendWith(MockitoExtension.class)
 class NegativeAcknowledgementHandlerTest {
 
     @Mock
-    TransferStore transferStore;
-
-    @Mock
-    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+    private TransferService transferService;
 
     @InjectMocks
-    NegativeAcknowledgementHandler negativeAcknowledgementHandler;
+    private NegativeAcknowledgementHandler negativeAcknowledgementHandler;
 
-    private final UUID conversationId = UUID.randomUUID();
+    private final UUID conversationId = UUID.fromString("d263e1ed-95d5-4502-95f8-905c10edc85f");
+
+    private final String nemsMessageId = "8dd4f4be-9449-4efb-b231-e574415dbf86";
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailureDetails() throws Exception {
-        Transfer transfer =
-                new Transfer(
-                        conversationId.toString(),
-                        "1234567890",
-                        "sourceGP",
-                        "someNemsMessageId",
-                        "yesterday",
-                        "FAILED",
-                        null,
-                        null,
-                        null,
-                        true
-                );
-        TransferCompleteEvent transferCompleteEvent =
-                new TransferCompleteEvent("yesterday",
-                        "sourceGP",
-                        "SUSPENSION",
-                        "someNemsMessageId",
-                        "1234567890");
+    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailureDetails() {
+        // given
+        Acknowledgement negativeAcknowledgement = createAcknowledgement(conversationId, failureDetailsList("06", "09"));
 
-        when(transferStore.findTransfer(conversationId.toString())).thenReturn(transfer);
+        // when
+        when(transferService.getNemsMessageIdAsString(conversationId)).thenReturn(nemsMessageId);
 
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, failureDetailsList("06", "09")));
+        negativeAcknowledgementHandler.handleMessage(negativeAcknowledgement);
 
-        verify(transferStore, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
-                "someNemsMessageId" , "ACTION:EHR_TRANSFER_FAILED:06", false);
-
-        verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
+        // then
+        verify(transferService).updateConversationStatusWithFailure(conversationId, nemsMessageId, EHR_TRANSFER_FAILED, "06");
     }
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailedUsingUnknownErrorCodeIfThereAreNoFailureDetails() throws Exception {
-        Transfer transfer =
-                new Transfer(
-                        conversationId.toString(),
-                        "1234567890",
-                        "sourceGP",
-                        "someNemsMessageId",
-                        "yesterday",
-                        "FAILED",
-                        null,
-                        null,
-                        null,
-                        true
-                );
+    void shouldUpdateDbRecordAsTransferFailedUsingUnknownErrorCodeIfThereAreNoFailureDetails() {
+        // given
+        Acknowledgement negativeAcknowledgement = createAcknowledgement(conversationId, noFailureDetails());
 
-        TransferCompleteEvent transferCompleteEvent =
-                new TransferCompleteEvent("yesterday",
-                        "sourceGP",
-                        "SUSPENSION",
-                        "someNemsMessageId",
-                        "1234567890");
+        // when
+        when(transferService.getNemsMessageIdAsString(conversationId)).thenReturn(nemsMessageId);
 
-        when(transferStore.findTransfer(conversationId.toString())).thenReturn(transfer);
+        negativeAcknowledgementHandler.handleMessage(negativeAcknowledgement);
 
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, noFailureDetails()));
-
-        verify(transferStore, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
-                "someNemsMessageId" ,"ACTION:EHR_TRANSFER_FAILED:UNKNOWN_ERROR", false);
-        verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
+        // then
+        verify(transferService).updateConversationStatusWithFailure(conversationId, nemsMessageId, EHR_TRANSFER_FAILED, "UNKNOWN_ERROR");
     }
 
     private List<FailureDetail> noFailureDetails() {
         return failureDetailsList();
     }
-
 
     private List<FailureDetail> failureDetailsList(String... failureCodes) {
         List<String> failureCodeList = Arrays.asList(failureCodes);

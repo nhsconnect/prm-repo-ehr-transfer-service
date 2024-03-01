@@ -3,57 +3,32 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_FAILED;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class NegativeAcknowledgementHandler {
 
-    private final TransferStore transferStore;
-    private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+    private final TransferService transferService;
 
     public void handleMessage(Acknowledgement acknowledgement) {
-        var conversationId = acknowledgement.getConversationId();
-        boolean isActive = false;
+        UUID conversationId = acknowledgement.getConversationId();
+        String nemsMessageId = transferService.getNemsMessageIdAsString(conversationId);
 
         logFailureDetail(acknowledgement);
 
-        transferStore.handleEhrTransferStateUpdate(
-                conversationId.toString(),
-                transferStore.findTransfer(conversationId.toString()).getNemsMessageId(),
-                createState(acknowledgement),
-                isActive
-        );
-
-        publishTransferCompleteEvent(
-                transferStore.findTransfer(conversationId.toString()),
-                conversationId
-        );
-    }
-
-    private String createState(Acknowledgement acknowledgement) {
-        return "ACTION:EHR_TRANSFER_FAILED:" + getFailureCodeForDb(acknowledgement);
-    }
-
-    private void publishTransferCompleteEvent(Transfer transfer, UUID conversationId) {
-        TransferCompleteEvent transferCompleteEvent = new TransferCompleteEvent(
-                transfer.getNemsEventLastUpdated(),
-                transfer.getSourceGP(),
-                "SUSPENSION",
-                transfer.getNemsMessageId(),
-                transfer.getNhsNumber());
-
-        transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
-
+        transferService.updateConversationStatusWithFailure(
+                conversationId,
+                nemsMessageId,
+                EHR_TRANSFER_FAILED,
+                getFailureCodeForDb(acknowledgement));
     }
 
     private String getFailureCodeForDb(Acknowledgement acknowledgement) {

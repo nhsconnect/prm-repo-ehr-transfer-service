@@ -13,10 +13,10 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-@Deprecated
-@AllArgsConstructor
-@Service
 @Slf4j
+@Service
+@AllArgsConstructor
+@Deprecated(forRemoval = true, since = "01/03/2024")
 public class TransferStore {
 
     private final TransferTrackerDb transferTrackerDb;
