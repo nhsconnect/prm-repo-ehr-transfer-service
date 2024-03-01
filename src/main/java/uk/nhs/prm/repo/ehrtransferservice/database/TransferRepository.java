@@ -2,6 +2,7 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.TransferTracker;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
@@ -27,6 +29,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 @Component
 @RequiredArgsConstructor
 class TransferRepository {
+    private final DynamoDbTable<TransferTracker> transferTrackerDynamoDbTable;
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
     private static final String CONVERSATION_LAYER = "CONVERSATION";

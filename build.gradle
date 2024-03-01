@@ -64,6 +64,7 @@ dependencies {
     implementation 'software.amazon.awssdk:sqs'
     implementation 'software.amazon.awssdk:s3'
     implementation 'software.amazon.awssdk:dynamodb'
+    implementation 'software.amazon.awssdk:dynamodb-enhanced'
 
     implementation 'com.amazonaws:amazon-sqs-java-extended-client-lib:1.2.2'
     implementation 'software.amazon.sns:sns-extended-client:1.1.3'

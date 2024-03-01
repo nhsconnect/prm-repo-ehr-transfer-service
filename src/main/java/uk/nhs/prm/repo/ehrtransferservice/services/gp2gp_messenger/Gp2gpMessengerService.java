@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
@@ -37,8 +38,16 @@ public class Gp2gpMessengerService {
         }
     }
 
-    public void sendContinueMessage(ParsedMessage parsedMessage, Transfer ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
-        var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), ehrTransferData.getSourceGP(), parsedMessage.getMessageId());
+    // TODO PRMT-4524 once we're happy with the new logic, remove this. It's just a placeholder so we can double check
+    //  that we're doing the same thing as the old logic
+//    public void sendContinueMessage(ParsedMessage parsedMessage, Transfer ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
+//        var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), ehrTransferData.getSourceGP(), parsedMessage.getMessageId());
+//        gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
+//        log.info("Successfully sent continue message request");
+//    }
+
+    public void sendContinueMessage(ParsedMessage parsedMessage, String sourceGp) throws HttpException, IOException, URISyntaxException, InterruptedException {
+        var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), sourceGp, parsedMessage.getMessageId());
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
         log.info("Successfully sent continue message request");
     }
