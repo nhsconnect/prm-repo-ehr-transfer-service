@@ -2,7 +2,6 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -13,7 +12,6 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.database.model.TransferTracker;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
@@ -24,12 +22,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_STARTED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.CREATED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.DESTINATION_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.FAILURE_CODE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.INBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NEMS_MESSAGE_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NHS_NUMBER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.SOURCE_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.STATE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.UPDATED_AT;
 
 @Component
 @RequiredArgsConstructor
 class TransferRepository {
-    private final DynamoDbTable<TransferTracker> transferTrackerDynamoDbTable;
     private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
     private static final String CONVERSATION_LAYER = "CONVERSATION";
@@ -192,7 +199,6 @@ class TransferRepository {
         dynamoDbClient.updateItem(itemRequest);
     }
 
-    // TODO PRMT-4524 this might not belong here, but I'm placing it here for now as a placeholder
     ConversationRecord mapGetItemResponseToConversationRecord(GetItemResponse response) {
         Map<String, AttributeValue> item = response.item();
 
