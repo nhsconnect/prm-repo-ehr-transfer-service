@@ -11,7 +11,6 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
 
 @Getter
 @AllArgsConstructor
@@ -24,7 +23,7 @@ public class PresignedUrl {
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(url.toURI())
             .PUT(message)
-            .header("Content-MD5", computeContentMd5Header(messageBody))
+            .header("Content-MD5", Md5Utils.md5AsBase64(messageBody.getBytes()))
             .build();
 
         var response = HttpClient.newBuilder()
@@ -34,9 +33,5 @@ public class PresignedUrl {
         if (response.statusCode() != 200) {
             throw new RuntimeException("Unexpected response from S3 with status code :"+ response.statusCode());
         }
-    }
-
-    private String computeContentMd5Header(String message) {
-        return Arrays.toString(Md5Utils.computeMD5Hash(message.getBytes()));
     }
 }
