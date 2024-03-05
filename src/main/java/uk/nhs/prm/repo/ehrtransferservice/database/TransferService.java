@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.NemsMessageIdNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
@@ -17,7 +18,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-
     private final TransferRepository transferRepository;
     private final SplunkAuditPublisher splunkAuditPublisher;
 
@@ -37,14 +37,18 @@ public class TransferService {
     }
 
     public String getNemsMessageIdAsString(UUID inboundConversationId) {
-        ConversationRecord conversation = transferRepository.findConversationByInboundConversationId(inboundConversationId);
+        final ConversationRecord conversation = transferRepository
+            .findConversationByInboundConversationId(inboundConversationId);
 
-        return String.valueOf(conversation.nemsMessageId()
-                .orElse(null));
+        return String.valueOf(conversation
+            .nemsMessageId()
+            .orElseThrow(NemsMessageIdNotPresentException::new)
+        );
     }
 
     public String getConversationState(UUID inboundConversationId) {
-        ConversationRecord conversation = transferRepository.findConversationByInboundConversationId(inboundConversationId);
+        ConversationRecord conversation = transferRepository
+            .findConversationByInboundConversationId(inboundConversationId);
 
         return conversation.state();
     }
