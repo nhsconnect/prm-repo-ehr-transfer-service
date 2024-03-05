@@ -66,7 +66,7 @@ public class RepoIncomingService {
 
             transferState = transferService.getConversationState(UUID.fromString(conversationId));
 
-            if (transferState.equals(EHR_SENT_REPOSITORY.name())) {
+            if (transferState.equals(EHR_SENT_TO_REPOSITORY.name())) {
                 log.info("Successful transfer found for conversationId " + conversationId);
                 return;
             }
