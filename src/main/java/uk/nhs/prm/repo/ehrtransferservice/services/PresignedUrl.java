@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -23,7 +24,9 @@ public class PresignedUrl {
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(url.toURI())
             .PUT(message)
-            .header("Content-MD5", Md5Utils.md5AsBase64(messageBody.getBytes()))
+            .header("Content-MD5", Md5Utils.md5AsBase64(
+                new ByteArrayInputStream(messageBody.getBytes()))
+            )
             .build();
 
         var response = HttpClient.newBuilder()
