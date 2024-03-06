@@ -3,9 +3,9 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 import com.amazonaws.util.Md5Utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import software.amazon.awssdk.utils.BinaryUtils;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -20,13 +20,10 @@ public class PresignedUrl {
 
     public void uploadMessage(ParsedMessage parsedMessage) throws URISyntaxException, IOException, InterruptedException {
         final String messageBody = parsedMessage.getMessageBody();
-        var message = HttpRequest.BodyPublishers.ofString(messageBody);
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(url.toURI())
-            .PUT(message)
-            .header("Content-MD5", Md5Utils.md5AsBase64(
-                new ByteArrayInputStream(messageBody.getBytes()))
-            )
+            .PUT(HttpRequest.BodyPublishers.ofString(messageBody))
+            .header("Content-MD5", BinaryUtils.toBase64(Md5Utils.computeMD5Hash(messageBody.getBytes())))
             .build();
 
         var response = HttpClient.newBuilder()
