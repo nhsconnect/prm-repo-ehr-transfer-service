@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_STARTED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_STARTED;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.CREATED_AT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.DESTINATION_GP;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.FAILURE_CODE;
@@ -31,17 +31,16 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NHS_NUMBER;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.SOURCE_GP;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.STATE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.TRANSFER_STATUS;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.UPDATED_AT;
 
 @Component
 @RequiredArgsConstructor
 class TransferRepository {
-    private final DynamoDbClient dynamoDbClient;
     private final AppConfig config;
+    private final DynamoDbClient dynamoDbClient;
+
     private static final String CONVERSATION_LAYER = "CONVERSATION";
-    private static final String CORE_LAYER = "CORE";
-    private static final String FRAGMENT_LAYER = "FRAGMENT#%s";
 
     void createConversation(RepoIncomingEvent event) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
@@ -66,7 +65,7 @@ class TransferRepository {
             .s(event.getDestinationGp())
             .build());
 
-        tableItem.put(STATE.name, AttributeValue.builder()
+        tableItem.put(TRANSFER_STATUS.name, AttributeValue.builder()
             .s(EHR_TRANSFER_STARTED.name())
             .build());
 
@@ -128,7 +127,7 @@ class TransferRepository {
         return mapGetItemResponseToConversationRecord(response);
     }
 
-    void updateConversationStatus(UUID inboundConversationId, TransferState state) {
+    void updateConversationStatus(UUID inboundConversationId, TransferStatus state) {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = LocalDateTime.now().toString();
 
@@ -142,7 +141,7 @@ class TransferRepository {
 
         final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
 
-        updateItems.put(STATE.name, AttributeValueUpdate.builder()
+        updateItems.put(TRANSFER_STATUS.name, AttributeValueUpdate.builder()
             .value(AttributeValue.builder().s(state.name()).build())
             .action(AttributeAction.PUT)
             .build());
@@ -161,7 +160,7 @@ class TransferRepository {
         dynamoDbClient.updateItem(itemRequest);
     }
 
-    void updateConversationStatusWithFailure(UUID inboundConversationId, TransferState state, String failureCode) {
+    void updateConversationStatusWithFailure(UUID inboundConversationId, TransferStatus state, String failureCode) {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = LocalDateTime.now().toString();
 
@@ -175,7 +174,7 @@ class TransferRepository {
 
         final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
 
-        updateItems.put(STATE.name, AttributeValueUpdate.builder()
+        updateItems.put(TRANSFER_STATUS.name, AttributeValueUpdate.builder()
                 .value(AttributeValue.builder().s(state.name()).build())
                 .action(AttributeAction.PUT)
                 .build());
@@ -211,7 +210,7 @@ class TransferRepository {
                 item.get(SOURCE_GP.name).s(),
                 Optional.ofNullable(item.get(DESTINATION_GP.name))
                         .map(AttributeValue::s),
-                item.get(STATE.name).s(),
+                item.get(TRANSFER_STATUS.name).s(),
                 Optional.ofNullable(item.get(FAILURE_CODE.name))
                         .map(AttributeValue::s),
                 Optional.ofNullable(item.get(NEMS_MESSAGE_ID.name))
