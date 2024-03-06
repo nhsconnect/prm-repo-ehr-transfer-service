@@ -1,6 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.validator;
 
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferState;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -13,10 +13,10 @@ public final class ValidationUtility {
 
     private static final String ODS_CODE_REGEX = "^[A-Z][0-9]{4,5}[A-Z]?$";
 
-    private static final List<String> STATES;
+    private static final List<String> STATUSES;
 
     static {
-        STATES = Arrays.stream(TransferState.class.getDeclaredFields())
+        STATUSES = Arrays.stream(TransferStatus.class.getDeclaredFields())
             .map(Field::getName)
             .toList();
     }
@@ -45,6 +45,6 @@ public final class ValidationUtility {
      * @return true if the state is valid, otherwise false.
      */
     public static boolean isValidState(String state) {
-        return STATES.contains(state);
+        return STATUSES.contains(state);
     }
 }
