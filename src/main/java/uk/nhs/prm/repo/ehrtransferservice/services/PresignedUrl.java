@@ -1,9 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.services;
 
-import com.amazonaws.util.Md5Utils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import software.amazon.awssdk.utils.BinaryUtils;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 import java.io.IOException;
@@ -23,7 +21,6 @@ public class PresignedUrl {
         final HttpRequest request = HttpRequest.newBuilder()
             .uri(url.toURI())
             .PUT(HttpRequest.BodyPublishers.ofString(messageBody))
-            .header("Content-MD5", BinaryUtils.toBase64(Md5Utils.computeMD5Hash(messageBody.getBytes())))
             .build();
 
         var response = HttpClient.newBuilder()
