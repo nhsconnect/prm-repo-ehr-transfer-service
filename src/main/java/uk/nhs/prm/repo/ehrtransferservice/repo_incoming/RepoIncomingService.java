@@ -13,7 +13,11 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_REQUEST_SENT_TO_GP2GP_MESSENGER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_SENT_TO_REPOSITORY;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_STARTED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_TIMEOUT;
 
 @Service
 @RequiredArgsConstructor

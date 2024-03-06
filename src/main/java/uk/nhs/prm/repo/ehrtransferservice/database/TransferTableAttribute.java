@@ -12,7 +12,7 @@ public enum TransferTableAttribute {
     NHS_NUMBER("NhsNumber"),
     SOURCE_GP("SourceGp"),
     DESTINATION_GP("DestinationGp"),
-    STATE("State"),
+    TRANSFER_STATUS("TransferStatus"),
     FAILURE_CODE("FailureCode"),
     NEMS_MESSAGE_ID("NemsMessageId"),
     CREATED_AT("CreatedAt"),

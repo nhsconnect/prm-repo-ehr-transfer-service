@@ -9,7 +9,7 @@ import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import java.util.UUID;
 
 import static net.logstash.logback.argument.StructuredArguments.v;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_FAILED;
 
 @Service
 @RequiredArgsConstructor

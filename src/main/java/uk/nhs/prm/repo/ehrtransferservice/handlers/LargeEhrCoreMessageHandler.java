@@ -4,8 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferState;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
@@ -40,7 +39,7 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage>
                 conversationId,
                 String.valueOf(conversation.nemsMessageId()
                         .orElse(null)),
-                TransferState.CONTINUE_REQUEST_SENT_TO_GP2GP_MESSENGER
+                TransferStatus.CONTINUE_REQUEST_SENT_TO_GP2GP_MESSENGER
         );
     }
 }

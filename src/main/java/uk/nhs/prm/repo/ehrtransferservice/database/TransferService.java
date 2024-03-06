@@ -57,7 +57,7 @@ public class TransferService {
         return transferRepository.isInboundConversationIdPresent(inboundConversationId);
     }
 
-    public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferState state) {
+    public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferStatus state) {
         try {
             transferRepository.updateConversationStatus(inboundConversationId, state);
             log.info("Updated state of EHR transfer in DB to: " + state);
@@ -71,7 +71,7 @@ public class TransferService {
     public void updateConversationStatusWithFailure(
             UUID inboundConversationId,
             String nemsMessageId,
-            TransferState state,
+            TransferStatus state,
             String failureCode
     ) {
         try {

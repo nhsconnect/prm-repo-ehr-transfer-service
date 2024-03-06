@@ -2,31 +2,25 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
-import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
-import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferState.EHR_TRANSFER_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_FAILED;
 
 @ExtendWith(MockitoExtension.class)
 class NegativeAcknowledgementHandlerTest {

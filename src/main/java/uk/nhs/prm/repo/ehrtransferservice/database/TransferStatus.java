@@ -1,6 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.database;
 
-public enum TransferState {
+public enum TransferStatus {
     EHR_TRANSFER_STARTED,
     EHR_REQUEST_SENT_TO_GP2GP_MESSENGER,
     EHR_CORE_RECEIVED_BY_EHR_TRANSFER_SERVICE,
