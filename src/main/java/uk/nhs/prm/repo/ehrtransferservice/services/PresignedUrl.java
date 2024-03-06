@@ -2,7 +2,6 @@ package uk.nhs.prm.repo.ehrtransferservice.services;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import software.amazon.awssdk.utils.BinaryUtils;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 
 import java.io.IOException;
