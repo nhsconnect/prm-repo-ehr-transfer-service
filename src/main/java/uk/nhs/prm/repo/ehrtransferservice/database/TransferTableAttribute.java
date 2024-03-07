@@ -14,6 +14,7 @@ public enum TransferTableAttribute {
     DESTINATION_GP("DestinationGp"),
     TRANSFER_STATUS("TransferStatus"),
     FAILURE_CODE("FailureCode"),
+    MESSAGE_ID("MessageId"),
     NEMS_MESSAGE_ID("NemsMessageId"),
     CREATED_AT("CreatedAt"),
     UPDATED_AT("UpdatedAt"),
