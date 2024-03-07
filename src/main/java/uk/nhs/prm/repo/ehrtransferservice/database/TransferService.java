@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.NemsMessageIdNotPresentException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToPersistException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
@@ -28,7 +28,15 @@ public class TransferService {
             transferRepository.createConversation(event);
             log.info("Conversation DynamoDB entry created for Inbound Conversation ID {}.", event.getConversationId());
         } catch (SdkClientException exception) {
-            throw new TransferUnableToPersistException(inboundConversationId, exception);
+            throw new FailedToPersistException(inboundConversationId, exception);
+        }
+    }
+
+    public void createCore(UUID inboundConversationId, UUID coreMessageId) {
+        try {
+            transferRepository.createCore(inboundConversationId, coreMessageId);
+        } catch (SdkClientException exception) {
+            throw new FailedToPersistException(inboundConversationId, exception);
         }
     }
 
