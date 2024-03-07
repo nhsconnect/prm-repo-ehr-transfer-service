@@ -46,7 +46,7 @@ public class TransferService {
         );
     }
 
-    public String getConversationState(UUID inboundConversationId) {
+    public String getConversationTransferStatus(UUID inboundConversationId) {
         ConversationRecord conversation = transferRepository
             .findConversationByInboundConversationId(inboundConversationId);
 
@@ -60,7 +60,7 @@ public class TransferService {
     public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferStatus state) {
         try {
             transferRepository.updateConversationStatus(inboundConversationId, state);
-            log.info("Updated state of EHR transfer in DB to: " + state);
+            log.info("Updated state of EHR transfer in DB to: {}.", state);
             publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
         } catch (SdkClientException exception) {
             log.error("Failed to update state of EHR Transfer: " + exception.getMessage());
