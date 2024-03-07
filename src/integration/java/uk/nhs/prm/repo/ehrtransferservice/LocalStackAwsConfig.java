@@ -50,6 +50,10 @@ import java.util.Map;
 import java.util.Objects;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.INBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NHS_NUMBER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
 
 @TestConfiguration
 public class LocalStackAwsConfig {
@@ -121,9 +125,9 @@ public class LocalStackAwsConfig {
     @Value("${activemq.randomOption}")
     private String randomOption;
 
-    @Value("${aws.splunkUploaderTopicArn}")
-    private String splunkUploaderTopicArn;
+    private static final long DYNAMO_READ_CAPACITY_UNITS = 5L;
 
+    private static final long DYNAMO_WRITE_CAPACITY_UNITS = 5L;
 
     @Bean
     public static SqsClient sqsClient(@Value("${localstack.url}") String localstackUrl) throws URISyntaxException {
@@ -188,7 +192,6 @@ public class LocalStackAwsConfig {
     private String failoverUrl() {
         return String.format("failover:(%s,%s)%s", amqEndpoint1, amqEndpoint2, randomOption);
     }
-
 
     @Bean
     public static AmazonSQSAsync amazonSQSAsync(@Value("${localstack.url}") String localstackUrl) {
@@ -259,7 +262,7 @@ public class LocalStackAwsConfig {
     public void setupTestQueuesAndTopics() {
         setupS3Bucket();
         setUpQueueAndTopics();
-        setupDbAndTable();
+        createDynamoTable();
     }
 
     private void setUpQueueAndTopics() {
@@ -327,59 +330,101 @@ public class LocalStackAwsConfig {
         waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(sqsLargeMessageBucketName).build());
     }
 
-    // TODO - Implement new logic here to reflect the up-to-date table.
-    private void setupDbAndTable() {
-        var waiter = dynamoDbClient.waiter();
-        var tableRequest = DescribeTableRequest.builder()
+    private void createDynamoTable() {
+        final DynamoDbWaiter waiter = dynamoDbClient.waiter();
+        final DescribeTableRequest tableRequest = DescribeTableRequest.builder()
                 .tableName(transferTrackerDbTableName)
                 .build();
 
         if (dynamoDbClient.listTables().tableNames().contains(transferTrackerDbTableName)) {
-            resetTableForLocalEnvironment(waiter, tableRequest);
+            deleteDynamoTable(waiter, tableRequest);
         }
 
-        List<KeySchemaElement> keySchema = new ArrayList<>();
+        final List<KeySchemaElement> keySchema = new ArrayList<>();
+
+        // Partition Key
         keySchema.add(KeySchemaElement.builder()
                 .keyType(KeyType.HASH)
-                .attributeName("conversation_id")
-                .build());
-        List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("conversation_id")
-                .build());
-        attributeDefinitions.add(AttributeDefinition.builder()
-                .attributeType(ScalarAttributeType.S)
-                .attributeName("is_active")
+                .attributeName(INBOUND_CONVERSATION_ID.name)
                 .build());
 
-        GlobalSecondaryIndex globalSecondaryIndex = GlobalSecondaryIndex.builder()
-                .indexName("IsActiveSecondaryIndex")
-                .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("is_active").build())
+        // Sort Key
+        keySchema.add(KeySchemaElement.builder()
+            .keyType(KeyType.RANGE)
+            .attributeName(LAYER.name)
+            .build());
+
+        final List<AttributeDefinition> attributeDefinitions = new ArrayList<>();
+
+        attributeDefinitions.add(AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName(INBOUND_CONVERSATION_ID.name)
+                .build());
+
+        attributeDefinitions.add(AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName(LAYER.name)
+                .build());
+
+        attributeDefinitions.add(AttributeDefinition.builder()
+            .attributeType(ScalarAttributeType.S)
+            .attributeName(OUTBOUND_CONVERSATION_ID.name)
+            .build());
+
+        attributeDefinitions.add(AttributeDefinition.builder()
+                .attributeType(ScalarAttributeType.S)
+                .attributeName(NHS_NUMBER.name)
+            .build());
+
+        // NHS Number GSI
+        final List<GlobalSecondaryIndex> globalSecondaryIndexes = List.of(
+            GlobalSecondaryIndex.builder()
+                .indexName("NhsNumberSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName(NHS_NUMBER.name)
+                    .build())
                 .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
                 .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
+                    .readCapacityUnits(DYNAMO_READ_CAPACITY_UNITS)
+                    .writeCapacityUnits(DYNAMO_WRITE_CAPACITY_UNITS)
+                    .build())
+                .build(),
 
-        var createTableRequest = CreateTableRequest.builder()
-                .tableName(transferTrackerDbTableName)
-                .keySchema(keySchema)
-                .globalSecondaryIndexes(globalSecondaryIndex)
-                .attributeDefinitions(attributeDefinitions)
+            GlobalSecondaryIndex.builder()
+                .indexName("OutboundConversationIdSecondaryIndex")
+                .keySchema(KeySchemaElement.builder()
+                    .keyType(KeyType.HASH)
+                    .attributeName(OUTBOUND_CONVERSATION_ID.name)
+                    .build())
+                .projection(Projection.builder().projectionType(ProjectionType.ALL).build())
                 .provisionedThroughput(ProvisionedThroughput.builder()
-                        .readCapacityUnits(5L)
-                        .writeCapacityUnits(5L)
-                        .build())
-                .build();
+                    .readCapacityUnits(DYNAMO_READ_CAPACITY_UNITS)
+                    .writeCapacityUnits(DYNAMO_WRITE_CAPACITY_UNITS)
+                    .build())
+                .build()
+        );
+
+        final CreateTableRequest createTableRequest = CreateTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .keySchema(keySchema)
+            .globalSecondaryIndexes(globalSecondaryIndexes)
+            .attributeDefinitions(attributeDefinitions)
+            .provisionedThroughput(ProvisionedThroughput.builder()
+                .readCapacityUnits(DYNAMO_READ_CAPACITY_UNITS)
+                .writeCapacityUnits(DYNAMO_WRITE_CAPACITY_UNITS)
+                .build()
+            ).build();
 
         dynamoDbClient.createTable(createTableRequest);
         waiter.waitUntilTableExists(tableRequest);
     }
 
-    private void resetTableForLocalEnvironment(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
-        var deleteRequest = DeleteTableRequest.builder().tableName(transferTrackerDbTableName).build();
+    private void deleteDynamoTable(DynamoDbWaiter waiter, DescribeTableRequest tableRequest) {
+        final DeleteTableRequest deleteRequest = DeleteTableRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .build();
+
         dynamoDbClient.deleteTable(deleteRequest);
         waiter.waitUntilTableNotExists(tableRequest);
     }
@@ -402,4 +447,3 @@ public class LocalStackAwsConfig {
         return queueAttributes.getAttributes().get("QueueArn");
     }
 }
-
