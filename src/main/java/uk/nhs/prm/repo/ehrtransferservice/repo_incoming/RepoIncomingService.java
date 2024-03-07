@@ -68,7 +68,7 @@ public class RepoIncomingService {
                     pollCount + 1,
                     ehrResponsePollLimit));
 
-            transferState = transferService.getConversationState(UUID.fromString(conversationId));
+            transferState = transferService.getConversationTransferStatus(UUID.fromString(conversationId));
 
             if (transferState.equals(EHR_SENT_TO_REPOSITORY.name())) {
                 log.info("Successful transfer found for conversationId " + conversationId);
