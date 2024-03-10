@@ -12,9 +12,7 @@ public class ConversationRecordBuilder {
 
     private UUID inboundConversationId;
 
-    private Optional<UUID> outboundConversationId;
-
-    private Optional<String> nhsNumber;
+    private String nhsNumber;
 
     private String sourceGp;
 
@@ -30,11 +28,10 @@ public class ConversationRecordBuilder {
 
     private LocalDateTime updatedAt;
 
-    public ConversationRecordBuilder createDefaultTestConversationRecord() {
+    public ConversationRecordBuilder withDefaults() {
         inboundConversationId = UUID.fromString("9b1bf808-353f-4459-a325-2ded5c576e63");
-        outboundConversationId = Optional.empty();
-        nhsNumber = Optional.of("1234567890");
-        sourceGp = "sourceGP";
+        nhsNumber = "1234567890";
+        sourceGp = "ODSCODE";
         destinationGp = Optional.empty();
         state = EHR_TRANSFER_STARTED.name();
         failureCode = Optional.empty();
@@ -44,10 +41,14 @@ public class ConversationRecordBuilder {
         return this;
     }
 
+    public ConversationRecordBuilder withInboundConversationId(UUID inboundConversationId) {
+        this.inboundConversationId = inboundConversationId;
+        return this;
+    }
+
     public ConversationRecord build() {
         return new ConversationRecord(
                 inboundConversationId,
-                outboundConversationId,
                 nhsNumber,
                 sourceGp,
                 destinationGp,
