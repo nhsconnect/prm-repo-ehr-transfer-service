@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.MessageRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.NemsMessageIdNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
@@ -40,8 +41,12 @@ public class TransferService {
         }
     }
 
-    public ConversationRecord getConversation(UUID inboundConversationId) {
+    public ConversationRecord getConversationByInboundConversationId(UUID inboundConversationId) {
         return transferRepository.findConversationByInboundConversationId(inboundConversationId);
+    }
+
+    public MessageRecord getCoreByInboundConversationId(UUID inboundConversationId) {
+        return transferRepository.findCoreByInboundConversationId(inboundConversationId);
     }
 
     public String getNemsMessageIdAsString(UUID inboundConversationId) {
