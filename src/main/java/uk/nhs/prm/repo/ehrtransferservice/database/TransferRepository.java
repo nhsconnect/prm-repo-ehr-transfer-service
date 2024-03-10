@@ -12,9 +12,11 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.MessageRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,24 +25,26 @@ import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_STARTED;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.CREATED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.DELETED_AT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.DESTINATION_GP;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.FAILURE_CODE;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.INBOUND_CONVERSATION_ID;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.MESSAGE_ID;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NEMS_MESSAGE_ID;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.NHS_NUMBER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.SOURCE_GP;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.TRANSFER_STATUS;
 import static uk.nhs.prm.repo.ehrtransferservice.database.TransferTableAttribute.UPDATED_AT;
 
 @Component
 @RequiredArgsConstructor
-class TransferRepository {
+public class TransferRepository {
     private final AppConfig config;
     private final DynamoDbClient dynamoDbClient;
 
     private static final String CONVERSATION_LAYER = "CONVERSATION";
+    private static final String CORE_LAYER = "CORE";
 
     void createConversation(RepoIncomingEvent event) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
@@ -89,6 +93,37 @@ class TransferRepository {
         dynamoDbClient.putItem(itemRequest);
     }
 
+    void createCore(UUID inboundConversationId, UUID coreMessageId) {
+        final Map<String, AttributeValue> tableItem = new HashMap<>();
+        final String creationTimestamp = LocalDateTime.now().toString();
+
+        tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+            .s(inboundConversationId.toString())
+            .build());
+
+        tableItem.put(LAYER.name, AttributeValue.builder()
+            .s(CORE_LAYER).build());
+
+        tableItem.put(MESSAGE_ID.name, AttributeValue.builder()
+            .s(coreMessageId.toString())
+            .build());
+
+        tableItem.put(CREATED_AT.name, AttributeValue.builder()
+            .s(creationTimestamp)
+            .build());
+
+        tableItem.put(UPDATED_AT.name, AttributeValue.builder()
+            .s(creationTimestamp)
+            .build());
+
+        final PutItemRequest itemRequest = PutItemRequest.builder()
+            .tableName(config.transferTrackerDbTableName())
+            .item(tableItem)
+            .build();
+
+        dynamoDbClient.putItem(itemRequest);
+    }
+
     boolean isInboundConversationIdPresent(UUID inboundConversationId) {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
 
@@ -107,15 +142,19 @@ class TransferRepository {
     }
 
     ConversationRecord findConversationByInboundConversationId(UUID inboundConversationId) {
-        final Map<String, AttributeValue> keyItems = new HashMap<>();
+        final Map<String, AttributeValue> keyItem = new HashMap<>();
 
-        keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+        keyItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
             .s(inboundConversationId.toString())
+            .build());
+
+        keyItem.put(LAYER.name, AttributeValue.builder()
+            .s(CONVERSATION_LAYER)
             .build());
 
         final GetItemRequest itemRequest = GetItemRequest.builder()
             .tableName(config.transferTrackerDbTableName())
-            .key(keyItems)
+            .key(keyItem)
             .build();
 
         GetItemResponse response = dynamoDbClient.getItem(itemRequest);
@@ -198,26 +237,64 @@ class TransferRepository {
         dynamoDbClient.updateItem(itemRequest);
     }
 
-    ConversationRecord mapGetItemResponseToConversationRecord(GetItemResponse response) {
-        Map<String, AttributeValue> item = response.item();
+    MessageRecord findCoreByInboundConversationId(UUID inboundConversationId) {
+        final Map<String, AttributeValue> keyItems = new HashMap<>();
+
+        keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+            .s(inboundConversationId.toString())
+            .build());
+
+        keyItems.put(LAYER.name, AttributeValue.builder()
+            .s(CORE_LAYER)
+            .build());
+
+        final GetItemRequest itemRequest = GetItemRequest.builder()
+            .tableName(config.transferTrackerDbTableName())
+            .key(keyItems)
+            .build();
+
+        GetItemResponse response = dynamoDbClient.getItem(itemRequest);
+
+        if (!response.hasItem()) {
+            throw new TransferRecordNotPresentException(inboundConversationId);
+        }
+
+        return mapGetItemResponseToMessageRecord(response);
+    }
+
+    // Helper Methods
+    ConversationRecord mapGetItemResponseToConversationRecord(GetItemResponse itemResponse) {
+        Map<String, AttributeValue> item = itemResponse.item();
 
         return new ConversationRecord(
-                UUID.fromString(item.get(INBOUND_CONVERSATION_ID.name).s()),
-                Optional.ofNullable(item.get(OUTBOUND_CONVERSATION_ID.name))
-                        .map(attributeValue -> UUID.fromString(attributeValue.s())),
-                Optional.ofNullable(item.get(NHS_NUMBER.name))
-                        .map(AttributeValue::s),
-                item.get(SOURCE_GP.name).s(),
-                Optional.ofNullable(item.get(DESTINATION_GP.name))
-                        .map(AttributeValue::s),
-                item.get(TRANSFER_STATUS.name).s(),
-                Optional.ofNullable(item.get(FAILURE_CODE.name))
-                        .map(AttributeValue::s),
-                Optional.ofNullable(item.get(NEMS_MESSAGE_ID.name))
-                        .map(attributeValue -> UUID.fromString(attributeValue.s())),
-                // TODO PRMT-4524 this assumes dates are stored as a string, may need to refactor!
-                LocalDateTime.parse(item.get(CREATED_AT.name).s()),
-                LocalDateTime.parse(item.get(UPDATED_AT.name).s())
+            UUID.fromString(item.get(INBOUND_CONVERSATION_ID.name).s()),
+            item.get(NHS_NUMBER.name).s(),
+            item.get(SOURCE_GP.name).s(),
+            Optional.ofNullable(item.get(DESTINATION_GP.name))
+                .map(AttributeValue::s),
+            item.get(TRANSFER_STATUS.name).s(),
+            Optional.ofNullable(item.get(FAILURE_CODE.name))
+                .map(AttributeValue::s),
+            Optional.ofNullable(item.get(NEMS_MESSAGE_ID.name))
+                .map(attributeValue -> UUID.fromString(attributeValue.s())),
+            // TODO PRMT-4524 this assumes dates are stored as a string, may need to refactor!
+            LocalDateTime.parse(item.get(CREATED_AT.name).s()),
+            LocalDateTime.parse(item.get(UPDATED_AT.name).s())
+        );
+    }
+
+    MessageRecord mapGetItemResponseToMessageRecord(GetItemResponse itemResponse) {
+        Map<String, AttributeValue> item = itemResponse.item();
+
+        return new MessageRecord(
+            UUID.fromString(item.get(INBOUND_CONVERSATION_ID.name).s()),
+            Optional.ofNullable(item.get(MESSAGE_ID.name)).map(attributeValue ->
+                UUID.fromString(attributeValue.s())),
+            item.get(TRANSFER_STATUS.name).s(),
+            LocalDateTime.parse(item.get(CREATED_AT.name).s()),
+            LocalDateTime.parse(item.get(UPDATED_AT.name).s()),
+            Optional.ofNullable(item.get(DELETED_AT.name)).map(attributeValue ->
+                Instant.parse(attributeValue.s()))
         );
     }
 }
