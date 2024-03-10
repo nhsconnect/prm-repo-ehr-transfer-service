@@ -11,5 +11,4 @@ import java.util.UUID;
 @Data
 public class EhrCompleteEvent {
     private UUID conversationId;
-    private UUID messageId;
 }
