@@ -3,26 +3,30 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.sns.model.ResourceNotFoundException;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.QueryReturnedNoItemsException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDataGenerator;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static uk.nhs.prm.repo.ehrtransferservice.database.TransferStatus.EHR_TRANSFER_STARTED;
+import static org.junit.jupiter.api.Assertions.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
 
-@SpringBootTest()
+@SpringBootTest
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = { LocalStackAwsConfig.class })
@@ -32,60 +36,173 @@ public class TransferRepositoryTest {
     TransferRepository transferRepository;
 
     @Autowired
-    private DynamoDbClient dbClient;
-
-    @Value("${aws.transferTrackerDbTableName}")
-    private String transferTrackerDbTableName;
+    TransferTrackerDataGenerator transferTrackerDataGenerator;
 
     private static final String NHS_NUMBER = "9798547485";
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
     private static final String DESTINATION_GP = "A74854";
-    private static final String CONVERSATION_ID = "44635df1-d18a-4a77-8256-f5ff21289664";
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
-
-
-    /**
-     * TODO: CREATE CONVERSATION - HAPPY PATH
-     * TODO: CREATE CONVERSATION - UNHAPPY PATH
-     */
+    private static final String EHR_CORE_MESSAGE_ID = "13cd1199-4b3a-44dc-9a60-6abcc22b8a44";
 
     @Test
-    void createConversation_ValidRepoIncomingEvent_ShouldPersist() {
+    void createConversation_ValidRepoIncomingEvent_ShouldCreateConversation() {
         // given
-        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent();
-        final UUID inboundConversationId = UUID.fromString(CONVERSATION_ID);
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
 
         // when
         transferRepository.createConversation(repoIncomingEvent);
+        ConversationRecord record = transferRepository
+            .findConversationByInboundConversationId(inboundConversationId);
+
+        String nemsMessageIdResult = record.nemsMessageId()
+            .orElseThrow()
+            .toString();
+
+        // then
+        assertEquals(record.inboundConversationId().toString(), inboundConversationId.toString());
+        assertEquals(record.nhsNumber(), NHS_NUMBER);
+        assertEquals(record.sourceGp(), SOURCE_GP);
+        assertEquals(record.state(), INBOUND_STARTED.name());
+        assertEquals(record.failureCode(), Optional.empty());
+        assertEquals(nemsMessageIdResult, NEMS_MESSAGE_ID);
+        assertNotNull(record.createdAt());
+        assertNotNull(record.updatedAt());
+    }
+
+    @Test
+    void isInboundConversationPresent_ValidInboundConversationId_ShouldReturnTrue() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        // when
+        transferRepository.createConversation(event);
+        boolean isConversationPresent = transferRepository
+            .isInboundConversationPresent(inboundConversationId);
+
+        // then
+        assertTrue(isConversationPresent);
+    }
+
+    @Test
+    void isInboundConversationPresent_NonExistingInboundConversationId_ShouldReturnFalse() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+
+        // when
+        boolean isConversationPresent = transferRepository
+            .isInboundConversationPresent(inboundConversationId);
+
+        // then
+        assertFalse(isConversationPresent);
+    }
+
+    @Test
+    void findConversationByInboundConversationId_NonExistingInboundConversationId_ShouldThrowTransferRecordNotPresentException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "No transfer present for Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(TransferRecordNotPresentException.class,
+            () -> transferRepository.findConversationByInboundConversationId(inboundConversationId));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
+
+    @Test
+    void updateConversationStatus_ValidInboundConversationIdAndConversationTransferStatus_ShouldUpdateStatus() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        // when
+        transferRepository.createConversation(event);
+        transferRepository.updateConversationStatus(inboundConversationId, INBOUND_FAILED);
+        ConversationRecord record = transferRepository
+            .findConversationByInboundConversationId(inboundConversationId);
+
+        // then
+        assertEquals(record.state(), INBOUND_FAILED.name());
+    }
+    // NON EXISTING INBOUND MESSAGE ID
+
+    @Test
+    void updateConversationStatusWithFailure_ValidInboundConversationIdAndFailureCode_ShouldUpdateFailureCode() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+        final String failureCode = "19";
+
+        // when
+        transferRepository.createConversation(event);
+        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
         final ConversationRecord record = transferRepository
             .findConversationByInboundConversationId(inboundConversationId);
 
-        final String resultDestinationGp = record.destinationGp().orElseThrow();
+        final String failureCodeResult = record.failureCode().orElseThrow();
 
         // then
-        assertAll(
-            () -> assertEquals(record.inboundConversationId().toString(), CONVERSATION_ID),
-            () -> assertEquals(record.nhsNumber(), NHS_NUMBER),
-            () -> assertEquals(record.sourceGp(), SOURCE_GP),
-            () -> assertEquals(resultDestinationGp, DESTINATION_GP), // TODO - Add logic to update this.
-            () -> assertEquals(record.state(), EHR_TRANSFER_STARTED.name()),
-            () -> assertEquals(record.failureCode(), Optional.empty()),
-            () -> assertEquals(record.nemsMessageId().toString(), NEMS_MESSAGE_ID)
-        );
+        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(failureCodeResult, failureCode);
     }
 
+    @Test
+    void updateConversationStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowResourceNotFoundException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String failureCode = "19";
 
+        // when
+        final SdkException exception = assertThrows(ResourceNotFoundException.class, () ->
+            transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode));
+
+        // then
+        assertEquals(exception.getClass(), ResourceNotFoundException.class);
+    }
+
+    @Test
+    void getEhrCoreInboundMessageIdForInboundConversationId_ValidInboundConversationId_ShouldReturnMessageId() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final UUID ehrCoreMessageId = UUID.fromString(EHR_CORE_MESSAGE_ID);
+
+        // when
+        transferTrackerDataGenerator.createCore(inboundConversationId, ehrCoreMessageId);
+
+        final UUID result =
+            transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+
+        // then
+        assertEquals(result, ehrCoreMessageId);
+    }
+
+    @Test
+    void getEhrCoreInboundMessageIdForInboundConversationId_NonExistingInboundConversationId_ShouldThrowQueryReturnedNoItemsException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "The query returned no items for Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(QueryReturnedNoItemsException.class,
+            () -> transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
 
     // Helper Methods
-    private RepoIncomingEvent createRepoIncomingEvent() {
-        return new RepoIncomingEvent(
-            NHS_NUMBER,
-            SOURCE_GP,
-            NEMS_MESSAGE_ID,
-            DESTINATION_GP,
-            NEMS_EVENT_LAST_UPDATED,
-            CONVERSATION_ID
-        );
+    private RepoIncomingEvent createRepoIncomingEvent(UUID inboundConversationId) {
+        return RepoIncomingEvent.builder()
+            .nhsNumber(NHS_NUMBER)
+            .sourceGp(SOURCE_GP)
+            .nemsMessageId(NEMS_MESSAGE_ID)
+            .destinationGp(DESTINATION_GP)
+            .nemsEventLastUpdated(NEMS_EVENT_LAST_UPDATED)
+            .conversationId(inboundConversationId.toString())
+            .build();
     }
 }

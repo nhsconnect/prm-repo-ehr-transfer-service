@@ -2,40 +2,34 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import com.amazonaws.SdkClientException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.database.model.MessageRecord;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.NemsMessageIdNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
+import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_COMPLETE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class TransferService {
+    private final Gp2gpMessengerService gp2gpMessengerService;
     private final TransferRepository transferRepository;
-    private final SplunkAuditPublisher splunkAuditPublisher;
 
     public void createConversation(RepoIncomingEvent event) {
         final UUID inboundConversationId = UUID.fromString(event.getConversationId());
 
         try {
             transferRepository.createConversation(event);
-            log.info("Conversation DynamoDB entry created for Inbound Conversation ID {}.", event.getConversationId());
-        } catch (SdkClientException exception) {
-            throw new FailedToPersistException(inboundConversationId, exception);
-        }
-    }
-
-    public void createCore(UUID inboundConversationId, UUID coreMessageId) {
-        try {
-            transferRepository.createCore(inboundConversationId, coreMessageId);
+            log.info("Initial Conversation created for Inbound Conversation ID {}.", event.getConversationId());
         } catch (SdkClientException exception) {
             throw new FailedToPersistException(inboundConversationId, exception);
         }
@@ -45,18 +39,11 @@ public class TransferService {
         return transferRepository.findConversationByInboundConversationId(inboundConversationId);
     }
 
-    public MessageRecord getCoreByInboundConversationId(UUID inboundConversationId) {
-        return transferRepository.findCoreByInboundConversationId(inboundConversationId);
-    }
-
-    public String getNemsMessageIdAsString(UUID inboundConversationId) {
+    public Optional<UUID> getNemsMessageIdAsUuid(UUID inboundConversationId) {
         final ConversationRecord conversation = transferRepository
             .findConversationByInboundConversationId(inboundConversationId);
 
-        return String.valueOf(conversation
-            .nemsMessageId()
-            .orElseThrow(NemsMessageIdNotPresentException::new)
-        );
+        return conversation.nemsMessageId();
     }
 
     public String getConversationTransferStatus(UUID inboundConversationId) {
@@ -67,38 +54,50 @@ public class TransferService {
     }
 
     public boolean isInboundConversationIdPresent(UUID inboundConversationId) {
-        return transferRepository.isInboundConversationIdPresent(inboundConversationId);
+        return transferRepository.isInboundConversationPresent(inboundConversationId);
     }
 
-    public void updateConversationStatus(UUID inboundConversationId, String nemsMessageId, TransferStatus state) {
+    public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         try {
-            transferRepository.updateConversationStatus(inboundConversationId, state);
-            log.info("Updated state of EHR transfer in DB to: {}.", state);
-            publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
+            transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
+            log.info("Updated conversationTransferStatus of EHR transfer in DB to: {}.", conversationTransferStatus);
         } catch (SdkClientException exception) {
-            log.error("Failed to update state of EHR Transfer: " + exception.getMessage());
+            log.error("Failed to update conversationTransferStatus of EHR Transfer: " + exception.getMessage());
             throw new TransferUnableToUpdateException(inboundConversationId, exception);
         }
     }
 
-    public void updateConversationStatusWithFailure(
-            UUID inboundConversationId,
-            String nemsMessageId,
-            TransferStatus state,
-            String failureCode
+    public void updateConversationTransferStatusWithFailure(
+        UUID inboundConversationId,
+        String failureCode
     ) {
         try {
-            transferRepository.updateConversationStatusWithFailure(inboundConversationId, state, failureCode);
-            log.info("Updated state of EHR transfer in DB to: " + state);
-            publishAuditMessage(inboundConversationId.toString(), nemsMessageId, state.name());
+            transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
+            log.info("Updated conversationTransferStatus of EHR transfer in DB to: {}", INBOUND_FAILED);
         } catch (SdkClientException exception) {
-            log.error("Failed to update state of EHR Transfer: " + exception.getMessage());
+            log.error("Failed to update conversationTransferStatus of EHR Transfer: " + exception.getMessage());
             throw new TransferUnableToUpdateException(inboundConversationId, exception);
         }
     }
 
-    private void publishAuditMessage(String conversationId, String nemsMessageId, String state) {
-        splunkAuditPublisher.sendMessage(new SplunkAuditMessage(conversationId, nemsMessageId, state));
-        log.info("Published audit message with the status of: " + state);
+    // TODO 4524 - ANYMORE USEFUL LOGIC? HANDLE EXCEPTIONS?
+    public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
+        return transferRepository
+            .getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+    }
+
+    // TODO PRMT-4534 - HANDLE THIS EXCEPTION HERE?
+    public void markConversationAsComplete(UUID inboundConversationId) throws Exception {
+        final ConversationRecord conversation = getConversationByInboundConversationId(inboundConversationId);
+        final UUID ehrCoreMessageId = getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+
+        gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(
+            conversation.nhsNumber(),
+            conversation.sourceGp(),
+            inboundConversationId,
+            ehrCoreMessageId
+        );
+
+        updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
     }
 }

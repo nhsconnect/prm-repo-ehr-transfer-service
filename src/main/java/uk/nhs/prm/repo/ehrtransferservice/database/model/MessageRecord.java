@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public record MessageRecord(
     UUID inboundConversationId,
-    String state,
+    Optional<UUID> outboundConversationId,
+    Optional<String> state,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     Optional<Instant> deletedAt

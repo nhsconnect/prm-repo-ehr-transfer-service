@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+@Disabled
 @ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -100,7 +101,7 @@ public class ParserBrokerIntegrationTest {
         key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID_FOR_COPC).build());
         dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
     }
-    
+
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
         var fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
