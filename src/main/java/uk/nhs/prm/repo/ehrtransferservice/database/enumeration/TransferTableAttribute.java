@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.database;
+package uk.nhs.prm.repo.ehrtransferservice.database.enumeration;
 
 /**
  * An enumeration which represents all possible
@@ -14,7 +14,7 @@ public enum TransferTableAttribute {
     DESTINATION_GP("DestinationGp"),
     TRANSFER_STATUS("TransferStatus"),
     FAILURE_CODE("FailureCode"),
-    MESSAGE_ID("MessageId"),
+    INBOUND_MESSAGE_ID("InboundMessageId"),
     NEMS_MESSAGE_ID("NemsMessageId"),
     CREATED_AT("CreatedAt"),
     UPDATED_AT("UpdatedAt"),
