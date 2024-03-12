@@ -7,6 +7,7 @@ import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import java.util.Map;
 
 @Component
+@Deprecated(forRemoval = true, since = "07/03/2024")
 public class EhrCompleteMessagePublisher {
     private final String ehrCompleteTopicArn;
     private final MessagePublisher messagePublisher;
