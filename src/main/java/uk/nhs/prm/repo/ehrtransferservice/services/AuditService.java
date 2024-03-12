@@ -14,7 +14,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AuditService {
-
     private final SplunkAuditPublisher splunkAuditPublisher;
 
     public void publishAuditMessage(
