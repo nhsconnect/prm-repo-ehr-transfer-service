@@ -14,7 +14,6 @@ public class DynamoDBClientSpringConfiguration {
     @Value("${aws.region}")
     private String awsRegion;
     private AwsCredentialsProvider awsCredentialsProvider;
-    private AppConfig appConfig;
 
     @Bean
     public DynamoDbClient dynamoDbClient() {
