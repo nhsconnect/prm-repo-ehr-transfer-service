@@ -7,7 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 public final class DateUtility {
     private DateUtility() { }
-    private static final String TIME_FORMAT = "yyyy-MM-dd'T'hh:mm:ssZ";
+
     public static final String ZONE_ID = "Europe/London";
 
     /**
@@ -17,6 +17,6 @@ public final class DateUtility {
     public static String getIsoTimestamp() {
         return ZonedDateTime.now(ZoneId.of(ZONE_ID))
             .truncatedTo(ChronoUnit.MINUTES)
-            .format(DateTimeFormatter.ofPattern(TIME_FORMAT));
+            .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 }
