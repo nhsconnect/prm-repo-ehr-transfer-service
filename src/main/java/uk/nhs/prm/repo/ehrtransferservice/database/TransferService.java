@@ -9,19 +9,16 @@ import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferUnableToUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_COMPLETE;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-    private final Gp2gpMessengerService gp2gpMessengerService;
     private final TransferRepository transferRepository;
 
     public void createConversation(RepoIncomingEvent event) {
@@ -80,24 +77,8 @@ public class TransferService {
         }
     }
 
-    // TODO 4524 - ANYMORE USEFUL LOGIC? HANDLE EXCEPTIONS?
     public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
         return transferRepository
             .getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
-    }
-
-    // TODO PRMT-4534 - HANDLE THIS EXCEPTION HERE?
-    public void markConversationAsComplete(UUID inboundConversationId) throws Exception {
-        final ConversationRecord conversation = getConversationByInboundConversationId(inboundConversationId);
-        final UUID ehrCoreMessageId = getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
-
-        gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(
-            conversation.nhsNumber(),
-            conversation.sourceGp(),
-            inboundConversationId,
-            ehrCoreMessageId
-        );
-
-        updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
     }
 }
