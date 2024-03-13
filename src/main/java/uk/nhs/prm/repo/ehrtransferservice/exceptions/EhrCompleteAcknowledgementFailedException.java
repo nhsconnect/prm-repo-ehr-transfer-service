@@ -1,4 +1,6 @@
-package uk.nhs.prm.repo.ehrtransferservice.exceptions.base;
+package uk.nhs.prm.repo.ehrtransferservice.exceptions;
+
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.AcknowledgementException;
 
 import java.util.UUID;
 
