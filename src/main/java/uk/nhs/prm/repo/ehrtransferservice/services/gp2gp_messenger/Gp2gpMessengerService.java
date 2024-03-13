@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
@@ -51,7 +52,7 @@ public class Gp2gpMessengerService {
         log.info("Continue request sent for Inbound Conversation ID: {}", parsedMessage.getConversationId());
     }
 
-    public void sendEhrCompletePositiveAcknowledgement(UUID inboundConversationId) throws Exception {
+    public void sendEhrCompletePositiveAcknowledgement(UUID inboundConversationId) {
         final ConversationRecord record =
             transferService.getConversationByInboundConversationId(inboundConversationId);
 
@@ -69,7 +70,7 @@ public class Gp2gpMessengerService {
             log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID: {}", inboundConversationId);
         } catch (Exception exception) {
             log.error("An exception occurred while sending an EHR complete positive acknowledgement: {}", exception.getMessage());
-            throw new Exception("Error while sending positive acknowledgement request", exception);
+            throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
         }
     }
 }
