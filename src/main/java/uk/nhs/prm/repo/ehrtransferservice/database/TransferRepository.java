@@ -3,25 +3,16 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeAction;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValueUpdate;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.database.model.MessageRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.UpdateConversationException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +21,19 @@ import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.CREATED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DELETED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DESTINATION_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.FAILURE_CODE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_MESSAGE_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.LAYER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.NEMS_MESSAGE_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.NHS_NUMBER;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.SOURCE_GP;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.TRANSFER_STATUS;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.UPDATED_AT;
 import static uk.nhs.prm.repo.ehrtransferservice.utility.DateUtility.getIsoTimestamp;
 
 @Component
@@ -135,6 +138,9 @@ public class TransferRepository {
     }
 
     void updateConversationStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
+        if(!isInboundConversationPresent(inboundConversationId))
+            throw new UpdateConversationException(inboundConversationId);
+
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = getIsoTimestamp();
 
@@ -168,6 +174,9 @@ public class TransferRepository {
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
+        if(!isInboundConversationPresent(inboundConversationId))
+            throw new UpdateConversationException(inboundConversationId);
+
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = getIsoTimestamp();
 
@@ -251,24 +260,6 @@ public class TransferRepository {
                 .map(UUID::fromString),
             ZonedDateTime.parse(item.get(CREATED_AT.name).s()),
             ZonedDateTime.parse(item.get(UPDATED_AT.name).s()),
-            Optional.ofNullable(item.get(DELETED_AT.name))
-                .map(AttributeValue::s)
-                .map(Instant::parse)
-        );
-    }
-
-    private MessageRecord mapGetItemResponseToMessageRecord(GetItemResponse itemResponse) {
-        Map<String, AttributeValue> item = itemResponse.item();
-
-        return new MessageRecord(
-            UUID.fromString(item.get(INBOUND_CONVERSATION_ID.name).s()),
-            Optional.ofNullable(item.get(OUTBOUND_CONVERSATION_ID.name))
-                .map(AttributeValue::s)
-                .map(UUID::fromString),
-            Optional.ofNullable(item.get(TRANSFER_STATUS.name))
-                .map(AttributeValue::s),
-            LocalDateTime.parse(item.get(CREATED_AT.name).s()),
-            LocalDateTime.parse(item.get(UPDATED_AT.name).s()),
             Optional.ofNullable(item.get(DELETED_AT.name))
                 .map(AttributeValue::s)
                 .map(Instant::parse)
