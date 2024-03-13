@@ -68,7 +68,7 @@ public class Gp2gpMessengerService {
         try {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
             log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID: {}", inboundConversationId);
-        } catch (Exception exception) {
+        } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
             log.error("An exception occurred while sending an EHR complete positive acknowledgement: {}", exception.getMessage());
             throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
         }
