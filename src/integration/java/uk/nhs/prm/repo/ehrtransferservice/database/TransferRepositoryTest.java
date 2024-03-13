@@ -8,13 +8,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import software.amazon.awssdk.core.exception.SdkException;
-import software.amazon.awssdk.services.sns.model.ResourceNotFoundException;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.UpdateConversationException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDataGenerator;
@@ -128,7 +127,20 @@ public class TransferRepositoryTest {
         // then
         assertEquals(record.state(), INBOUND_FAILED.name());
     }
-    // NON EXISTING INBOUND MESSAGE ID
+
+    @Test
+    void updateConversationStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowUpdateConversationException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "The conversation could not be updated with Inbound Message ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(UpdateConversationException.class, () ->
+            transferRepository.updateConversationStatus(inboundConversationId, INBOUND_FAILED));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
 
     @Test
     void updateConversationStatusWithFailure_ValidInboundConversationIdAndFailureCode_ShouldUpdateFailureCode() {
@@ -151,17 +163,18 @@ public class TransferRepositoryTest {
     }
 
     @Test
-    void updateConversationStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowResourceNotFoundException() {
+    void updateConversationStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowUpdateConversationException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
+        final String exceptionMessage = "The conversation could not be updated with Inbound Message ID %s";
 
         // when
-        final SdkException exception = assertThrows(ResourceNotFoundException.class, () ->
+        final DatabaseException exception = assertThrows(UpdateConversationException.class, () ->
             transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode));
 
         // then
-        assertEquals(exception.getClass(), ResourceNotFoundException.class);
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
     }
 
     @Test
