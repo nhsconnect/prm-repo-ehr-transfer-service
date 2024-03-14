@@ -43,8 +43,6 @@ class LargeEhrCoreMessageHandlerTest {
 
     private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("4c77d6c9-00cd-47b6-8974-e66bdd2697e2");
 
-    private static final UUID INBOUND_MESSAGE_ID = UUID.fromString("4b5dcfee-76a4-4f8c-bc49-a8a7658136d6");
-
     static {
         final ConversationRecordBuilder builder = new ConversationRecordBuilder();
         CONVERSATION_RECORD = builder.withDefaults()
@@ -59,8 +57,6 @@ class LargeEhrCoreMessageHandlerTest {
             .thenReturn(CONVERSATION_RECORD);
         when(largeSqsMessage.getConversationId())
             .thenReturn(INBOUND_CONVERSATION_ID);
-        when(largeSqsMessage.getMessageId())
-            .thenReturn(INBOUND_MESSAGE_ID);
 
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
 
