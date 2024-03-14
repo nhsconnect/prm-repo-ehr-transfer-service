@@ -4,7 +4,9 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,27 +14,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
 
-@Disabled
 @ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 @SpringBootTest()
 @ActiveProfiles("test")
@@ -43,10 +42,10 @@ public class ParserBrokerIntegrationTest {
     private AmazonSQSAsync sqs;
 
     @Autowired
-    private DynamoDbClient dbClient;
+    private TransferService transferService;
 
     @Autowired
-    private TransferService transferService;
+    TransferTrackerDbUtility transferTrackerDbUtility;
 
     @Value("${activemq.inboundQueue}")
     private String inboundQueue;
@@ -69,21 +68,15 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.ehrInUnhandledObservabilityQueueName}")
     private String ehrInUnhandledObservabilityQueueName;
 
-    @Value("${aws.transferTrackerDbTableName}")
-    private String transferTrackerDbTableName;
-
     private final TestDataLoader dataLoader = new TestDataLoader();
 
-    private static final String CONVERSATION_ID_FOR_SMALL_EHR = "ff27abc3-9730-40f7-ba82-382152e6b90a";
-    private static final String CONVERSATION_ID_FOR_COPC = "ff1457fb-4f58-4870-8d90-24d9c3ef8b91";
-
-    @BeforeEach
-    public void setup(){
-        RepoIncomingEvent repoIncomingEventForSmallEhr = new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05", CONVERSATION_ID_FOR_SMALL_EHR);
-        RepoIncomingEvent repoIncomingEventForCopc = new RepoIncomingEvent("NHS_number_12312","gp_4823","NemsId_48309","dest_gp_2484","2023-01-05", CONVERSATION_ID_FOR_COPC);
-        transferService.createConversation(repoIncomingEventForSmallEhr);
-        transferService.createConversation(repoIncomingEventForCopc);
-    }
+    private static final UUID COPC_INBOUND_CONVERSATION_ID = UUID.fromString("ff1457fb-4f58-4870-8d90-24d9c3ef8b91");
+    private static final UUID EHR_CORE_INBOUND_CONVERSATION_ID = UUID.fromString("ff27abc3-9730-40f7-ba82-382152e6b90a");
+    private static final String SOURCE_GP = "A74154";
+    private static final String DESTINATION_GP = "B74158";
+    private static final UUID NEMS_MESSAGE_ID = UUID.fromString("ad9246ce-b337-4ba9-973f-e1284e1f79c7");
+    private static final String NHS_NUMBER = "9896589658";
+    private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @AfterEach
     public void tearDown() {
@@ -94,24 +87,28 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(ehrCompleteQueueName);
         purgeQueue(ehrInUnhandledObservabilityQueueName);
 
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID_FOR_SMALL_EHR).build());
-        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
-        key.clear();
-        key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID_FOR_COPC).build());
-        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
+        if(transferService.isInboundConversationIdPresent(COPC_INBOUND_CONVERSATION_ID)) {
+            transferTrackerDbUtility.deleteItem(COPC_INBOUND_CONVERSATION_ID, CONVERSATION);
+        }
+
+        if(transferService.isInboundConversationIdPresent(EHR_CORE_INBOUND_CONVERSATION_ID)) {
+            transferTrackerDbUtility.deleteItem(EHR_CORE_INBOUND_CONVERSATION_ID, CONVERSATION);
+        }
     }
 
     @Test
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
-        var fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(COPC_INBOUND_CONVERSATION_ID);
+        final String fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
+        final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        final String fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
 
-        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        // when
+        transferService.createConversation(repoIncomingEvent);
         inboundQueueFromMhs.sendMessage(fragmentMessageBody);
 
-        var fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
-        System.out.println("fragmentsQueueUrl: " + fragmentsQueueUrl);
-
+        // then
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(fragmentsQueueUrl);
             Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(fragmentMessageBody));
@@ -121,17 +118,25 @@ public class ParserBrokerIntegrationTest {
     }
 
     @Test
-    void shouldPublishSmallMessageToSmallEhrObservabilityQueue() throws IOException {
-        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+    void shouldPublishEhrCoreToSmallEhrObservabilityQueue() throws IOException {
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(EHR_CORE_INBOUND_CONVERSATION_ID);
+        final String ehrCoreMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
-        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
-        inboundQueueFromMhs.sendMessage(smallEhrMessageBody);
+        // when
+        transferService.createConversation(repoIncomingEvent);
+        transferService.updateConversationTransferStatus(
+            EHR_CORE_INBOUND_CONVERSATION_ID,
+            INBOUND_REQUEST_SENT
+        );
 
-        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+        inboundQueueFromMhs.sendMessage(ehrCoreMessageBody);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
-            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(smallEhrMessageBody));
+            Assertions.assertTrue(receivedMessageHolder.get(0).getBody().contains(ehrCoreMessageBody));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("traceId"));
             Assertions.assertTrue(receivedMessageHolder.get(0).getMessageAttributes().containsKey("conversationId"));
         });
@@ -139,18 +144,26 @@ public class ParserBrokerIntegrationTest {
 
     @Test
     void shouldPassCorrelationIdToBeSetAsTraceId() throws IOException {
-        var correlationId = UUID.randomUUID().toString();
-        var smallEhrMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        // given
+        final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(EHR_CORE_INBOUND_CONVERSATION_ID);
+        final String ehrCoreMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+        final String correlationId = UUID.randomUUID().toString();
 
-        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
-        inboundQueueFromMhs.sendMessage(smallEhrMessageBody, correlationId);
+        // when
+        transferService.createConversation(repoIncomingEvent);
+        transferService.updateConversationTransferStatus(
+            EHR_CORE_INBOUND_CONVERSATION_ID,
+            INBOUND_REQUEST_SENT
+        );
 
-        var smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
+        inboundQueueFromMhs.sendMessage(ehrCoreMessageBody, correlationId);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             var receivedMessageHolder = checkMessageInRelatedQueue(smallEhrObservabilityQueueUrl);
             var message = receivedMessageHolder.get(0);
-            Assertions.assertTrue(message.getBody().contains(smallEhrMessageBody));
+            Assertions.assertTrue(message.getBody().contains(ehrCoreMessageBody));
             Assertions.assertTrue(message.getMessageAttributes().containsKey("traceId"));
             Assertions.assertEquals(message.getMessageAttributes().get("traceId").getStringValue(), correlationId);
         });
@@ -200,5 +213,16 @@ public class ParserBrokerIntegrationTest {
     private void purgeQueue(String queueName) {
         var queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
         sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
+    }
+
+    private RepoIncomingEvent createDefaultRepoIncomingEvent(UUID inboundConversationId) {
+        return RepoIncomingEvent.builder()
+            .conversationId(inboundConversationId.toString())
+            .nhsNumber(NHS_NUMBER)
+            .sourceGp(SOURCE_GP)
+            .destinationGp(DESTINATION_GP)
+            .nemsMessageId(NEMS_MESSAGE_ID.toString())
+            .nemsEventLastUpdated(NEMS_EVENT_LAST_UPDATED)
+            .build();
     }
 }
