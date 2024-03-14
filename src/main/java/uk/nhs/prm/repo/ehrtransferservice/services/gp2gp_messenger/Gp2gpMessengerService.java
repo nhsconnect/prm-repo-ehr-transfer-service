@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
@@ -29,11 +29,17 @@ public class Gp2gpMessengerService {
     private String repositoryAsid;
 
     public void sendEhrRequest(RepoIncomingEvent repoIncomingEvent) throws Exception {
-        Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(repoIncomingEvent.getDestinationGp(),
-                repositoryAsid, repoIncomingEvent.getSourceGp(), repoIncomingEvent.getConversationId());
+        final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
+        final Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(
+            repoIncomingEvent.getDestinationGp(),
+            repositoryAsid,
+            repoIncomingEvent.getSourceGp(),
+            repoIncomingEvent.getConversationId()
+        );
+
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-            log.info("Successfully sent EHR Request");
+            log.info("An EHR Request has been sent for Inbound Conversation ID: {}", inboundConversationId);
         } catch (Exception e) {
             log.error("Caught error during ehr-request");
             throw new Exception("Error while sending ehr-request", e);
