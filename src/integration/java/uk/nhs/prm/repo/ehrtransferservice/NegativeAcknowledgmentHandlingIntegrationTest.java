@@ -13,28 +13,26 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferTrackerDb;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
 
 import java.io.IOException;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
-@SpringBootTest()
+@SpringBootTest
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
+@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 public class NegativeAcknowledgmentHandlingIntegrationTest {
-
     @Autowired
-    TransferTrackerDb transferTrackerDb;
+    TransferService transferService;
 
     @Autowired
     private AmazonSQSAsync sqs;
@@ -47,6 +45,13 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
 
     private final TestDataLoader dataLoader = new TestDataLoader();
 
+    private static final String NHS_NUMBER = "9798547485";
+    private static final String SOURCE_GP = "B45744";
+    private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
+    private static final String DESTINATION_GP = "A74854";
+    private static final String CONVERSATION_ID = "44635df1-d18a-4a77-8256-f5ff21289664";
+    private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
+
     @BeforeEach
     public void tearDown() {
         purgeQueue(nackInternalQueueName);
@@ -54,47 +59,38 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
 
     @Test
     void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
-        var negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13Failure");
-        UUID transferConversationId = createTransferRecord();
+        final String negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13Failure");
+        UUID inboundConversationId = createConversationRecord();
 
-        var inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         inboundQueueFromMhs.sendMessage(negativeAck);
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            var transferState = fetchTransferState(transferConversationId);
-            assertThat(transferState.getState()).isEqualTo("ACTION:EHR_TRANSFER_FAILED:15");
+            String transferStatus = transferService
+                .getConversationTransferStatus(inboundConversationId);
+
+            assertThat(transferStatus).isEqualTo(INBOUND_FAILED.name());
         });
     }
 
-    private UUID createTransferRecord() {
-        var conversationId = UUID.fromString("13962cb7-6d46-4986-bdb4-3201bb25f1f7");
-        Transfer transfer =
-                new Transfer(
-                        conversationId.toString(),
-                        "0123456789",
-                        "BOB13",
-                        UUID.randomUUID().toString(),
-                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
-                        "great status",
-                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
-                        trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings(),
-                        UUID.randomUUID().toString(),
-                        true
-                );
-        transferTrackerDb.save(transfer);
-        return conversationId;
-    }
+    private UUID createConversationRecord() {
+        RepoIncomingEvent event = new RepoIncomingEvent(
+            NHS_NUMBER,
+            SOURCE_GP,
+            NEMS_MESSAGE_ID,
+            DESTINATION_GP,
+            NEMS_EVENT_LAST_UPDATED,
+            CONVERSATION_ID
+        );
 
-    private String trustMeToGetTimeNowInTheRightFormatCauseWeLikeStrings() {
-        return ZonedDateTime.now(ZoneOffset.ofHours(0)).toString();
-    }
-
-    private Transfer fetchTransferState(UUID conversationId) {
-        return transferTrackerDb.getByConversationId(conversationId.toString());
+        transferService.createConversation(event);
+        return UUID.fromString(event.getConversationId());
     }
 
     private void purgeQueue(String queueName) {
-        var queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
-        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
+        final String queueUrl = sqs.getQueueUrl(queueName).getQueueUrl();
+        final PurgeQueueRequest purgeQueueRequest = new PurgeQueueRequest(queueUrl);
+
+        sqs.purgeQueue(purgeQueueRequest);
     }
 }
