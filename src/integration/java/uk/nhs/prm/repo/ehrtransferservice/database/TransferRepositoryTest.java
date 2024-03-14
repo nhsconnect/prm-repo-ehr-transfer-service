@@ -7,7 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
@@ -16,7 +15,7 @@ import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentExc
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.UpdateConversationException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDataGenerator;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -35,7 +34,7 @@ public class TransferRepositoryTest {
     TransferRepository transferRepository;
 
     @Autowired
-    TransferTrackerDataGenerator transferTrackerDataGenerator;
+    TransferTrackerDbUtility transferTrackerDbUtility;
 
     private static final String NHS_NUMBER = "9798547485";
     private static final String SOURCE_GP = "B45744";
@@ -184,7 +183,7 @@ public class TransferRepositoryTest {
         final UUID ehrCoreMessageId = UUID.fromString(EHR_CORE_MESSAGE_ID);
 
         // when
-        transferTrackerDataGenerator.createCore(inboundConversationId, ehrCoreMessageId);
+        transferTrackerDbUtility.createCore(inboundConversationId, ehrCoreMessageId);
 
         final UUID result =
             transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
