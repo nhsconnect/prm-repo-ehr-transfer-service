@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,15 +20,15 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTa
 import static uk.nhs.prm.repo.ehrtransferservice.utility.DateUtility.getIsoTimestamp;
 
 @Component
-public final class TransferTrackerDataGenerator {
-    private static final Logger LOGGER = LogManager.getLogger(TransferTrackerDataGenerator.class);
+public class TransferTrackerDbUtility {
+    private static final Logger LOGGER = LogManager.getLogger(TransferTrackerDbUtility.class);
     private final DynamoDbClient dynamoDbClient;
     private final String transferTrackerDbTableName;
     private static final String CORE_LAYER = "CORE#%s";
 
     @Autowired
-    public TransferTrackerDataGenerator(DynamoDbClient dynamoDbClient,
-                                        @Value("${aws.transferTrackerDbTableName}") String transferTrackerDbTableName) {
+    public TransferTrackerDbUtility(DynamoDbClient dynamoDbClient,
+                                    @Value("${aws.transferTrackerDbTableName}") String transferTrackerDbTableName) {
         this.dynamoDbClient = dynamoDbClient;
         this.transferTrackerDbTableName = transferTrackerDbTableName;
     }
@@ -65,5 +67,20 @@ public final class TransferTrackerDataGenerator {
         dynamoDbClient.putItem(itemRequest);
         LOGGER.info("The CORE layer has been crated for Inbound Conversation ID: {}",
             inboundConversationId.toString());
+    }
+
+    public void deleteItem(UUID inboundConversationId, Layer layer) {
+        final DeleteItemRequest request = DeleteItemRequest.builder()
+            .tableName(transferTrackerDbTableName)
+            .key(Map.of(
+                INBOUND_CONVERSATION_ID.name,
+                AttributeValue.builder().s(inboundConversationId.toString()).build(),
+                LAYER.name,
+                AttributeValue.builder().s(layer.name()).build()
+            ))
+            .build();
+
+        dynamoDbClient.deleteItem(request);
+        LOGGER.info("Deleted record for Inbound Conversation ID: {}", inboundConversationId);
     }
 }
