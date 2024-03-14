@@ -19,22 +19,27 @@ public class NegativeAcknowledgementHandler {
     private final TransferService transferService;
     private final AuditService auditService;
 
+    private static final String DEFAULT_FAILURE_CODE = "UNKNOWN_ERROR";
+
     public void handleMessage(Acknowledgement acknowledgement) {
-        UUID conversationId = acknowledgement.getConversationId();
-        Optional<UUID> nemsMessageId = transferService.getNemsMessageIdAsUuid(conversationId);
+        final UUID inboundConversationId = acknowledgement.getConversationId();
+        final Optional<UUID> nemsMessageId = transferService.getNemsMessageIdAsUuid(inboundConversationId);
 
         logFailureDetail(acknowledgement);
 
         transferService.updateConversationTransferStatusWithFailure(
-            conversationId,
+            inboundConversationId,
             getFailureCodeForDb(acknowledgement)
         );
 
-        auditService.publishAuditMessage(conversationId, INBOUND_FAILED, nemsMessageId);
+        auditService.publishAuditMessage(inboundConversationId, INBOUND_FAILED, nemsMessageId);
     }
 
     private String getFailureCodeForDb(Acknowledgement acknowledgement) {
-        if (acknowledgement.getFailureDetails().isEmpty()) return "UNKNOWN_ERROR";
+        if (acknowledgement.getFailureDetails().isEmpty()) {
+            return DEFAULT_FAILURE_CODE;
+        }
+
         return acknowledgement.getFailureDetails().get(0).code();
     }
 
