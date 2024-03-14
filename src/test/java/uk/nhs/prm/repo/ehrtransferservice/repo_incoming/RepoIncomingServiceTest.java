@@ -1,234 +1,158 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import org.mockito.Mock;
-import org.mockito.InjectMocks;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.TestPropertySource;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseFailedException;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseTimedOutException;
-import uk.nhs.prm.repo.ehrtransferservice.models.SplunkAuditMessage;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferTrackerDbException;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.SplunkAuditPublisher;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
+import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @TestPropertySource(locations = "classpath:application.properties")
 @ExtendWith(MockitoExtension.class)
 class RepoIncomingServiceTest {
+    @Mock
+    private TransferService transferService;
 
     @Mock
-    TransferStore transferStore;
+    private Gp2gpMessengerService gp2gpMessengerService;
 
     @Mock
-    Gp2gpMessengerService gp2gpMessengerService;
+    private AuditService auditService;
 
     @Mock
-    SplunkAuditPublisher splunkAuditPublisher;
+    private RepoIncomingEvent repoIncomingEvent;
 
     @InjectMocks
-    RepoIncomingService repoIncomingService;
+    private RepoIncomingService repoIncomingService;
 
-    private static final String TRANSFER_STARTED_STATE = "ACTION:TRANSFER_TO_REPO_STARTED";
-    private static final String TRANSFER_COMPLETE_STATE = "ACTION:EHR_TRANSFER_TO_REPO_COMPLETE";
-    private static final String TRANSFER_FAILED_STATE = "ACTION:EHR_TRANSFER_FAILED";
-    private static final String TRANSFER_TIMEOUT_STATE = "ACTION:EHR_TRANSFER_TIMEOUT";
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("bbd98cce-0a86-44ee-8f51-5267d4d81303");
+    private static final UUID NEMS_MESSAGE_ID = UUID.fromString("ce919f71-b1f8-4f4a-82d4-36d75daef1cb");
 
     @Test
-    void shouldMakeInitialDbUpdateWhenRepoIncomingEventReceived() throws Exception {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
-
+    void processIncomingEvent_ValidRepoIncomingEvent_HandledSuccessfully() throws Exception {
         // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
+        when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
+        when(transferService.isInboundConversationIdPresent(INBOUND_CONVERSATION_ID)).thenReturn(false);
+        when(transferService.getConversationTransferStatus(INBOUND_CONVERSATION_ID)).thenReturn(INBOUND_COMPLETE.name());
+
         repoIncomingService.processIncomingEvent(repoIncomingEvent);
 
         // then
-        verify(transferStore).createEhrTransfer(repoIncomingEvent, TRANSFER_STARTED_STATE);
-    }
-
-    @Test
-    void shouldCallGp2gpMessengerServiceToSendEhrRequest() throws Exception {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
-
-        // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
-        repoIncomingService.processIncomingEvent(repoIncomingEvent);
-
-        // then
+        verify(transferService).isInboundConversationIdPresent(INBOUND_CONVERSATION_ID);
+        verify(transferService).createConversation(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
+        verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService).getConversationTransferStatus(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldUpdateDbWithEhrRequestSendStatusWhenEhrRequestSentSuccessfully() throws Exception {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
-
+    void processIncomingEvent_InboundConversationIdAlreadyExists_SkipCreateConversation() throws Exception {
         // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
+        when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
+        when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
+        when(transferService.isInboundConversationIdPresent(INBOUND_CONVERSATION_ID)).thenReturn(true);
+        when(transferService.getConversationTransferStatus(INBOUND_CONVERSATION_ID)).thenReturn(INBOUND_COMPLETE.name());
+
         repoIncomingService.processIncomingEvent(repoIncomingEvent);
 
         // then
-        verify(transferStore).handleEhrTransferStateUpdate("conversation-id","nems-message-id", "ACTION:EHR_REQUEST_SENT", true);
+        verify(transferService).isInboundConversationIdPresent(INBOUND_CONVERSATION_ID);
+        verify(transferService, never()).createConversation(repoIncomingEvent);
+        verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
+        verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService).getConversationTransferStatus(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldSendMessageToAuditSplunkWithCorrectStatusWhenTransferToRepoIsStarted() throws Exception {
+    void processIncomingEvent_CreateConversationThrowsFailedToPersistException_ShouldNotProceed() throws Exception {
         // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
-        final SplunkAuditMessage splunkAuditMessage = new SplunkAuditMessage(
-                repoIncomingEvent.getConversationId(),
-                repoIncomingEvent.getNemsMessageId(),
-                TRANSFER_STARTED_STATE
-        );
+        final DatabaseException exception = new FailedToPersistException(INBOUND_CONVERSATION_ID, new Throwable());
+        final String exceptionMessage = "Unable to persist transfer to DynamoDB for Inbound Conversation ID %s";
 
         // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(repoIncomingEvent.getConversationId())).thenReturn(transfer);
-        repoIncomingService.processIncomingEvent(repoIncomingEvent);
+        when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
+        when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
+        when(transferService.isInboundConversationIdPresent(INBOUND_CONVERSATION_ID)).thenReturn(false);
+        doThrow(exception)
+            .when(transferService)
+            .createConversation(repoIncomingEvent);
+
+        final DatabaseException thrown = assertThrows(FailedToPersistException.class,
+            () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
 
         // then
-        verify(splunkAuditPublisher).sendMessage(splunkAuditMessage);
+        assertEquals(thrown.getMessage(), exceptionMessage.formatted(INBOUND_CONVERSATION_ID));
+        verify(transferService).isInboundConversationIdPresent(INBOUND_CONVERSATION_ID);
+        verify(gp2gpMessengerService, never()).sendEhrRequest(repoIncomingEvent);
+        verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
+        verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService, never()).getConversationTransferStatus(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldNotSendEhrRequestIsSentMessageToAuditSplunkWhenGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        var splunkAuditMessage = new SplunkAuditMessage(incomingEvent.getConversationId(), incomingEvent.getNemsMessageId(), "ACTION:EHR_REQUEST_SENT");
-        doThrow(TransferTrackerDbException.class).when(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
-
-        assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(splunkAuditPublisher, never()).sendMessage(splunkAuditMessage);
-    }
-
-    @Test
-    void shouldThrowErrorAndNotCallGp2gpMessengerWhenFailsToMakeInitialDbSave() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        doThrow(TransferTrackerDbException.class).when(transferStore).createEhrTransfer(incomingEvent, "ACTION:TRANSFER_TO_REPO_STARTED");
-
-        assertThrows(TransferTrackerDbException.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(gp2gpMessengerService, never()).sendEhrRequest(incomingEvent);
-    }
-
-    @Test
-    void shouldThrowErrorAndNotUpdateDbWhenFailsToSendEhrRequest() throws Exception {
-        var incomingEvent = createIncomingEvent();
-        doThrow(Exception.class).when(gp2gpMessengerService).sendEhrRequest(incomingEvent);
-
-        assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(incomingEvent));
-        verify(transferStore, never()).handleEhrTransferStateUpdate("conversation-id", "nems-message-id" ,"ACTION:EHR_REQUEST_SENT", true);
-    }
-
-    @Test
-    void shouldWaitForTransferTrackerDbToUpdate() throws Exception {
+    void processIncomingEvent_SendEhrRequestThrowsException_ShouldNotProceed() throws Exception {
         // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_COMPLETE_STATE);
+        final Exception exception = new Exception();
 
         // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(transfer.getConversationId()))
-                .thenReturn(transfer);
+        when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
+        when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
+        when(transferService.isInboundConversationIdPresent(INBOUND_CONVERSATION_ID)).thenReturn(false);
+        doThrow(exception)
+            .when(gp2gpMessengerService)
+            .sendEhrRequest(repoIncomingEvent);
 
         // then
-        assertDoesNotThrow(() -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+        assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+        verify(transferService).isInboundConversationIdPresent(INBOUND_CONVERSATION_ID);
+        verify(transferService).createConversation(repoIncomingEvent);
+        verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
+        verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
+        verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService, never()).getConversationTransferStatus(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTransferFailed() throws Exception {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_FAILED_STATE);
-
+    void processIncomingEvent_TransferStatusDoesNotUpdate_TransferStatusUpdatesToInboundTimeoutAndThrowsEhrResponseTimedOutException() throws Exception {
         // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(transfer.getConversationId()))
-                .thenReturn(transfer);
+        configureProcessingParameters(2, 5000);
+
+        when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
+        when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
+        when(transferService.isInboundConversationIdPresent(INBOUND_CONVERSATION_ID)).thenReturn(false);
+        when(transferService.getConversationTransferStatus(INBOUND_CONVERSATION_ID)).thenReturn(INBOUND_REQUEST_SENT.name());
 
         // then
-        assertThrows(EhrResponseFailedException.class,
-                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+        assertThrows(EhrResponseTimedOutException.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
+        verify(transferService).isInboundConversationIdPresent(INBOUND_CONVERSATION_ID);
+        verify(transferService).createConversation(repoIncomingEvent);
+        verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
+        verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService, times(2)).getConversationTransferStatus(INBOUND_CONVERSATION_ID);
+        verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_TIMEOUT);
     }
 
-    @Test
-    void shouldThrowAnEhrResponseFailedExceptionIfStateIsEhrTimeout() throws Exception {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_TIMEOUT_STATE);
-
-        // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(transfer.getConversationId()))
-                .thenReturn(transfer);
-
-        // then
-        assertThrows(EhrResponseFailedException.class,
-                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
-    }
-
-    @Test
-    void shouldThrowAnEhrTimedOutExceptionIfTransferSitsInPendingIndefinitely() throws NoSuchFieldException, IllegalAccessException {
-        // given
-        final RepoIncomingEvent repoIncomingEvent = createIncomingEvent();
-        final Transfer transfer = createTransfer(repoIncomingEvent, TRANSFER_STARTED_STATE);
-
-        // when
-        configureProcessingParameters(10, 10);
-        when(transferStore.findTransfer(transfer.getConversationId()))
-                .thenReturn(transfer);
-
-        // then
-        assertThrows(EhrResponseTimedOutException.class,
-                () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
-    }
-
-    private Transfer createTransfer(RepoIncomingEvent repoIncomingEvent, String initialState) {
-        return new Transfer(
-                repoIncomingEvent.getConversationId(),
-                repoIncomingEvent.getNhsNumber(),
-                repoIncomingEvent.getSourceGp(),
-                repoIncomingEvent.getNemsMessageId(),
-                repoIncomingEvent.getNemsEventLastUpdated(),
-                initialState,
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                UUID.randomUUID().toString(),
-                true
-        );
-    }
-
-    private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent(
-                "123456765",
-                "source-gp",
-                "nems-message-id",
-                "destination-gp",
-                "last-updated",
-                "conversation-id"
-        );
-    }
-
-    private void configureProcessingParameters(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds) throws NoSuchFieldException, IllegalAccessException {
+    private void configureProcessingParameters(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds)
+        throws NoSuchFieldException, IllegalAccessException {
         final Field ehrResponsePollLimitField = RepoIncomingService.class.getDeclaredField("ehrResponsePollLimit");
         final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriodMilliseconds");
 
