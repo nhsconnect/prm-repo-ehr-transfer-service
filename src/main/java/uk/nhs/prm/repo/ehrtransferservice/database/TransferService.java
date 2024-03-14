@@ -64,10 +64,7 @@ public class TransferService {
         }
     }
 
-    public void updateConversationTransferStatusWithFailure(
-        UUID inboundConversationId,
-        String failureCode
-    ) {
+    public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
         try {
             transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
             log.info("Updated conversationTransferStatus of EHR transfer in DB to: {}", INBOUND_FAILED);

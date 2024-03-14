@@ -21,19 +21,9 @@ import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.CREATED_AT;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DELETED_AT;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DESTINATION_GP;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.FAILURE_CODE;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_CONVERSATION_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_MESSAGE_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.LAYER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.NEMS_MESSAGE_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.NHS_NUMBER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.SOURCE_GP;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.TRANSFER_STATUS;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.UPDATED_AT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CORE;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.*;
 import static uk.nhs.prm.repo.ehrtransferservice.utility.DateUtility.getIsoTimestamp;
 
 @Component
@@ -41,8 +31,6 @@ import static uk.nhs.prm.repo.ehrtransferservice.utility.DateUtility.getIsoTimes
 public class TransferRepository {
     private final AppConfig config;
     private final DynamoDbClient dynamoDbClient;
-    private static final String CONVERSATION_LAYER = "CONVERSATION";
-    private static final String CORE_LAYER = "CORE";
 
     void createConversation(RepoIncomingEvent event) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
@@ -53,7 +41,7 @@ public class TransferRepository {
             .build());
 
         tableItem.put(LAYER.name, AttributeValue.builder()
-            .s(CONVERSATION_LAYER).build());
+            .s(CONVERSATION.name()).build());
 
         tableItem.put(NHS_NUMBER.name, AttributeValue.builder()
             .s(event.getNhsNumber())
@@ -99,7 +87,7 @@ public class TransferRepository {
                 .build());
 
         keyItems.put(LAYER.name, AttributeValue.builder()
-            .s(CONVERSATION_LAYER)
+            .s(CONVERSATION.name())
             .build());
 
         final GetItemRequest itemRequest = GetItemRequest.builder()
@@ -120,7 +108,7 @@ public class TransferRepository {
             .build());
 
         keyItem.put(LAYER.name, AttributeValue.builder()
-            .s(CONVERSATION_LAYER)
+            .s(CONVERSATION.name())
             .build());
 
         final GetItemRequest itemRequest = GetItemRequest.builder()
@@ -149,7 +137,7 @@ public class TransferRepository {
             .build());
 
         keyItems.put(LAYER.name, AttributeValue.builder()
-            .s(CONVERSATION_LAYER)
+            .s(CONVERSATION.name())
             .build());
 
         final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
@@ -185,7 +173,7 @@ public class TransferRepository {
                 .build());
 
         keyItems.put(LAYER.name, AttributeValue.builder()
-                .s(CONVERSATION_LAYER)
+                .s(CONVERSATION.name())
                 .build());
 
         final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
@@ -226,7 +214,7 @@ public class TransferRepository {
                     .s(inboundConversationId.toString())
                     .build(),
                 ":layer", AttributeValue.builder()
-                    .s(CORE_LAYER)
+                    .s(CORE.name())
                     .build()
             ))
             .build();
