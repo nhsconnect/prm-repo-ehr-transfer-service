@@ -1,17 +1,19 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseFailedException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.EhrResponseTimedOutException;
 import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @Slf4j
 @Service
@@ -21,65 +23,59 @@ public class RepoIncomingService {
     private final TransferService transferService;
     private final Gp2gpMessengerService gp2gpMessengerService;
 
-    // the number of times we will poll the TransferTrackerDB to check that we've received the EHR response before timing out
     @Value("${ehrResponsePollLimit}")
     private int ehrResponsePollLimit;
 
-    // how frequently we will poll the TransferTrackerDB to check that we've received the EHR response
     @Value("${ehrResponsePollPeriodMilliseconds}")
     private int ehrResponsePollPeriodMilliseconds;
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
         final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
-        final UUID nemsMessageId = UUID.fromString(repoIncomingEvent.getNemsMessageId());
+        final Optional<UUID> nemsMessageId = Optional.of(
+            UUID.fromString(repoIncomingEvent.getNemsMessageId())
+        );
 
-        transferService.createConversation(repoIncomingEvent);
-        auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, Optional.of(nemsMessageId));
+        if(!transferService.isInboundConversationIdPresent(inboundConversationId))
+            transferService.createConversation(repoIncomingEvent);
+        else
+            log.warn("Inbound Conversation ID {} previously existed, this is a repo incoming message re-read.", inboundConversationId);
+
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
-//        waitForTransferTrackerDbToUpdate(repoIncomingEvent.getConversationId());
+
+        auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
+        waitForTransferTrackerDbToUpdate(inboundConversationId);
     }
 
-    // TODO PRMT-4524: DO WE STILL NEED THIS?
-//    private void waitForTransferTrackerDbToUpdate(String conversationId) throws InterruptedException, EhrResponseFailedException, EhrResponseTimedOutException {
-//        final float timeoutMinutes = ((float) ehrResponsePollLimit * ehrResponsePollPeriodMilliseconds) / (60 * 1000);
-//        final float pollLimitSeconds = (float) ehrResponsePollPeriodMilliseconds / 1000;
-//        int pollCount = 0;
-//        String transferState;
-//
-//        log.info(String.format(
-//                "Polling the TransferTrackerDB every %f seconds up to a maximum of %d times, this could take up to %f minutes",
-//                pollLimitSeconds,
-//                ehrResponsePollLimit,
-//                timeoutMinutes));
-//
-//        do {
-//            Thread.sleep(ehrResponsePollPeriodMilliseconds);
-//
-//            log.info(String.format(
-//                    "Retrieving TransferTrackerDB record for conversationId %s attempt %d of %d",
-//                    conversationId,
-//                    pollCount + 1,
-//                    ehrResponsePollLimit));
-//
-//            transferState = transferService.getConversationTransferStatus(UUID.fromString(conversationId));
-//
-//            if (transferState.equals(EHR_SENT_TO_REPOSITORY.name())) {
-//                log.info("Successful transfer found for conversationId " + conversationId);
-//                return;
-//            }
-//
-//            if (transferState.startsWith(INBOUND_FAILED.name())
-//                || transferState.equals(EHR_TRANSFER_TIMEOUT.name())
-//            ) {
-//                throw new EhrResponseFailedException(transferState);
-//            }
-//
-//            log.info("Still awaiting EHR response for conversationId " + conversationId);
-//            pollCount++;
-//        } while (pollCount < ehrResponsePollLimit);
-//
-//        throw new EhrResponseTimedOutException(transferState);
-//    }
+    private void waitForTransferTrackerDbToUpdate(UUID inboundConversationId)
+        throws InterruptedException, EhrResponseFailedException, EhrResponseTimedOutException {
+        int pollCount = 0;
+        String transferState;
+
+        log.info("Awaiting for transfer status to become INBOUND_COMPLETE for Inbound Conversation ID {}",
+            inboundConversationId);
+
+        do {
+            Thread.sleep(ehrResponsePollPeriodMilliseconds);
+            transferState = transferService.getConversationTransferStatus(inboundConversationId);
+
+            log.info("Transfer status yet to be updated to INBOUND_COMPLETE (currently {}) for Inbound Conversation ID {} - attempt {} of {}",
+                transferState,
+                inboundConversationId,
+                pollCount + 1,
+                ehrResponsePollLimit
+            );
+
+            if (transferState.equals(INBOUND_COMPLETE.name())) {
+                log.info("Transfer status has been set to INBOUND_COMPLETE for Inbound Conversation Id {}", inboundConversationId);
+                return;
+            }
+
+            pollCount++;
+        } while (pollCount < ehrResponsePollLimit);
+
+        log.warn("The transfer for Inbound Conversation ID {} has timed out", inboundConversationId);
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
+        throw new EhrResponseTimedOutException(transferState);
+    }
 }
