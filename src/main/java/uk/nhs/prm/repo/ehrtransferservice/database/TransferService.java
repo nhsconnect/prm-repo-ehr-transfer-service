@@ -24,7 +24,7 @@ public class TransferService {
             transferRepository.createConversation(event);
             log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
         } catch (DatabaseException exception) {
-            log.error(exception.getMessage());
+            log.warn(exception.getMessage());
         }
     }
 
