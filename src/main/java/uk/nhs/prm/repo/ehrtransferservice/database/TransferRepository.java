@@ -118,8 +118,7 @@ public class TransferRepository {
             .key(keyItem)
             .build();
 
-
-        GetItemResponse response = dynamoDbClient.getItem(itemRequest);
+        final GetItemResponse response = dynamoDbClient.getItem(itemRequest);
 
         if (!response.hasItem()) {
             throw new TransferRecordNotPresentException(inboundConversationId);
