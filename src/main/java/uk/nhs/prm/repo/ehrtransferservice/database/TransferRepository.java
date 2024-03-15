@@ -2,14 +2,13 @@ package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.QueryReturnedNoItemsException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.TransferRecordNotPresentException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.UpdateConversationException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.*;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.time.Instant;
@@ -35,6 +34,7 @@ public class TransferRepository {
     void createConversation(RepoIncomingEvent event) {
         final Map<String, AttributeValue> tableItem = new HashMap<>();
         final String timestamp = getIsoTimestamp();
+        final UUID inboundConversationId = UUID.fromString(event.getConversationId());
 
         tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
             .s(event.getConversationId())
@@ -76,7 +76,11 @@ public class TransferRepository {
             .item(tableItem)
             .build();
 
-        dynamoDbClient.putItem(itemRequest);
+        try {
+            dynamoDbClient.putItem(itemRequest);
+        } catch (SdkException exception) {
+            throw new FailedToPersistException(inboundConversationId, exception);
+        }
     }
 
     boolean isInboundConversationPresent(UUID inboundConversationId) {
@@ -95,9 +99,7 @@ public class TransferRepository {
                 .key(keyItems)
                 .build();
 
-        return dynamoDbClient
-                .getItem(itemRequest)
-                .hasItem();
+        return dynamoDbClient.getItem(itemRequest).hasItem();
     }
 
     ConversationRecord findConversationByInboundConversationId(UUID inboundConversationId) {
@@ -116,6 +118,7 @@ public class TransferRepository {
             .key(keyItem)
             .build();
 
+
         GetItemResponse response = dynamoDbClient.getItem(itemRequest);
 
         if (!response.hasItem()) {
@@ -126,8 +129,9 @@ public class TransferRepository {
     }
 
     void updateConversationStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
-        if(!isInboundConversationPresent(inboundConversationId))
+        if(!isInboundConversationPresent(inboundConversationId)) {
             throw new UpdateConversationException(inboundConversationId);
+        }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = getIsoTimestamp();
@@ -158,7 +162,11 @@ public class TransferRepository {
             .attributeUpdates(updateItems)
             .build();
 
-        dynamoDbClient.updateItem(itemRequest);
+        try {
+            dynamoDbClient.updateItem(itemRequest);
+        } catch (SdkException exception) {
+            throw new TransferUpdateFailedException(inboundConversationId, exception);
+        }
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
@@ -199,7 +207,11 @@ public class TransferRepository {
                 .attributeUpdates(updateItems)
                 .build();
 
-        dynamoDbClient.updateItem(itemRequest);
+        try {
+            dynamoDbClient.updateItem(itemRequest);
+        } catch (SdkException exception) {
+            throw new TransferUpdateFailedException(inboundConversationId, exception);
+        }
     }
 
     UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
