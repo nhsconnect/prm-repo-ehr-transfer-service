@@ -49,7 +49,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
     private static final String DESTINATION_GP = "A74854";
-    private static final String CONVERSATION_ID = "44635df1-d18a-4a77-8256-f5ff21289664";
+    private static final String CONVERSATION_ID = "13962cb7-6d46-4986-bdb4-3201bb25f1f7";
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @BeforeEach
@@ -59,12 +59,15 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
 
     @Test
     void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
+        // given
         final String negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13Failure");
-        UUID inboundConversationId = createConversationRecord();
+        final UUID inboundConversationId = createConversationRecord();
+        final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
 
-        SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
+        // when
         inboundQueueFromMhs.sendMessage(negativeAck);
 
+        // then
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
             String transferStatus = transferService
                 .getConversationTransferStatus(inboundConversationId);
