@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer;
 
@@ -70,17 +71,40 @@ public class TransferTrackerDbUtility {
     }
 
     public void deleteItem(UUID inboundConversationId, Layer layer) {
-        final DeleteItemRequest request = DeleteItemRequest.builder()
+        if(doesLayerExist(inboundConversationId, layer)) {
+            final DeleteItemRequest request = DeleteItemRequest.builder()
+                .tableName(transferTrackerDbTableName)
+                .key(Map.of(
+                    INBOUND_CONVERSATION_ID.name,
+                    AttributeValue.builder().s(inboundConversationId.toString()).build(),
+                    LAYER.name,
+                    AttributeValue.builder().s(layer.name()).build()
+                ))
+                .build();
+
+            dynamoDbClient.deleteItem(request);
+            LOGGER.info("Deleted record for Inbound Conversation ID: {}", inboundConversationId);
+        } else {
+            LOGGER.warn("{} layer does not exist for Inbound Conversation ID {}", layer.name(), inboundConversationId);
+        }
+    }
+
+    private boolean doesLayerExist(UUID inboundConversationId, Layer layer) {
+        final Map<String, AttributeValue> keyItems = new HashMap<>();
+
+        keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
+            .s(inboundConversationId.toString())
+            .build());
+
+        keyItems.put(LAYER.name, AttributeValue.builder()
+            .s(layer.name())
+            .build());
+
+        final GetItemRequest itemRequest = GetItemRequest.builder()
             .tableName(transferTrackerDbTableName)
-            .key(Map.of(
-                INBOUND_CONVERSATION_ID.name,
-                AttributeValue.builder().s(inboundConversationId.toString()).build(),
-                LAYER.name,
-                AttributeValue.builder().s(layer.name()).build()
-            ))
+            .key(keyItems)
             .build();
 
-        dynamoDbClient.deleteItem(request);
-        LOGGER.info("Deleted record for Inbound Conversation ID: {}", inboundConversationId);
+        return dynamoDbClient.getItem(itemRequest).hasItem();
     }
 }
