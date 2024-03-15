@@ -35,11 +35,7 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        if(!transferService.isInboundConversationIdPresent(inboundConversationId)) {
-            transferService.createConversation(repoIncomingEvent);
-        } else {
-            log.warn("Inbound Conversation ID {} previously existed, this is a repo incoming message re-read.", inboundConversationId);
-        }
+        transferService.createConversation(repoIncomingEvent);
 
         gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
