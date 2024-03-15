@@ -4,8 +4,8 @@ import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.util.UUID;
 
-public final class TestDataGenerator {
-    private TestDataGenerator() { }
+public final class TestDataUtility {
+    private TestDataUtility() { }
 
     public static final String NHS_NUMBER = "9798547485";
     public static final String SOURCE_GP = "B45744";

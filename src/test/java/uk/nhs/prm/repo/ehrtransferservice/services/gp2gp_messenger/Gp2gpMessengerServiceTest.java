@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataGenerator.REPOSITORY_ASID;
-import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataGenerator.createRepoIncomingEvent;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.REPOSITORY_ASID;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.createRepoIncomingEvent;
 
 @ExtendWith(MockitoExtension.class)
 class Gp2gpMessengerServiceTest {
