@@ -48,7 +48,7 @@ public class TransferService {
         return conversation.state();
     }
 
-    public boolean isInboundConversationIdPresent(UUID inboundConversationId) {
+    public boolean isInboundConversationPresent(UUID inboundConversationId) {
         final boolean conversationPresent = transferRepository
             .isInboundConversationPresent(inboundConversationId);
 

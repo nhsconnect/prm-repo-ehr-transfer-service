@@ -63,7 +63,7 @@ public class Broker {
 
     public void sendMessageToEhrInOrUnhandled(ParsedMessage parsedMessage) {
         boolean conversationIdPresent = transferService
-            .isInboundConversationIdPresent(parsedMessage.getConversationId());
+            .isInboundConversationPresent(parsedMessage.getConversationId());
 
         if (conversationIdPresent) {
             log.info("Found Conversation ID '{}' in Transfer Tracker Database - received EHR IN message", parsedMessage.getConversationId());

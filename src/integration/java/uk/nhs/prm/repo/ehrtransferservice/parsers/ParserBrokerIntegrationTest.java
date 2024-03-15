@@ -87,11 +87,11 @@ public class ParserBrokerIntegrationTest {
         purgeQueue(ehrCompleteQueueName);
         purgeQueue(ehrInUnhandledObservabilityQueueName);
 
-        if(transferService.isInboundConversationIdPresent(COPC_INBOUND_CONVERSATION_ID)) {
+        if(transferService.isInboundConversationPresent(COPC_INBOUND_CONVERSATION_ID)) {
             transferTrackerDbUtility.deleteItem(COPC_INBOUND_CONVERSATION_ID, CONVERSATION);
         }
 
-        if(transferService.isInboundConversationIdPresent(EHR_CORE_INBOUND_CONVERSATION_ID)) {
+        if(transferService.isInboundConversationPresent(EHR_CORE_INBOUND_CONVERSATION_ID)) {
             transferTrackerDbUtility.deleteItem(EHR_CORE_INBOUND_CONVERSATION_ID, CONVERSATION);
         }
     }
