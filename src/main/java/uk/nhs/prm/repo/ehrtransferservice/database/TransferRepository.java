@@ -36,6 +36,10 @@ public class TransferRepository {
         final String timestamp = getIsoTimestamp();
         final UUID inboundConversationId = UUID.fromString(event.getConversationId());
 
+        if(isInboundConversationPresent(inboundConversationId)) {
+            throw new ConversationAlreadyPresentException(inboundConversationId);
+        }
+
         tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
             .s(event.getConversationId())
             .build());

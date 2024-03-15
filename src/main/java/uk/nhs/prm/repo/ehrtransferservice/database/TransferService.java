@@ -5,6 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.util.Optional;
@@ -19,8 +20,12 @@ public class TransferService {
     private final TransferRepository transferRepository;
 
     public void createConversation(RepoIncomingEvent event) {
-        transferRepository.createConversation(event);
-        log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
+        try {
+            transferRepository.createConversation(event);
+            log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
+        } catch (DatabaseException exception) {
+            log.error(exception.getMessage());
+        }
     }
 
     public ConversationRecord getConversationByInboundConversationId(UUID inboundConversationId) {
@@ -32,15 +37,13 @@ public class TransferService {
     }
 
     public Optional<UUID> getNemsMessageIdAsUuid(UUID inboundConversationId) {
-        final ConversationRecord conversation = transferRepository
-            .findConversationByInboundConversationId(inboundConversationId);
-
+        final ConversationRecord conversation = getConversationByInboundConversationId(inboundConversationId);
         return conversation.nemsMessageId();
     }
 
     public String getConversationTransferStatus(UUID inboundConversationId) {
-        ConversationRecord conversation = transferRepository
-            .findConversationByInboundConversationId(inboundConversationId);
+        final ConversationRecord conversation =
+            getConversationByInboundConversationId(inboundConversationId);
 
         return conversation.state();
     }
