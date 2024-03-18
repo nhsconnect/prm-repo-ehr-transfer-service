@@ -84,7 +84,7 @@ dependencies {
     testImplementation 'commons-fileupload:commons-fileupload:1.5'
     testImplementation 'org.wiremock:wiremock-standalone:3.3.1'
     testImplementation 'com.google.guava:guava:33.0.0-jre'
-    testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.awaitility:awaitility:4.2.1'
 
     integrationImplementation 'com.swiftmq:swiftmq-client:12.5.4'
 }
