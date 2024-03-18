@@ -44,7 +44,7 @@ public class NegativeAcknowledgementHandler {
     }
 
     private void logFailureDetail(Acknowledgement acknowledgement) {
-        acknowledgement.getFailureDetails().forEach(detail -> log.info("""
+        final String logTemplate = """
             Negative acknowledgement details:
             
             acknowledgementTypeCode: {},
@@ -52,6 +52,15 @@ public class NegativeAcknowledgementHandler {
             detail.displayName: {},
             detail.level: {},
             detail.codeSystem: {}
-            """, acknowledgement.getTypeCode(), detail.code(), detail.displayName(), detail.level(), detail.codeSystem()));
+            """;
+
+        acknowledgement.getFailureDetails().forEach(detail -> log.info(
+            logTemplate,
+            acknowledgement.getTypeCode(),
+            detail.code(),
+            detail.displayName(),
+            detail.level(),
+            detail.codeSystem()
+        ));
     }
 }

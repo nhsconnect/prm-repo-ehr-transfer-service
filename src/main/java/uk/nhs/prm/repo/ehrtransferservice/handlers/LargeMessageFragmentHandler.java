@@ -21,7 +21,8 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
         StoreMessageResult storeMessageResult = storeFragmentMessage(fragmentMessage);
 
         if (storeMessageResult.isEhrComplete()) {
-            log.info("Successfully stored all fragments of large ehr message in the ehr-repo-service");
+            log.info("Successfully stored all fragments for Inbound Conversation ID {}",
+                fragmentMessage.getConversationId());
             gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(fragmentMessage.getConversationId());
         }
     }
@@ -29,7 +30,10 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
     private StoreMessageResult storeFragmentMessage(ParsedMessage fragmentMessage) throws Exception {
         LargeEhrFragmentMessage largeEhrFragment = new LargeEhrFragmentMessage(fragmentMessage);
         StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(largeEhrFragment);
-        log.info("Successfully stored one fragment of large ehr message in the ehr-repo-service");
+        log.info("Successfully stored fragment with Inbound Message ID {} for Outbound Conversation ID {}",
+            fragmentMessage.getMessageId(),
+            fragmentMessage.getConversationId()
+        );
         return storeMessageResult;
     }
 }

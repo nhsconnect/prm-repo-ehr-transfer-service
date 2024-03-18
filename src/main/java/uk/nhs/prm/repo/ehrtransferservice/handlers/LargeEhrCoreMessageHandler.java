@@ -32,7 +32,8 @@ public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage>
         final UUID conversationId = largeEhrCoreMessage.getConversationId();
         ehrRepoService.storeMessage(largeEhrCoreMessage);
 
-        log.info("Successfully stored large-ehr message in the ehr-repo");
+        log.info("Successfully stored EHR Core for Inbound Conversation ID {}",
+            largeEhrCoreMessage.getConversationId());
 
         final ConversationRecord conversation = transferService
             .getConversationByInboundConversationId(conversationId);

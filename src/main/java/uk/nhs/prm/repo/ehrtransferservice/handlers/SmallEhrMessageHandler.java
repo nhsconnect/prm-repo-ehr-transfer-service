@@ -20,8 +20,8 @@ public class SmallEhrMessageHandler implements MessageHandler<ParsedMessage> {
     @Override
     public void handleMessage(ParsedMessage parsedMessage) throws Exception {
         final StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(parsedMessage);
-        log.info("The Small EHR with Inbound Message ID %s has been stored in the ehr-repo-service successfully"
-            .formatted(parsedMessage.getConversationId()));
+        log.info("The Small EHR with Inbound Message ID {} has been stored successfully",
+            parsedMessage.getConversationId());
 
         if(storeMessageResult.isEhrComplete()) {
             gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(parsedMessage.getConversationId());
