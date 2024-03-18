@@ -9,8 +9,8 @@ import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage> {
     private final Gp2gpMessengerService gp2gpMessengerService;

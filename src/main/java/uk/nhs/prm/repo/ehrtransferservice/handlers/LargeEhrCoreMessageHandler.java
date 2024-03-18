@@ -14,8 +14,8 @@ import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage> {
     private final EhrRepoService ehrRepoService;
