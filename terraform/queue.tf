@@ -26,7 +26,7 @@ resource "aws_sqs_queue" "repo_incoming" {
   message_retention_seconds  = local.max_retention_period
   kms_master_key_id          = data.aws_ssm_parameter.repo_incoming_kms_key.value
   receive_wait_time_seconds  = 20
-  visibility_timeout_seconds = 240
+  visibility_timeout_seconds = 43200
 
   tags = {
     Name        = local.repo_incoming_queue_name
