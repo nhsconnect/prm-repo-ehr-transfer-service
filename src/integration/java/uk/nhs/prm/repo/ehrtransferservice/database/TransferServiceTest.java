@@ -10,14 +10,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
 
 @SpringBootTest
@@ -64,144 +68,144 @@ public class TransferServiceTest {
         assertNotNull(record.createdAt());
         assertNotNull(record.updatedAt());
     }
-//
-//    @Test
-//    void isInboundConversationPresent_ValidInboundConversationId_ShouldReturnTrue() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
-//
-//        // when
-//        transferRepository.createConversation(event);
-//        boolean isConversationPresent = transferRepository
-//            .isInboundConversationPresent(inboundConversationId);
-//
-//        // then
-//        assertTrue(isConversationPresent);
-//    }
-//
-//    @Test
-//    void isInboundConversationPresent_NonExistingInboundConversationId_ShouldReturnFalse() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//
-//        // when
-//        boolean isConversationPresent = transferRepository
-//            .isInboundConversationPresent(inboundConversationId);
-//
-//        // then
-//        assertFalse(isConversationPresent);
-//    }
-//
-//    @Test
-//    void findConversationByInboundConversationId_NonExistingInboundConversationId_ShouldThrowTransferRecordNotPresentException() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final String exceptionMessage = "No transfer present for Inbound Conversation ID %s";
-//
-//        // when
-//        final DatabaseException exception = assertThrows(TransferRecordNotPresentException.class,
-//            () -> transferRepository.findConversationByInboundConversationId(inboundConversationId));
-//
-//        // then
-//        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
-//    }
-//
-//    @Test
-//    void updateConversationStatus_ValidInboundConversationIdAndConversationTransferStatus_ShouldUpdateStatus() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
-//
-//        // when
-//        transferRepository.createConversation(event);
-//        transferRepository.updateConversationStatus(inboundConversationId, INBOUND_FAILED);
-//        ConversationRecord record = transferRepository
-//            .findConversationByInboundConversationId(inboundConversationId);
-//
-//        // then
-//        assertEquals(record.state(), INBOUND_FAILED.name());
-//    }
-//
-//    @Test
-//    void updateConversationStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowUpdateConversationException() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final String exceptionMessage = "The conversation could not be updated with Inbound Message ID %s";
-//
-//        // when
-//        final DatabaseException exception = assertThrows(UpdateConversationException.class, () ->
-//            transferRepository.updateConversationStatus(inboundConversationId, INBOUND_FAILED));
-//
-//        // then
-//        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
-//    }
-//
-//    @Test
-//    void updateConversationStatusWithFailure_ValidInboundConversationIdAndFailureCode_ShouldUpdateFailureCode() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
-//        final String failureCode = "19";
-//
-//        // when
-//        transferRepository.createConversation(event);
-//        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
-//        final ConversationRecord record = transferRepository
-//            .findConversationByInboundConversationId(inboundConversationId);
-//
-//        final String failureCodeResult = record.failureCode().orElseThrow();
-//
-//        // then
-//        assertEquals(record.state(), INBOUND_FAILED.name());
-//        assertEquals(failureCodeResult, failureCode);
-//    }
-//
-//    @Test
-//    void updateConversationStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowUpdateConversationException() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final String failureCode = "19";
-//        final String exceptionMessage = "The conversation could not be updated with Inbound Message ID %s";
-//
-//        // when
-//        final DatabaseException exception = assertThrows(UpdateConversationException.class, () ->
-//            transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode));
-//
-//        // then
-//        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
-//    }
-//
-//    @Test
-//    void getEhrCoreInboundMessageIdForInboundConversationId_ValidInboundConversationId_ShouldReturnMessageId() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final UUID ehrCoreMessageId = UUID.fromString(EHR_CORE_MESSAGE_ID);
-//
-//        // when
-//        transferTrackerDbUtility.createCore(inboundConversationId, ehrCoreMessageId);
-//
-//        final UUID result =
-//            transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
-//
-//        // then
-//        assertEquals(result, ehrCoreMessageId);
-//    }
-//
-//    @Test
-//    void getEhrCoreInboundMessageIdForInboundConversationId_NonExistingInboundConversationId_ShouldThrowQueryReturnedNoItemsException() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//        final String exceptionMessage = "The query returned no items for Inbound Conversation ID %s";
-//
-//        // when
-//        final DatabaseException exception = assertThrows(QueryReturnedNoItemsException.class,
-//            () -> transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId));
-//
-//        // then
-//        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
-//    }
-//
+
+    @Test
+    void isInboundConversationPresent_ValidInboundConversationId_ShouldReturnTrue() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        // when
+        transferService.createConversation(event);
+        boolean isConversationPresent = transferService
+            .isInboundConversationPresent(inboundConversationId);
+
+        // then
+        assertTrue(isConversationPresent);
+    }
+
+    @Test
+    void isInboundConversationPresent_NonExistingInboundConversationId_ShouldReturnFalse() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+
+        // when
+        boolean isConversationPresent = transferService
+            .isInboundConversationPresent(inboundConversationId);
+
+        // then
+        assertFalse(isConversationPresent);
+    }
+
+    @Test
+    void getConversationByInboundConversationId_NonExistingInboundConversationId_ShouldThrowTransferRecordNotPresentException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "No transfer present for Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(ConversationNotPresentException.class,
+            () -> transferService.getConversationByInboundConversationId(inboundConversationId));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
+
+    @Test
+    void updateConversationTransferStatus_ValidInboundConversationIdAndConversationTransferStatus_ShouldUpdateStatus() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        // when
+        transferService.createConversation(event);
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED);
+        ConversationRecord record = transferService
+            .getConversationByInboundConversationId(inboundConversationId);
+
+        // then
+        assertEquals(record.state(), INBOUND_FAILED.name());
+    }
+
+    @Test
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowTransferUpdateFailedException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "The conversation could not be updated with Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(ConversationUpdateException.class, () ->
+            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
+
+    @Test
+    void updateConversationTransferStatusWithFailure_ValidInboundConversationIdAndFailureCode_ShouldUpdateFailureCode() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+        final String failureCode = "19";
+
+        // when
+        transferService.createConversation(event);
+        transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode);
+        final ConversationRecord record = transferService
+            .getConversationByInboundConversationId(inboundConversationId);
+
+        final String failureCodeResult = record.failureCode().orElseThrow();
+
+        // then
+        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(failureCodeResult, failureCode);
+    }
+
+    @Test
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowTransferUpdateFailedException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String failureCode = "19";
+        final String exceptionMessage = "The conversation could not be updated with Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(ConversationUpdateException.class, () ->
+            transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
+
+    @Test
+    void getEhrCoreInboundMessageIdForInboundConversationId_ValidInboundConversationId_ShouldReturnMessageId() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final UUID ehrCoreMessageId = UUID.fromString(EHR_CORE_MESSAGE_ID);
+
+        // when
+        transferTrackerDbUtility.createCore(inboundConversationId, ehrCoreMessageId);
+
+        final UUID result =
+            transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+
+        // then
+        assertEquals(result, ehrCoreMessageId);
+    }
+
+    @Test
+    void getEhrCoreInboundMessageIdForInboundConversationId_NonExistingInboundConversationId_ShouldThrowQueryReturnedNoItemsException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final String exceptionMessage = "The query returned no items for Inbound Conversation ID %s";
+
+        // when
+        final DatabaseException exception = assertThrows(QueryReturnedNoItemsException.class,
+            () -> transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId));
+
+        // then
+        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
+    }
+
     // Helper Methods
     private RepoIncomingEvent createRepoIncomingEvent(UUID inboundConversationId) {
         return RepoIncomingEvent.builder()
