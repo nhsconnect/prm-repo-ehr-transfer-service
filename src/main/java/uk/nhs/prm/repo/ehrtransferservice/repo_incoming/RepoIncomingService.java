@@ -64,7 +64,7 @@ public class RepoIncomingService {
             );
 
             if (transferState.equals(INBOUND_COMPLETE.name())) {
-                log.info("Transfer status has been set to INBOUND_COMPLETE for Inbound Conversation Id {}", inboundConversationId);
+                log.info("Transfer status has been set to INBOUND_COMPLETE for Inbound Conversation ID {}", inboundConversationId);
                 return;
             }
 
