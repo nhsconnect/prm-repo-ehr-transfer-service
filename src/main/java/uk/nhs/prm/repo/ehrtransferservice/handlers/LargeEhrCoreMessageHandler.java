@@ -18,13 +18,9 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Conversati
 @Slf4j
 @RequiredArgsConstructor
 public class LargeEhrCoreMessageHandler implements MessageHandler<ParsedMessage> {
-
     private final EhrRepoService ehrRepoService;
-
     private final Gp2gpMessengerService gp2gpMessengerService;
-
     private final TransferService transferService;
-
     private final AuditService auditService;
 
     @Override
