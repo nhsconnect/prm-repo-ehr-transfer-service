@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class UpdateConversationException extends DatabaseException {
     private static final String EXCEPTION_MESSAGE =
-        "The conversation could not be updated with Inbound Message ID %s";
+        "The conversation could not be updated with Inbound Conversation ID %s";
 
     public UpdateConversationException(UUID inboundConversationId) {
         super(EXCEPTION_MESSAGE.formatted(inboundConversationId));
