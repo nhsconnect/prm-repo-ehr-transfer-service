@@ -12,15 +12,13 @@ import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessenge
 @Service
 @RequiredArgsConstructor
 public class SmallEhrMessageHandler implements MessageHandler<ParsedMessage> {
-
     private final EhrRepoService ehrRepoService;
-
     private final Gp2gpMessengerService gp2gpMessengerService;
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) throws Exception {
         final StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(parsedMessage);
-        log.info("The Small EHR with Inbound Message ID {} has been stored successfully",
+        log.info("The Small EHR with Inbound Conversation ID {} has been stored successfully",
             parsedMessage.getConversationId());
 
         if(storeMessageResult.isEhrComplete()) {
