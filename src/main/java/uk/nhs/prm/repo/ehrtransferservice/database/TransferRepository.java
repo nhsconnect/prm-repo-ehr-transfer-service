@@ -168,13 +168,14 @@ public class TransferRepository {
         try {
             dynamoDbClient.updateItem(itemRequest);
         } catch (SdkException exception) {
-            throw new TransferUpdateFailedException(inboundConversationId, exception);
+            throw new UpdateConversationException(inboundConversationId, exception);
         }
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        if(!isInboundConversationPresent(inboundConversationId))
+        if(!isInboundConversationPresent(inboundConversationId)) {
             throw new UpdateConversationException(inboundConversationId);
+        }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();
         final String updateTimestamp = getIsoTimestamp();
@@ -213,7 +214,7 @@ public class TransferRepository {
         try {
             dynamoDbClient.updateItem(itemRequest);
         } catch (SdkException exception) {
-            throw new TransferUpdateFailedException(inboundConversationId, exception);
+            throw new UpdateConversationException(inboundConversationId, exception);
         }
     }
 
