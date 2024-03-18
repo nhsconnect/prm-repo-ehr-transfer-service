@@ -9,6 +9,7 @@ import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 
 @Slf4j
 @Component
+@Deprecated
 public class TransferCompleteSnsHealthProbe implements HealthProbe {
     private final AppConfig config;
     private final SnsClient snsClient;
