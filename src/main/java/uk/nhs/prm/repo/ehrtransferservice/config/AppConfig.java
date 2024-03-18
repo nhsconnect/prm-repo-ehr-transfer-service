@@ -10,6 +10,8 @@ public class AppConfig {
 
     private final String environment;
     private final String transferTrackerDbTableName;
+
+    @Deprecated
     private final String transferCompleteTopicArn;
 
     public AppConfig(@Value("${environment}") String environment,
@@ -28,6 +30,7 @@ public class AppConfig {
         return transferTrackerDbTableName;
     }
 
+    @Deprecated
     public String transferCompleteSnsTopicArn() {
         return transferCompleteTopicArn;
     }
