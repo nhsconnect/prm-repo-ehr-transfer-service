@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.exceptions;
+package uk.nhs.prm.repo.ehrtransferservice.exceptions.database;
 
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 
