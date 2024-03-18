@@ -8,7 +8,11 @@ import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.*;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationAlreadyPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.time.Instant;
@@ -125,7 +129,7 @@ public class TransferRepository {
         final GetItemResponse response = dynamoDbClient.getItem(itemRequest);
 
         if (!response.hasItem()) {
-            throw new TransferRecordNotPresentException(inboundConversationId);
+            throw new ConversationNotPresentException(inboundConversationId);
         }
 
         return mapGetItemResponseToConversationRecord(response);
@@ -133,7 +137,7 @@ public class TransferRepository {
 
     void updateConversationStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         if(!isInboundConversationPresent(inboundConversationId)) {
-            throw new UpdateConversationException(inboundConversationId);
+            throw new ConversationUpdateException(inboundConversationId);
         }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();
@@ -168,13 +172,13 @@ public class TransferRepository {
         try {
             dynamoDbClient.updateItem(itemRequest);
         } catch (SdkException exception) {
-            throw new UpdateConversationException(inboundConversationId, exception);
+            throw new ConversationUpdateException(inboundConversationId, exception);
         }
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
         if(!isInboundConversationPresent(inboundConversationId)) {
-            throw new UpdateConversationException(inboundConversationId);
+            throw new ConversationUpdateException(inboundConversationId);
         }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();
@@ -214,7 +218,7 @@ public class TransferRepository {
         try {
             dynamoDbClient.updateItem(itemRequest);
         } catch (SdkException exception) {
-            throw new UpdateConversationException(inboundConversationId, exception);
+            throw new ConversationUpdateException(inboundConversationId, exception);
         }
     }
 
