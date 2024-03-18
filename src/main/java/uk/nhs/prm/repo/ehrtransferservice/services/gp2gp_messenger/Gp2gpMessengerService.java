@@ -39,10 +39,12 @@ public class Gp2gpMessengerService {
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-            log.info("An EHR Request has been sent for Inbound Conversation ID: {}", inboundConversationId);
-        } catch (Exception e) {
-            log.error("Caught error during ehr-request");
-            throw new Exception("Error while sending ehr-request", e);
+            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId);
+        } catch (Exception exception) {
+            throw new Exception(
+                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId),
+                exception
+            );
         }
     }
 
@@ -55,7 +57,7 @@ public class Gp2gpMessengerService {
         );
 
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
-        log.info("Continue request sent for Inbound Conversation ID: {}", parsedMessage.getConversationId());
+        log.info("Continue Request sent for Inbound Conversation ID {}", parsedMessage.getConversationId());
     }
 
     public void sendEhrCompletePositiveAcknowledgement(UUID inboundConversationId) {
@@ -65,7 +67,8 @@ public class Gp2gpMessengerService {
         final UUID ehrCoreMessageId =
             transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
 
-        final var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(repositoryAsid,
+        final var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(
+            repositoryAsid,
             record.sourceGp(),
             inboundConversationId.toString(),
             ehrCoreMessageId.toString()
@@ -73,9 +76,9 @@ public class Gp2gpMessengerService {
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
-            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID: {}", inboundConversationId);
+            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId);
         } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
-            log.error("An exception occurred while sending an EHR complete positive acknowledgement: {}", exception.getMessage());
+            log.error("An exception occurred while sending an EHR complete positive acknowledgement {}", exception.getMessage());
             throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
         }
     }
