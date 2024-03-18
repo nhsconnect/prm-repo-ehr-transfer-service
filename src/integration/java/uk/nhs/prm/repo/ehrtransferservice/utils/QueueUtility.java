@@ -17,11 +17,6 @@ public final class QueueUtility {
         this.amazonSQSAsync = amazonSQSAsync;
     }
 
-    /**
-     * Purges an SQS queue asynchronously based on the SQS
-     * Queue name.
-     * @param queueName The name of the AWS SQS Queue.
-     */
     public void purgeQueue(String queueName) {
         final String queueUrl = getQueueUrl(queueName);
         final PurgeQueueRequest request = new PurgeQueueRequest(queueUrl);
