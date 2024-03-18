@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice.exceptions;
+package uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement;
 
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.AcknowledgementException;
 
