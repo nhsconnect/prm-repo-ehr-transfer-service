@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice;
+package uk.nhs.prm.repo.ehrtransferservice.configuration;
 
 import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
 import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
@@ -43,17 +43,10 @@ import software.amazon.sns.SNSExtendedClientConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static javax.jms.Session.CLIENT_ACKNOWLEDGE;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_CONVERSATION_ID;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.LAYER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.NHS_NUMBER;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.OUTBOUND_CONVERSATION_ID;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.*;
 
 @TestConfiguration
 public class LocalStackAwsConfig {
