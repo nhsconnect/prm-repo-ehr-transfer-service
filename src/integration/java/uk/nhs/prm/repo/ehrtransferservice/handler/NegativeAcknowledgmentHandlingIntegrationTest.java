@@ -1,4 +1,4 @@
-package uk.nhs.prm.repo.ehrtransferservice;
+package uk.nhs.prm.repo.ehrtransferservice.handler;
 
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.model.PurgeQueueRequest;
