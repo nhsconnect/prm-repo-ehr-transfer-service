@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
@@ -31,8 +31,8 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTa
 @ActiveProfiles("test")
 @WireMockTest(httpPort = 8080)
 @ExtendWith(SpringExtension.class)
+@ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 class EhrRequestTest {
     @Autowired
     private TransferService transferService;

@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
@@ -32,10 +32,10 @@ import static org.awaitility.Awaitility.await;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
 
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
-@SpringBootTest()
+@SpringBootTest
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
+@ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 public class ParserBrokerIntegrationTest {
     @Autowired

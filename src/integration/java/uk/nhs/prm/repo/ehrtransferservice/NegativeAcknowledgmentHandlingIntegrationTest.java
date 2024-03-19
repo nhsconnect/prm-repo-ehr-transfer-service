@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
@@ -29,8 +29,8 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Conversati
 @SpringBootTest
 @ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
+@ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 public class NegativeAcknowledgmentHandlingIntegrationTest {
     @Autowired
     TransferService transferService;
