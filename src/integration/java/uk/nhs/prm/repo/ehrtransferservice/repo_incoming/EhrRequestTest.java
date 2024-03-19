@@ -1,10 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.model.PurgeQueueRequest;
-import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,102 +10,101 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
-import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
+import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.utils.QueueUtility;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DESTINATION_GP;
 
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
-@SpringBootTest()
+@SpringBootTest
 @ActiveProfiles("test")
+@WireMockTest(httpPort = 8080)
 @ExtendWith(SpringExtension.class)
+@ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 class EhrRequestTest {
     @Autowired
-    private AmazonSQSAsync sqs;
+    private TransferService transferService;
 
     @Autowired
-    private DynamoDbClient dbClient;
+    private TransferTrackerDbUtility transferTrackerDbUtility;
+
+    @Autowired
+    private QueueUtility queueUtility;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
 
-    @Value("${aws.transferTrackerDbTableName}")
-    private String transferTrackerDbTableName;
-
     @Value("${gp2gpMessengerAuthKey}")
     private String gp2gpMessengerAuthKey;
 
-    private static final String NHS_NUMBER = "2222222222";
-    private static final String CONVERSATION_ID = "000-111-222-333-444";
+    private static final String NHS_NUMBER = "9798548754";
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("ce3aad10-9b7c-4a9b-ab87-a9d6521d61b2");
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
     private static final String NEMS_EVENT_LAST_UPDATED = "2017-11-01T15:00:33+00:00";
-    private static final String SOURCE_GP = "odscode";
-    private WireMockServer wireMock;
-
-    @BeforeEach
-    public void setUp() {
-        wireMock = initializeWebServer();
-    }
-
-    private WireMockServer initializeWebServer() {
-        final WireMockServer wireMockServer = new WireMockServer(8080);
-        wireMockServer.start();
-        return wireMockServer;
-    }
+    private static final String SOURCE_GP = "B14758";
 
     @AfterEach
-    void tearDown() {
-        Map<String, AttributeValue> key = new HashMap<>();
-        key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
-        dbClient.deleteItem(DeleteItemRequest.builder().tableName(transferTrackerDbTableName).key(key).build());
-        var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
-        sqs.purgeQueue(new PurgeQueueRequest(queueUrl));
-
-        wireMock.resetAll();
-        wireMock.stop();
+    void afterEach() {
+        queueUtility.purgeQueue(repoIncomingQueueName);
+        transferTrackerDbUtility.deleteItem(INBOUND_CONVERSATION_ID, CONVERSATION);
     }
 
     @Test
-    void shouldSendEhrRequestAndUpdateDbWhenMessageOnRepoIncomingQueue()  {
-        var queueUrl = sqs.getQueueUrl(repoIncomingQueueName).getQueueUrl();
-        stubFor(post(urlMatching("/health-record-requests/" + NHS_NUMBER))
+    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSent() {
+        // given
+        final String repoIncomingMessage = getRepoIncomingMessage();
+
+        // when
+        stubFor(post(
+                urlMatching("/health-record-requests/" + NHS_NUMBER))
                 .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
                 .withHeader("Content-Type", equalTo("application/json"))
-                .willReturn(aResponse().withStatus(204)));
+                .willReturn(aResponse().withStatus(204))
+        );
 
-        sqs.sendMessage(queueUrl, getRepoIncomingData());
+        queueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
 
-        await().atMost(20,TimeUnit.SECONDS).untilAsserted(() -> {
-            Map<String, AttributeValue> key = new HashMap<>();
-            key.put("conversation_id", AttributeValue.builder().s(CONVERSATION_ID).build());
+        // then
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            final ConversationRecord record = transferService
+                .getConversationByInboundConversationId(INBOUND_CONVERSATION_ID);
 
-            var dbClientItem = dbClient.getItem(GetItemRequest.builder()
-                    .tableName(transferTrackerDbTableName)
-                    .key(key)
-                    .build()).item();
-
-            assertThat(dbClientItem.get("nhs_number").s()).isEqualTo(NHS_NUMBER);
-            assertThat(dbClientItem.get("nems_message_id").s()).isEqualTo(NEMS_MESSAGE_ID);
-            assertThat(dbClientItem.get("source_gp").s()).isEqualTo(SOURCE_GP);
-            assertThat(dbClientItem.get("nems_event_last_updated").s()).isEqualTo(NEMS_EVENT_LAST_UPDATED);
-            assertThat(dbClientItem.get("conversation_id").s()).isEqualTo(CONVERSATION_ID);
-            assertThat(dbClientItem.get("state").s()).isEqualTo("ACTION:EHR_REQUEST_SENT");
-            assertThat(dbClientItem.get("is_active").s()).isEqualTo("true");
+            assertEquals(INBOUND_REQUEST_SENT.name(), record.state());
         });
     }
 
-    private String getRepoIncomingData() {
-        return "{ \"conversationId\" : \"" + CONVERSATION_ID + "\",\n \"nhsNumber\" : \"" + NHS_NUMBER + "\",\n \"nemsMessageId\" : \"" + NEMS_MESSAGE_ID + "\",\n \"sourceGp\": \"" + SOURCE_GP + "\",\n \"destinationGp\": \"D3ST1NAT10N\" ,\n \"nemsEventLastUpdated\": \"" + NEMS_EVENT_LAST_UPDATED + "\"}";
+    // Test specific helper methods
+    private String getRepoIncomingMessage() {
+        final String repoIncomingEvent = """
+            {
+                "conversationId": "%s",
+                "nhsNumber": "%s",
+                "nemsMessageId": "%s",
+                "sourceGp": "%s",
+                "destinationGp": "%s",
+                "nemsEventLastUpdated": "%s"
+            }
+            """;
+
+        return repoIncomingEvent.formatted(
+            INBOUND_CONVERSATION_ID,
+            NHS_NUMBER,
+            NEMS_MESSAGE_ID,
+            SOURCE_GP,
+            DESTINATION_GP,
+            NEMS_EVENT_LAST_UPDATED
+        );
     }
 }

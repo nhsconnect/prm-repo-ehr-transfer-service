@@ -8,8 +8,8 @@ irrelevant messages to a downstream "not handled" queue so that they can be acti
 
 ## Prerequisites
 
-- Java v11 LTS
-- Gradle 7.3.2
+- Java 21 LTS
+- Gradle 8.5
 
 ### AWS helpers
 

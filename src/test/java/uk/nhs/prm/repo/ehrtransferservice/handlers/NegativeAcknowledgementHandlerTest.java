@@ -5,137 +5,96 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.MessageHeader;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPEnvelope;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.SOAPHeader;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
-import uk.nhs.prm.repo.ehrtransferservice.models.ack.AcknowledgementTypeCode;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureDetail;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
+import uk.nhs.prm.repo.ehrtransferservice.models.ack.FailureLevel;
+import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static java.util.stream.Collectors.toList;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 
 @ExtendWith(MockitoExtension.class)
 class NegativeAcknowledgementHandlerTest {
-
     @Mock
-    TransferStore transferStore;
-
+    private TransferService transferService;
     @Mock
-    TransferCompleteMessagePublisher transferCompleteMessagePublisher;
-
+    private AuditService auditService;
+    @Mock
+    private Acknowledgement acknowledgement;
     @InjectMocks
-    NegativeAcknowledgementHandler negativeAcknowledgementHandler;
+    private NegativeAcknowledgementHandler negativeAcknowledgementHandler;
 
-    private final UUID conversationId = UUID.randomUUID();
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("d263e1ed-95d5-4502-95f8-905c10edc85f");
+    private static final UUID NEMS_MESSAGE_ID = UUID.fromString("8dd4f4be-9449-4efb-b231-e574415dbf86");
+    private static final String DEFAULT_FAILURE_CODE = "UNKNOWN_ERROR";
+    private static final String FAILURE_CODE = "19";
+    private static final List<FailureDetail> FAILURE_DETAILS;
 
-    @Test
-    void shouldUpdateDbRecordAsTransferFailedUsingCodeFromFirstFailureDetails() throws Exception {
-        Transfer transfer =
-                new Transfer(
-                        conversationId.toString(),
-                        "1234567890",
-                        "sourceGP",
-                        "someNemsMessageId",
-                        "yesterday",
-                        "FAILED",
-                        null,
-                        null,
-                        null,
-                        true
-                );
-        TransferCompleteEvent transferCompleteEvent =
-                new TransferCompleteEvent("yesterday",
-                        "sourceGP",
-                        "SUSPENSION",
-                        "someNemsMessageId",
-                        "1234567890");
-
-        when(transferStore.findTransfer(conversationId.toString())).thenReturn(transfer);
-
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, failureDetailsList("06", "09")));
-
-        verify(transferStore, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
-                "someNemsMessageId" , "ACTION:EHR_TRANSFER_FAILED:06", false);
-
-        verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
+    static {
+        FAILURE_DETAILS = List.of(
+            new FailureDetail("DNO", FAILURE_CODE, "CSO", FailureLevel.ERROR),
+            new FailureDetail("DNT", "09", "CST", FailureLevel.INFO)
+        );
     }
 
     @Test
-    void shouldUpdateDbRecordAsTransferFailedUsingUnknownErrorCodeIfThereAreNoFailureDetails() throws Exception {
-        Transfer transfer =
-                new Transfer(
-                        conversationId.toString(),
-                        "1234567890",
-                        "sourceGP",
-                        "someNemsMessageId",
-                        "yesterday",
-                        "FAILED",
-                        null,
-                        null,
-                        null,
-                        true
-                );
+    void handleMessage_ValidAcknowledgement_UpdatesTransferStatusWithFirstFailureDetailAndPublishesAuditMessage() {
+        // when
+        when(acknowledgement.getConversationId())
+            .thenReturn(INBOUND_CONVERSATION_ID);
+        when(transferService.getNemsMessageIdAsUuid(INBOUND_CONVERSATION_ID))
+            .thenReturn(Optional.of(NEMS_MESSAGE_ID));
+        when(acknowledgement.getFailureDetails())
+            .thenReturn(FAILURE_DETAILS);
 
-        TransferCompleteEvent transferCompleteEvent =
-                new TransferCompleteEvent("yesterday",
-                        "sourceGP",
-                        "SUSPENSION",
-                        "someNemsMessageId",
-                        "1234567890");
+        negativeAcknowledgementHandler.handleMessage(acknowledgement);
 
-        when(transferStore.findTransfer(conversationId.toString())).thenReturn(transfer);
-
-        negativeAcknowledgementHandler.handleMessage(createAcknowledgement(conversationId, noFailureDetails()));
-
-        verify(transferStore, times(1)).handleEhrTransferStateUpdate(conversationId.toString(),
-                "someNemsMessageId" ,"ACTION:EHR_TRANSFER_FAILED:UNKNOWN_ERROR", false);
-        verify(transferCompleteMessagePublisher, times(1)).sendMessage(transferCompleteEvent, conversationId);
+        // then
+        verify(transferService).updateConversationTransferStatusWithFailure(INBOUND_CONVERSATION_ID, FAILURE_CODE);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_FAILED, Optional.of(NEMS_MESSAGE_ID));
     }
 
-    private List<FailureDetail> noFailureDetails() {
-        return failureDetailsList();
+    @Test
+    void handleMessage_ValidAcknowledgementAndNoNemsMessageId_UpdatesTransferStatusAndPublishesAuditMessage() {
+        // given
+        final Optional<UUID> nemsMessageId = Optional.empty();
+
+        // when
+        when(acknowledgement.getConversationId())
+            .thenReturn(INBOUND_CONVERSATION_ID);
+        when(transferService.getNemsMessageIdAsUuid(INBOUND_CONVERSATION_ID))
+            .thenReturn(nemsMessageId);
+        when(acknowledgement.getFailureDetails())
+            .thenReturn(FAILURE_DETAILS);
+
+        negativeAcknowledgementHandler.handleMessage(acknowledgement);
+
+        // then
+        verify(transferService).updateConversationTransferStatusWithFailure(INBOUND_CONVERSATION_ID, FAILURE_CODE);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_FAILED, nemsMessageId);
     }
 
+    @Test
+    void handleMessage_ValidAcknowledgementWithNoFailureDetails_UpdatesTransferStatusWithUnknownErrorAndPublishesAuditMessage() {
+        // when
+        when(acknowledgement.getConversationId())
+            .thenReturn(INBOUND_CONVERSATION_ID);
+        when(transferService.getNemsMessageIdAsUuid(INBOUND_CONVERSATION_ID))
+            .thenReturn(Optional.of(NEMS_MESSAGE_ID));
+        when(acknowledgement.getFailureDetails())
+            .thenReturn(Collections.emptyList());
 
-    private List<FailureDetail> failureDetailsList(String... failureCodes) {
-        List<String> failureCodeList = Arrays.asList(failureCodes);
+        negativeAcknowledgementHandler.handleMessage(acknowledgement);
 
-        return failureCodeList.stream().map(code -> new FailureDetail(null, code, null, null)).collect(toList());
-    }
-
-    private Acknowledgement createAcknowledgement(UUID conversationId, List<FailureDetail> failureList) {
-        SOAPEnvelope envelope = new SOAPEnvelope();
-        envelope.header = new SOAPHeader();
-        envelope.header.messageHeader = new MessageHeader();
-        envelope.header.messageHeader.conversationId = conversationId;
-        return new StubAcknowledgement(envelope, failureList);
-    }
-
-    public static class StubAcknowledgement extends Acknowledgement {
-        private final List<FailureDetail> failures;
-
-        public StubAcknowledgement(SOAPEnvelope envelope, List<FailureDetail> failures) {
-            super(envelope, null, null);
-            this.failures = failures;
-        }
-
-        @Override
-        public List<FailureDetail> getFailureDetails() {
-            return failures;
-        }
-
-        @Override
-        public AcknowledgementTypeCode getTypeCode() {
-            return AcknowledgementTypeCode.AE;
-        }
+        // then
+        verify(transferService).updateConversationTransferStatusWithFailure(INBOUND_CONVERSATION_ID, DEFAULT_FAILURE_CODE);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_FAILED, Optional.of(NEMS_MESSAGE_ID));
     }
 }

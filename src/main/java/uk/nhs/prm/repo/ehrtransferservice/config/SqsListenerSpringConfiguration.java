@@ -12,10 +12,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.handlers.*;
-import uk.nhs.prm.repo.ehrtransferservice.listeners.*;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeEhrCoreMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.LargeMessageFragmentHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.MessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.NegativeAcknowledgementHandler;
+import uk.nhs.prm.repo.ehrtransferservice.handlers.SmallEhrMessageHandler;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.NegativeAcknowledgementListener;
+import uk.nhs.prm.repo.ehrtransferservice.listeners.S3ExtendedMessageListener;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
-import uk.nhs.prm.repo.ehrtransferservice.parsers.EhrCompleteParser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.S3ExtendedMessageFetcher;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEventListener;
@@ -29,14 +33,11 @@ import javax.jms.Session;
 @RequiredArgsConstructor
 @Slf4j
 public class SqsListenerSpringConfiguration {
-
     private final Tracer tracer;
     private final RepoIncomingService repoIncomingService;
     private final RepoIncomingEventParser repoIncomingEventParser;
     private final SmallEhrMessageHandler smallEhrMessageHandler;
     private final LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
-    private final EhrCompleteHandler ehrCompleteHandler;
-    private final EhrCompleteParser ehrCompleteParser;
     private final Parser parser;
     private final S3ExtendedMessageFetcher s3ExtendedMessageFetcher;
     private final LargeMessageFragmentHandler largeMessageFragmentHandler;
@@ -53,9 +54,6 @@ public class SqsListenerSpringConfiguration {
 
     @Value("${aws.largeMessageFragmentsQueueName}")
     private String largeEhrMessageFragmentQueueName;
-
-    @Value("${aws.ehrCompleteQueueName}")
-    private String ehrCompleteQueueName;
 
     @Value("${aws.nackQueueName}")
     private String negativeAckQueueName;
@@ -97,19 +95,6 @@ public class SqsListenerSpringConfiguration {
     @Bean
     public Session createLargeEhrFragmentsQueueListener(SQSConnection connection) throws JMSException {
         return createS3ExtendedSqsListener(connection, "large-ehr-fragment", largeEhrMessageFragmentQueueName, largeMessageFragmentHandler);
-    }
-
-    @Bean
-    public Session createEhrCompleteQueueListener(SQSConnection connection) throws JMSException {
-        Session session = getSession(connection);
-
-        log.info("ehr complete queue name : {}", ehrCompleteQueueName);
-        var ehrCompleteConsumer = session.createConsumer(session.createQueue(ehrCompleteQueueName));
-        ehrCompleteConsumer.setMessageListener(new EhrCompleteMessageListener(tracer, ehrCompleteParser, ehrCompleteHandler));
-
-        connection.start();
-
-        return session;
     }
 
     @Bean

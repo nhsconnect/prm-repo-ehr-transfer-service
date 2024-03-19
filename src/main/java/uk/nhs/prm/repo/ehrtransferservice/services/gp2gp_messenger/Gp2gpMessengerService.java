@@ -4,53 +4,82 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class Gp2gpMessengerService {
     private final Gp2gpMessengerClient gp2gpMessengerClient;
+    private final TransferService transferService;
 
     @Value("${repositoryAsid}")
     private String repositoryAsid;
 
     public void sendEhrRequest(RepoIncomingEvent repoIncomingEvent) throws Exception {
-        Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(repoIncomingEvent.getDestinationGp(),
-                repositoryAsid, repoIncomingEvent.getSourceGp(), repoIncomingEvent.getConversationId());
+        final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
+        final Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(
+            repoIncomingEvent.getDestinationGp(),
+            repositoryAsid,
+            repoIncomingEvent.getSourceGp(),
+            repoIncomingEvent.getConversationId()
+        );
+
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-            log.info("Successfully sent EHR Request");
-        } catch (Exception e) {
-            log.error("Caught error during ehr-request");
-            throw new Exception("Error while sending ehr-request", e);
+            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId);
+        } catch (Exception exception) {
+            throw new Exception(
+                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId),
+                exception
+            );
         }
     }
 
-    public void sendContinueMessage(ParsedMessage parsedMessage, Transfer ehrTransferData) throws HttpException, IOException, URISyntaxException, InterruptedException {
-        var continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(parsedMessage.getConversationId(), ehrTransferData.getSourceGP(), parsedMessage.getMessageId());
+    public void sendContinueMessage(ParsedMessage parsedMessage, String sourceGp)
+        throws HttpException, IOException, URISyntaxException, InterruptedException {
+        Gp2gpMessengerContinueMessageRequestBody continueMessageRequestBody = new Gp2gpMessengerContinueMessageRequestBody(
+            parsedMessage.getConversationId(),
+            sourceGp,
+            parsedMessage.getMessageId()
+        );
+
         gp2gpMessengerClient.sendContinueMessage(continueMessageRequestBody);
-        log.info("Successfully sent continue message request");
+        log.info("Continue Request sent for Inbound Conversation ID {}", parsedMessage.getConversationId());
     }
 
-    public void sendEhrCompletePositiveAcknowledgement(EhrCompleteEvent parsedMessage, Transfer ehrTransferData) throws Exception {
-        var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(repositoryAsid, ehrTransferData.getSourceGP(), parsedMessage.getConversationId().toString(), parsedMessage.getMessageId().toString());
+    public void sendEhrCompletePositiveAcknowledgement(UUID inboundConversationId) {
+        final ConversationRecord record =
+            transferService.getConversationByInboundConversationId(inboundConversationId);
+
+        final UUID ehrCoreMessageId =
+            transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+
+        final var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(
+            repositoryAsid,
+            record.sourceGp(),
+            inboundConversationId.toString(),
+            ehrCoreMessageId.toString()
+        );
+
         try {
-            gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(ehrTransferData.getNhsNumber(), requestBody);
-            log.info("Successfully send positive acknowledgement");
-        } catch (Exception e) {
-            log.error("Caught error sending positive acknowledgement request: " + e.getMessage());
-            throw new Exception("Error while sending positive acknowledgement request", e);
+            gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
+            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId);
+        } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
+            log.error("An exception occurred while sending an EHR complete positive acknowledgement {}", exception.getMessage());
+            throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
         }
     }
 }

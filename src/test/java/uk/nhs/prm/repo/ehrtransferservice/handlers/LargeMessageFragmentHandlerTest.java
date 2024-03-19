@@ -1,26 +1,23 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.platform.commons.JUnitException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrFragmentMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,10 +29,7 @@ class LargeMessageFragmentHandlerTest {
     EhrRepoService ehrRepoService;
 
     @Mock
-    TransferStore transfers;
-
-    @Mock
-    EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
+    Gp2gpMessengerService gp2gpMessengerService;
 
     @InjectMocks
     LargeMessageFragmentHandler largeMessageFragmentHandler;
@@ -43,68 +37,75 @@ class LargeMessageFragmentHandlerTest {
     @Captor
     ArgumentCaptor<LargeEhrFragmentMessage> largeMessageFragmentsArgumentCaptor;
 
-    private UUID conversationId;
-    private UUID ehrCoreMessageId;
+    private static final UUID INBOUND_CONVERSATION_ID =
+        UUID.fromString("e979906a-31ce-43f4-a7ce-af93ebb659dc");
 
-    @BeforeEach
-    public void setUpMessageIds() {
-        conversationId = UUID.randomUUID();
-        ehrCoreMessageId = UUID.randomUUID();
+    private static final StoreMessageResult COMPLETE_RESULT;
+    private static final StoreMessageResult INCOMPLETE_RESULT;
 
-        lenient().when(largeSqsMessage.getConversationId()).thenReturn(conversationId);
+    static  {
+        COMPLETE_RESULT = getStoreMessageResult(Type.COMPLETE);
+        INCOMPLETE_RESULT = getStoreMessageResult(Type.INCOMPLETE);
     }
 
     @Test
-    void shouldCallEhrRepoServiceToStoreTheMessage() throws Exception {
-        when(transfers.findTransfer(conversationId)).thenReturn(aTransfer(conversationId, ehrCoreMessageId));
-        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResult(new StoreMessageResponseBody("complete")));
+    void handleMessage_StoreMessageResultIsComplete_StoreFragmentMessageAndEhrCompletePositiveAcknowledgement() throws Exception {
+        // when
+        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture()))
+            .thenReturn(COMPLETE_RESULT);
+        when(largeSqsMessage.getConversationId())
+            .thenReturn(INBOUND_CONVERSATION_ID);
+
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
+
+        // then
         verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
-        assertThat(largeMessageFragmentsArgumentCaptor.getValue().getNhsNumber()).isEmpty();
+        verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldFindTransferByItsConversationId() throws Exception {
-        when(transfers.findTransfer(conversationId)).thenReturn(aTransfer(conversationId, ehrCoreMessageId));
-
-        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResult(new StoreMessageResponseBody("complete")));
+    void handleMessage_StoreMessageResultIsNotComplete_StoreFragmentMessage() throws Exception {
+        // when
+        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture()))
+            .thenReturn(INCOMPLETE_RESULT);
 
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
 
-        verify(transfers).findTransfer(largeSqsMessage.getConversationId());
+        // then
+        verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
+        verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void shouldPostMessageToEhrCompleteQueueWithEhrCoreMessageIdIfStoredResponseStatusIsComplete() throws Exception {
-        when(transfers.findTransfer(conversationId)).thenReturn(aTransfer(conversationId, ehrCoreMessageId));
+    void handleMessage_StoreMessageThrowsException_ShouldNotSendEhrCompletePositiveAcknowledgement() throws Exception {
+        // given
+        final Exception exception = new Exception();
 
-        var ehrCompleteEvent = new EhrCompleteEvent(conversationId, ehrCoreMessageId);
+        // when
+        doThrow(exception)
+            .when(ehrRepoService)
+            .storeMessage(largeMessageFragmentsArgumentCaptor.capture());
 
-        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResult(new StoreMessageResponseBody("complete")));
-        largeMessageFragmentHandler.handleMessage(largeSqsMessage);
-
-        verify(ehrCompleteMessagePublisher).sendMessage(ehrCompleteEvent);
+        // then
+        assertThrows(Exception.class, () -> largeMessageFragmentHandler.handleMessage(largeSqsMessage));
+        verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
-    @Test
-    void shouldNotPostMessageToEhrCompleteQueueIfStoredResponseStatusIsNotEqualToComplete() throws Exception {
-        when(ehrRepoService.storeMessage(largeMessageFragmentsArgumentCaptor.capture())).thenReturn(new StoreMessageResult(new StoreMessageResponseBody("not complete")));
+    // Helper Methods & Utilities
+    private static StoreMessageResult getStoreMessageResult(Type type) {
+        StoreMessageResponseBody responseBody;
 
-        largeMessageFragmentHandler.handleMessage(largeSqsMessage);
+        switch (type) {
+            case Type.COMPLETE -> responseBody = new StoreMessageResponseBody("complete");
+            case Type.INCOMPLETE -> responseBody = new StoreMessageResponseBody("incomplete");
+            default -> throw new JUnitException("Invalid type provided for getResponseBody(String type)");
+        }
 
-        verify(ehrCompleteMessagePublisher, times(0)).sendMessage(any());
+        return new StoreMessageResult(responseBody);
     }
 
-    private Transfer aTransfer(UUID conversationId, UUID ehrCoreMessageId) {
-        return new Transfer(conversationId.toString(),
-                "some-nhs-number",
-                "some-source-gp",
-                "some-nems-message-id",
-                "last-updated",
-                "some-state",
-                "some-date",
-                "some-last-updated-date",
-                ehrCoreMessageId.toString(),
-                true);
+    private enum Type {
+        COMPLETE,
+        INCOMPLETE
     }
 }

@@ -3,73 +3,64 @@ package uk.nhs.prm.repo.ehrtransferservice.handlers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.TransferCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.TransferCompleteEvent;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.models.ack.Acknowledgement;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
+import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import static net.logstash.logback.argument.StructuredArguments.v;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class NegativeAcknowledgementHandler {
+    private final TransferService transferService;
+    private final AuditService auditService;
 
-    private final TransferStore transferStore;
-    private final TransferCompleteMessagePublisher transferCompleteMessagePublisher;
+    private static final String DEFAULT_FAILURE_CODE = "UNKNOWN_ERROR";
 
     public void handleMessage(Acknowledgement acknowledgement) {
-        var conversationId = acknowledgement.getConversationId();
-        boolean isActive = false;
+        final UUID inboundConversationId = acknowledgement.getConversationId();
+        final Optional<UUID> nemsMessageId = transferService.getNemsMessageIdAsUuid(inboundConversationId);
 
         logFailureDetail(acknowledgement);
 
-        transferStore.handleEhrTransferStateUpdate(
-                conversationId.toString(),
-                transferStore.findTransfer(conversationId.toString()).getNemsMessageId(),
-                createState(acknowledgement),
-                isActive
+        transferService.updateConversationTransferStatusWithFailure(
+            inboundConversationId,
+            getFailureCodeForDb(acknowledgement)
         );
 
-        publishTransferCompleteEvent(
-                transferStore.findTransfer(conversationId.toString()),
-                conversationId
-        );
-    }
-
-    private String createState(Acknowledgement acknowledgement) {
-        return "ACTION:EHR_TRANSFER_FAILED:" + getFailureCodeForDb(acknowledgement);
-    }
-
-    private void publishTransferCompleteEvent(Transfer transfer, UUID conversationId) {
-        TransferCompleteEvent transferCompleteEvent = new TransferCompleteEvent(
-                transfer.getNemsEventLastUpdated(),
-                transfer.getSourceGP(),
-                "SUSPENSION",
-                transfer.getNemsMessageId(),
-                transfer.getNhsNumber());
-
-        transferCompleteMessagePublisher.sendMessage(transferCompleteEvent, conversationId);
-
+        auditService.publishAuditMessage(inboundConversationId, INBOUND_FAILED, nemsMessageId);
     }
 
     private String getFailureCodeForDb(Acknowledgement acknowledgement) {
         if (acknowledgement.getFailureDetails().isEmpty()) {
-            return "UNKNOWN_ERROR";
+            return DEFAULT_FAILURE_CODE;
         }
+
         return acknowledgement.getFailureDetails().get(0).code();
     }
 
     private void logFailureDetail(Acknowledgement acknowledgement) {
-        acknowledgement.getFailureDetails().forEach(detail ->
-                log.info("Negative acknowledgement details",
-                        v("acknowledgementTypeCode", acknowledgement.getTypeCode()),
-                        v("detail.code", detail.code()),
-                        v("detail.displayName", detail.displayName()),
-                        v("detail.level", detail.level()),
-                        v("detail.codeSystem", detail.codeSystem())));
+        final String logTemplate = """
+            Negative acknowledgement details:
+            
+            acknowledgementTypeCode: {},
+            detail.code: {},
+            detail.displayName: {},
+            detail.level: {},
+            detail.codeSystem: {}
+            """;
+
+        acknowledgement.getFailureDetails().forEach(detail -> log.info(
+            logTemplate,
+            acknowledgement.getTypeCode(),
+            detail.code(),
+            detail.displayName(),
+            detail.level(),
+            detail.codeSystem()
+        ));
     }
 }

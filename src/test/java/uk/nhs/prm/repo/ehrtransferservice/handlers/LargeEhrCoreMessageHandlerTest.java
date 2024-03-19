@@ -1,14 +1,16 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import uk.nhs.prm.repo.ehrtransferservice.builders.ConversationRecordBuilder;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
+import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
@@ -19,59 +21,50 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LargeEhrCoreMessageHandlerTest {
+    @Mock
+    LargeSqsMessage largeSqsMessage;
 
     @Mock
     EhrRepoService ehrRepoService;
 
     @Mock
-    LargeSqsMessage largeSqsMessage;
-
-    @Mock
     Gp2gpMessengerService gp2gpMessengerService;
 
-    Transfer transfer;
+    @Mock
+    TransferService transferService;
 
     @Mock
-    TransferStore transferStore;
+    AuditService auditService;
 
     @InjectMocks
     LargeEhrCoreMessageHandler largeEhrCoreMessageHandler;
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        transfer = new Transfer("conversationId", "nhsNumber",
-                "sourceGP", "nemsMessageId", "nemsEventLastUpdated",
-                "state","createdAt", "lastUpdatedAt", "largeEhrCoreMessageId", true);
-        when(largeSqsMessage.getConversationId()).thenReturn(UUID.randomUUID());
-        when(largeSqsMessage.getMessageId()).thenReturn(UUID.randomUUID());
+    private static final ConversationRecord CONVERSATION_RECORD;
+
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("4c77d6c9-00cd-47b6-8974-e66bdd2697e2");
+
+    static {
+        final ConversationRecordBuilder builder = new ConversationRecordBuilder();
+        CONVERSATION_RECORD = builder.withDefaults()
+            .withInboundConversationId(INBOUND_CONVERSATION_ID)
+            .build();
     }
 
     @Test
-    void shouldCallEhrRepoServiceToStoreMessageForLargeEhr() throws Exception {
-        when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
+    void shouldCallEhrRepoServiceAndGp2gpMessengerServiceAndTransferServiceToHandleLargeEhrCore() throws Exception {
+        // when
+        when(transferService.getConversationByInboundConversationId(INBOUND_CONVERSATION_ID))
+            .thenReturn(CONVERSATION_RECORD);
+        when(largeSqsMessage.getConversationId())
+            .thenReturn(INBOUND_CONVERSATION_ID);
+
         largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
+
+        // then
         verify(ehrRepoService).storeMessage(largeSqsMessage);
+        verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, CONVERSATION_RECORD.sourceGp());
+        verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID,
+            ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT);
+        verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT, CONVERSATION_RECORD.nemsMessageId());
     }
-
-    @Test
-    void shouldCallGp2GpMessengerServiceToMakeContinueRequest() throws Exception {
-        when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
-        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
-        verify(gp2gpMessengerService).sendContinueMessage(largeSqsMessage, transfer);
-    }
-
-    @Test
-    void shouldCallTransferTrackerDbToUpdateWithExpectedStatus() throws Exception {
-        when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
-        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
-        verify(transferStore).handleEhrTransferStateUpdate(largeSqsMessage.getConversationId().toString(), "nemsMessageId" ,"ACTION:LARGE_EHR_CONTINUE_REQUEST_SENT", true);
-    }
-
-    @Test
-    void shouldCallTransferTrackerDbToUpdateWithLargeEhrCoreMessageId() throws Exception {
-        when(transferStore.findTransfer(largeSqsMessage.getConversationId().toString())).thenReturn(transfer);
-        largeEhrCoreMessageHandler.handleMessage(largeSqsMessage);
-        verify(transferStore).updateLargeEhrCoreMessageId(largeSqsMessage.getConversationId().toString(), largeSqsMessage.getMessageId().toString());
-    }
-
 }
