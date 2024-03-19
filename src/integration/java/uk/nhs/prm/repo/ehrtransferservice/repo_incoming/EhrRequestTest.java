@@ -1,8 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.nhs.prm.repo.ehrtransferservice.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient;
+import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.utils.QueueUtility;
@@ -21,22 +20,19 @@ import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DESTINATION_GP;
 
-@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
-@SpringBootTest()
+@SpringBootTest
 @ActiveProfiles("test")
+@WireMockTest(httpPort = 8080)
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
+@ExtendWith(ForceXercesParserSoLogbackDoesNotBlowUpWhenUsingSwiftMqClient.class)
 class EhrRequestTest {
     @Autowired
     private TransferService transferService;
@@ -54,36 +50,29 @@ class EhrRequestTest {
     private String gp2gpMessengerAuthKey;
 
     private static final String NHS_NUMBER = "9798548754";
-    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("d7525915-b2c4-44e4-9ac1-dbeec7715d4f");
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("ce3aad10-9b7c-4a9b-ab87-a9d6521d61b2");
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
     private static final String NEMS_EVENT_LAST_UPDATED = "2017-11-01T15:00:33+00:00";
-    private static final String SOURCE_GP = "odscode";
-    private WireMockServer wireMock;
-
-    @BeforeEach
-    public void setUp() {
-        wireMock = initializeWebServer();
-    }
+    private static final String SOURCE_GP = "B14758";
 
     @AfterEach
-    void tearDown() {
+    void afterEach() {
         queueUtility.purgeQueue(repoIncomingQueueName);
         transferTrackerDbUtility.deleteItem(INBOUND_CONVERSATION_ID, CONVERSATION);
-        wireMock.resetAll();
-        wireMock.stop();
     }
 
     @Test
-    void shouldCreateConversationRecordAndUpdateTransferStatusToInboundRequestSent()  {
+    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSent() {
         // given
         final String repoIncomingMessage = getRepoIncomingMessage();
 
         // when
-        stubFor(post(urlMatching("/health-record-requests/" + NHS_NUMBER))
+        stubFor(post(
+                urlMatching("/health-record-requests/" + NHS_NUMBER))
                 .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
                 .withHeader("Content-Type", equalTo("application/json"))
-                .withHeader("traceId", equalTo(INBOUND_CONVERSATION_ID.toString()))
-                .willReturn(aResponse().withStatus(204)));
+                .willReturn(aResponse().withStatus(204))
+        );
 
         queueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
 
@@ -117,12 +106,5 @@ class EhrRequestTest {
             DESTINATION_GP,
             NEMS_EVENT_LAST_UPDATED
         );
-    }
-
-    private WireMockServer initializeWebServer() {
-        final WireMockServer wireMockServer = new WireMockServer(8080);
-        wireMockServer.start();
-
-        return wireMockServer;
     }
 }
