@@ -1,29 +1,28 @@
 package uk.nhs.prm.repo.ehrtransferservice.handlers;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.message_publishers.EhrCompleteMessagePublisher;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
+import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class SmallEhrMessageHandler implements MessageHandler<ParsedMessage> {
-
     private final EhrRepoService ehrRepoService;
-    private final EhrCompleteMessagePublisher ehrCompleteMessagePublisher;
-
-    public SmallEhrMessageHandler(EhrRepoService ehrRepoService, EhrCompleteMessagePublisher ehrCompleteMessagePublisher) {
-        this.ehrRepoService = ehrRepoService;
-        this.ehrCompleteMessagePublisher = ehrCompleteMessagePublisher;
-    }
+    private final Gp2gpMessengerService gp2gpMessengerService;
 
     @Override
     public void handleMessage(ParsedMessage parsedMessage) throws Exception {
-        ehrRepoService.storeMessage(parsedMessage);
-        log.info("Successfully stored small-ehr message in the ehr-repo-service");
-        ehrCompleteMessagePublisher.sendMessage(new EhrCompleteEvent(parsedMessage.getConversationId(), parsedMessage.getMessageId()));
-        log.info("Successfully published message to ehr-complete topic");
+        final StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(parsedMessage);
+        log.info("The Small EHR with Inbound Conversation ID {} has been stored successfully",
+            parsedMessage.getConversationId());
+
+        if(storeMessageResult.isEhrComplete()) {
+            gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(parsedMessage.getConversationId());
+        }
     }
 }

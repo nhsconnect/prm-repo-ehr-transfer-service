@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JmsConsumer {
     final AmqpMessageParser amqpMessageParser;
-    final JmsProducer jmsProducer;
     final Parser parser;
     private final Broker broker;
     private final Tracer tracer;

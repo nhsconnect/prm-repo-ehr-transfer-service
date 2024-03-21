@@ -10,13 +10,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.logging.UpdateableTraceContext;
-import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
+import uk.nhs.prm.repo.ehrtransferservice.logging.UpdateableTraceContext;
 import uk.nhs.prm.repo.ehrtransferservice.message_publishers.ParsingDlqPublisher;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.AmqpMessageParser;
-import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 import uk.nhs.prm.repo.ehrtransferservice.parsers.Parser;
+import uk.nhs.prm.repo.ehrtransferservice.services.Broker;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,8 +31,6 @@ import static org.mockito.Mockito.*;
 class JmsConsumerTest {
     @Mock
     AmqpMessageParser amqpMessageParser;
-    @Mock
-    JmsProducer jmsProducer;
     @Mock
     Parser parser;
     @Mock

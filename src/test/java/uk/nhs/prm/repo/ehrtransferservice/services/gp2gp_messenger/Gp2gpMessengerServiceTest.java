@@ -1,102 +1,151 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.nhs.prm.repo.ehrtransferservice.database.TransferStore;
+import org.springframework.test.util.ReflectionTestUtils;
+import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
-import uk.nhs.prm.repo.ehrtransferservice.models.EhrCompleteEvent;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.Transfer;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.util.ReflectionTestUtils.setField;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.REPOSITORY_ASID;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.createRepoIncomingEvent;
 
 @ExtendWith(MockitoExtension.class)
 class Gp2gpMessengerServiceTest {
     @Mock
-    Gp2gpMessengerClient gp2gpMessengerClient;
+    private Gp2gpMessengerClient gp2gpMessengerClient;
+
     @Mock
-    ParsedMessage parsedMessage;
+    private TransferService transferService;
+
     @Mock
-    TransferStore transferStore;
+    private ParsedMessage parsedMessage;
+
     @Mock
-    EhrCompleteEvent ehrCompleteEvent;
-    @Mock
-    Transfer ehrTransferData;
+    private ConversationRecord conversationRecord;
+
+    @Captor
+    private ArgumentCaptor<Gp2gpMessengerEhrRequestBody> gp2gpMessengerEhrRequestBodyArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Gp2gpMessengerContinueMessageRequestBody> gp2gpMessengerContinueMessageRequestBodyArgumentCaptor;
+
+    @Captor
+    private ArgumentCaptor<Gp2gpMessengerPositiveAcknowledgementRequestBody> gp2gpMessengerPositiveAcknowledgementRequestBodyArgumentCaptor;
+
     @InjectMocks
-    Gp2gpMessengerService gp2gpMessengerService;
+    private Gp2gpMessengerService gp2gpMessengerService;
 
-    @BeforeEach
-    void setUp() {
-        setField(gp2gpMessengerService, "repositoryAsid", "some-asid");
+    private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("9ac92880-bcff-4ed2-ac42-d944b783d90f");
+    private static final UUID INBOUND_MESSAGE_ID = UUID.fromString("4fa2b27b-dc5b-4779-8e2c-c2c3a816d9b4");
+    private static final String SOURCE_GP = "B14758";
+    private static final String NHS_NUMBER = "9798547854";
+
+    @Test
+    void sendEhrRequest_ValidRepoIncomingEvent_SendGp2gpMessengerEhrRequest() throws Exception {
+        // given
+        final RepoIncomingEvent event = createRepoIncomingEvent(INBOUND_CONVERSATION_ID);
+
+        // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
+        gp2gpMessengerService.sendEhrRequest(event);
+
+        // then
+        verify(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest(
+            eq(event.getNhsNumber()),
+            gp2gpMessengerEhrRequestBodyArgumentCaptor.capture()
+        );
     }
 
     @Test
-    void shouldCallGp2gpMessengerForEhrRequest() throws Exception {
-        var incomingEvent = createIncomingEvent();
+    void sendEhrRequest_SendGp2gpMessengerEhrRequestThrowsHttpException_ThrowNewException() throws HttpException, URISyntaxException, IOException, InterruptedException {
+        // given
+        final RepoIncomingEvent event = createRepoIncomingEvent(INBOUND_CONVERSATION_ID);
+        final Exception exception = new HttpException();
 
-        gp2gpMessengerService.sendEhrRequest(incomingEvent);
+        // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
+        doThrow(exception)
+            .when(gp2gpMessengerClient)
+            .sendGp2gpMessengerEhrRequest(any(String.class), gp2gpMessengerEhrRequestBodyArgumentCaptor.capture());
 
-        Gp2gpMessengerEhrRequestBody gp2gpMessengerEhrRequestBody =
-                new Gp2gpMessengerEhrRequestBody("destination-gp", "some-asid", "source-gp", "randomUUID");
-        verify(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest("123456765", gp2gpMessengerEhrRequestBody);
+        // then
+        assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrRequest(event));
     }
 
     @Test
-    void shouldThrowHttpExceptionWhenWeGotAnyStatusCodeButNot204ForEhrRequest() throws HttpException, URISyntaxException, IOException, InterruptedException {
-        var incomingEvent = createIncomingEvent();
+    void sendContinueMessage_ValidParsedMessageAndSourceGp_SendContinueMessage() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        // when
+        when(parsedMessage.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID);
+        when(parsedMessage.getMessageId()).thenReturn(INBOUND_MESSAGE_ID);
 
-        doThrow(new HttpException()).when(gp2gpMessengerClient).sendGp2gpMessengerEhrRequest(any(), any());
+        gp2gpMessengerService.sendContinueMessage(parsedMessage, SOURCE_GP);
 
-        Assertions.assertThrows(Exception.class, () -> gp2gpMessengerService.sendEhrRequest(incomingEvent));
+        // then
+        verify(gp2gpMessengerClient)
+            .sendContinueMessage(gp2gpMessengerContinueMessageRequestBodyArgumentCaptor.capture());
     }
 
     @Test
-    void shouldCallGp2GpMessengerClientForContinueRequest() throws HttpException, IOException, URISyntaxException, InterruptedException {
-        UUID messageId = UUID.randomUUID();
-        UUID conversationId = UUID.randomUUID();
-        when(parsedMessage.getMessageId()).thenReturn(messageId);
-        when(parsedMessage.getConversationId()).thenReturn(conversationId);
-        when(ehrTransferData.getSourceGP()).thenReturn("source-gp");
-        gp2gpMessengerService.sendContinueMessage(parsedMessage, ehrTransferData);
-        verify(gp2gpMessengerClient).sendContinueMessage(new Gp2gpMessengerContinueMessageRequestBody(conversationId,"source-gp",messageId));
+    void sendEhrCompletePositiveAcknowledgement_ExistingInboundConversationId_SendGp2gpMessengerPositiveAcknowledgement() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        // when
+        when(transferService.getConversationByInboundConversationId(INBOUND_CONVERSATION_ID))
+            .thenReturn(conversationRecord);
+        when(transferService.getEhrCoreInboundMessageIdForInboundConversationId(INBOUND_CONVERSATION_ID))
+            .thenReturn(INBOUND_MESSAGE_ID);
+        when(conversationRecord.sourceGp()).thenReturn(SOURCE_GP);
+        when(conversationRecord.nhsNumber()).thenReturn(NHS_NUMBER);
+
+        gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
+
+        // then
+        verify(gp2gpMessengerClient).sendGp2gpMessengerPositiveAcknowledgement(
+            eq(NHS_NUMBER),
+            gp2gpMessengerPositiveAcknowledgementRequestBodyArgumentCaptor.capture()
+        );
     }
 
     @Test
-    void shouldCallGp2gpMessengerForPositiveAcknowledgement() throws Exception {
-        var conversationId = UUID.randomUUID();
-        var messageId = UUID.randomUUID();
-        var nhsNumber = "1234567890";
+    void sendEhrCompletePositiveAcknowledgement_SendGp2gpMessengerPositiveAcknowledgementThrowsHttpException_ThrowNewEhrCompleteAcknowledgementFailedException() throws HttpException, IOException, URISyntaxException, InterruptedException {
+        // given
+        final Exception exception = new HttpException();
 
-        when(ehrCompleteEvent.getConversationId()).thenReturn(conversationId);
-        when(ehrCompleteEvent.getMessageId()).thenReturn(messageId);
-        when(ehrTransferData.getSourceGP()).thenReturn("some-ods-code");
-        when(ehrTransferData.getNhsNumber()).thenReturn(nhsNumber);
+        // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
+        when(transferService.getConversationByInboundConversationId(INBOUND_CONVERSATION_ID))
+            .thenReturn(conversationRecord);
+        when(transferService.getEhrCoreInboundMessageIdForInboundConversationId(INBOUND_CONVERSATION_ID))
+            .thenReturn(INBOUND_MESSAGE_ID);
+        when(conversationRecord.sourceGp()).thenReturn(SOURCE_GP);
+        when(conversationRecord.nhsNumber()).thenReturn(NHS_NUMBER);
+        doThrow(exception)
+            .when(gp2gpMessengerClient)
+            .sendGp2gpMessengerPositiveAcknowledgement(
+                any(String.class),
+                gp2gpMessengerPositiveAcknowledgementRequestBodyArgumentCaptor.capture()
+            );
 
-        gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(ehrCompleteEvent, ehrTransferData);
-
-        var gp2gpMessengerPositiveAcknowledgementRequestBody =
-                new Gp2gpMessengerPositiveAcknowledgementRequestBody("some-asid", "some-ods-code", conversationId.toString(), messageId.toString());
-        verify(gp2gpMessengerClient).sendGp2gpMessengerPositiveAcknowledgement(nhsNumber, gp2gpMessengerPositiveAcknowledgementRequestBody);
-
+        // then
+        assertThrows(EhrCompleteAcknowledgementFailedException.class,
+            () -> gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID));
     }
-
-    private RepoIncomingEvent createIncomingEvent() {
-        return new RepoIncomingEvent("123456765", "source-gp", "nems-message-id", "destination-gp", "last-updated", "randomUUID");
-    }
-
 }

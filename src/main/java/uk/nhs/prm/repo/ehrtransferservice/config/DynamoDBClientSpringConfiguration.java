@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 public class DynamoDBClientSpringConfiguration {
     @Value("${aws.region}")
     private String awsRegion;
-
     private AwsCredentialsProvider awsCredentialsProvider;
 
     @Bean
