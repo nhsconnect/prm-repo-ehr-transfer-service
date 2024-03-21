@@ -168,7 +168,7 @@ data "aws_iam_policy_document" "transfer_tracker_db_access" {
       "dynamodb:Query"
     ]
     resources = [
-      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${data.aws_ssm_parameter.transfer_tracker_db_name}"
+      "arn:aws:dynamodb:${var.region}:${data.aws_caller_identity.current.account_id}:table/${data.aws_ssm_parameter.transfer_tracker_db_name.value}"
     ]
   }
 }
