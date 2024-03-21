@@ -51,3 +51,7 @@ data "aws_ssm_parameter" "repo_incoming_kms_key" {
 data "aws_ssm_parameter" "env_domain_name" {
   name = "/repo/${var.environment}/output/prm-deductions-infra/environment-domain-name"
 }
+
+data "aws_ssm_parameter" "transfer_tracker_db_name" {
+  name = "/repo/${var.environment}/output/prm-deductions-infra/ehr-transfer-tracker-db-name"
+}
