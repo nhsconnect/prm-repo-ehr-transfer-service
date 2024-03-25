@@ -74,7 +74,7 @@ dependencies {
     implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.533'
 
-    compileOnly 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.hamcrest:hamcrest:2.2'
