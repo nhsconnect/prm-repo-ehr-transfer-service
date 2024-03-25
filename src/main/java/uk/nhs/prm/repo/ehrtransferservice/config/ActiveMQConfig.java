@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 
+import java.util.List;
+
 @Configuration
 public class ActiveMQConfig {
 
@@ -41,6 +43,7 @@ public class ActiveMQConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
+        activeMQConnectionFactory.setTrustedPackages(List.of("uk.nhs.prm.repo.ehrtransferservice"));
         activeMQConnectionFactory.setBrokerURL(failoverUrl());
         activeMQConnectionFactory.setPassword(brokerPassword);
         activeMQConnectionFactory.setUserName(brokerUsername);
