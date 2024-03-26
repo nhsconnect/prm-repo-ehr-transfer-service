@@ -83,14 +83,16 @@ public class EhrRepoClient {
                 .header("traceId", tracer.getTraceId())
                 .POST(jsonPayload).build();
 
-        var response = HttpClient.newHttpClient()
-                .send(request, HttpResponse.BodyHandlers.ofString());
+        try (var httpClient = HttpClient.newHttpClient()) {
+            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-
-        if (response.statusCode() != 201) {
-            throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
+            if (response.statusCode() != 201) {
+                throw new HttpException(String.format("Unexpected response from EHR while checking if a message was stored: %d", response.statusCode()));
+            }
+            return parseResponse(response);
+        } catch (Exception exception) {
+            throw new RuntimeException("Error encountered when uploading message to S3", exception);
         }
-        return parseResponse(response);
     }
 
     public void softDeleteEhrRecord(String nhsNumber) {
