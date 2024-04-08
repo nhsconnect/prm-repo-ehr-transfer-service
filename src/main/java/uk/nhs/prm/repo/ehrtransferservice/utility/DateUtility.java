@@ -10,6 +10,7 @@ import java.time.temporal.ChronoUnit;
 
 public final class DateUtility {
     private static final Logger LOGGER = LogManager.getLogger(DateUtility.class);
+
     private DateUtility() { }
 
     public static final String ZONE_ID = "Europe/London";
