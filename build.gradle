@@ -71,7 +71,7 @@ dependencies {
 
     // Once we upgrade amazon-sqs-java-messaging-lib to v2 we can remove aws-java-sdk-core and sqs.
     implementation 'com.amazonaws:amazon-sqs-java-messaging-lib:1.1.2'
-    implementation 'com.amazonaws:aws-java-sdk-core:1.12.368'
+    implementation 'com.amazonaws:aws-java-sdk-core:1.12.696'
     implementation 'com.amazonaws:aws-java-sdk-sqs:1.12.533'
 
     compileOnly 'org.projectlombok:lombok:1.18.30'
