@@ -58,7 +58,7 @@ dependencies {
     implementation 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
     implementation 'org.apache.qpid:proton-j:0.34.1'
 
-    implementation platform('software.amazon.awssdk:bom:2.20.130')
+    implementation platform('software.amazon.awssdk:bom:2.25.26')
     implementation 'software.amazon.awssdk:cloudwatch'
     implementation 'software.amazon.awssdk:sns'
     implementation 'software.amazon.awssdk:sqs'
