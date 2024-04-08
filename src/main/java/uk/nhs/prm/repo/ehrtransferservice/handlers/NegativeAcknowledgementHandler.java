@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.FailureReason.NEGATIVE_ACKNOWLEDGEMENT_RECEIVED;
 
 @Slf4j
 @Service
@@ -29,7 +30,8 @@ public class NegativeAcknowledgementHandler {
 
         transferService.updateConversationTransferStatusWithFailure(
             inboundConversationId,
-            getFailureCodeForDb(acknowledgement)
+            getFailureCodeForDb(acknowledgement),
+            NEGATIVE_ACKNOWLEDGEMENT_RECEIVED
         );
 
         auditService.publishAuditMessage(inboundConversationId, INBOUND_FAILED, nemsMessageId);

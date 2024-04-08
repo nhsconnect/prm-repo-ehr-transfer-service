@@ -7,6 +7,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.FailureReason;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationAlreadyPresentException;
@@ -176,7 +177,7 @@ public class TransferRepository {
         }
     }
 
-    void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
+    void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode, FailureReason failureReason) {
         if(!isInboundConversationPresent(inboundConversationId)) {
             throw new ConversationUpdateException(inboundConversationId);
         }
@@ -198,6 +199,11 @@ public class TransferRepository {
                 .value(AttributeValue.builder().s(INBOUND_FAILED.name()).build())
                 .action(AttributeAction.PUT)
                 .build());
+
+        updateItems.put(FAILURE_REASON.name, AttributeValueUpdate.builder()
+            .value(AttributeValue.builder().s(failureReason.reason).build())
+            .action(AttributeAction.ADD)
+            .build());
 
         updateItems.put(FAILURE_CODE.name, AttributeValueUpdate.builder()
                 .value(AttributeValue.builder().s(failureCode).build())

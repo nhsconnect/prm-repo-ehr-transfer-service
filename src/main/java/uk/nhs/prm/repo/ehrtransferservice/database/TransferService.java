@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.FailureReason;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
@@ -67,10 +68,10 @@ public class TransferService {
             inboundConversationId, conversationTransferStatus.name());
     }
 
-    public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
-        log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
-            inboundConversationId, INBOUND_FAILED.name(), failureCode);
+    public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode, FailureReason failureReason) {
+        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode, failureReason);
+        log.info("Updated conversation record with Inbound Conversation ID {} to {} - with failure code {} and reason {}",
+            inboundConversationId, INBOUND_FAILED.name(), failureCode, failureReason);
     }
 
     public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
