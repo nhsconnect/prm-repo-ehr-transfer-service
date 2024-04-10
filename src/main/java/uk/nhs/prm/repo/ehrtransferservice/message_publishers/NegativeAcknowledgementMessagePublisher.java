@@ -17,7 +17,7 @@ public class NegativeAcknowledgementMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.negativeAcksTopicArn, message, Map.of("conversationId", conversationId.toString()));
+        messagePublisher.sendMessage(this.negativeAcksTopicArn, message, Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }
 

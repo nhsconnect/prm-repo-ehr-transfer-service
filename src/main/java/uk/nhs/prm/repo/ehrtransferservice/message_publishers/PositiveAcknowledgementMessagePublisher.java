@@ -17,7 +17,7 @@ public class PositiveAcknowledgementMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.positiveAcksTopicArn, message, Map.of("conversationId", conversationId.toString()));
+        messagePublisher.sendMessage(this.positiveAcksTopicArn, message, Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }
 

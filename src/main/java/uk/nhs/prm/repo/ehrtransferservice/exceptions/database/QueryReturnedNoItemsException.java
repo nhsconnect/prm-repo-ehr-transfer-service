@@ -8,6 +8,6 @@ public class QueryReturnedNoItemsException extends DatabaseException {
     private static final String EXCEPTION_MESSAGE = "The query returned no items for Inbound Conversation ID %s";
 
     public QueryReturnedNoItemsException(UUID inboundConversationId) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString()));
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()));
     }
 }

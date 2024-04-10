@@ -42,7 +42,7 @@ public class EhrRepoClient {
     }
 
     public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws DuplicateMessageException, RuntimeException, IOException, URISyntaxException, InterruptedException {
-        String endpoint = "/messages/" + conversationId + "/" + messageId;
+        String endpoint = "/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URL(ehrRepoUrl, endpoint).toURI())
                 .header("Authorization", ehrRepoAuthKey)

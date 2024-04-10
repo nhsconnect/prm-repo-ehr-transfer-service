@@ -34,15 +34,15 @@ public class Gp2gpMessengerService {
             repoIncomingEvent.getDestinationGp(),
             repositoryAsid,
             repoIncomingEvent.getSourceGp(),
-            repoIncomingEvent.getConversationId()
+            repoIncomingEvent.getConversationId().toUpperCase()
         );
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId);
+            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } catch (Exception exception) {
             throw new Exception(
-                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId),
+                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId.toString().toUpperCase()),
                 exception
             );
         }
@@ -71,7 +71,7 @@ public class Gp2gpMessengerService {
             repositoryAsid,
             record.sourceGp(),
             inboundConversationId.toString(),
-            ehrCoreMessageId.toString()
+            ehrCoreMessageId.toString().toUpperCase()
         );
 
         try {

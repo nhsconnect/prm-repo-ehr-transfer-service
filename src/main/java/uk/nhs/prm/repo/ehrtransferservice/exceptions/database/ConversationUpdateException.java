@@ -9,10 +9,10 @@ public class ConversationUpdateException extends DatabaseException {
         "The conversation could not be updated with Inbound Conversation ID %s";
 
     public ConversationUpdateException(UUID inboundConversationId) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId));
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()));
     }
 
     public ConversationUpdateException(UUID inboundConversationId, Throwable throwable) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId), throwable);
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()), throwable);
     }
 }

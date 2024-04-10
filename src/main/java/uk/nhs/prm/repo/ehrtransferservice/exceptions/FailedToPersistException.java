@@ -9,6 +9,6 @@ public class FailedToPersistException extends DatabaseException {
         "Unable to persist transfer to DynamoDB for Inbound Conversation ID %s";
 
     public FailedToPersistException(UUID inboundMessageId, Throwable throwable) {
-        super(EXCEPTION_MESSAGE.formatted(inboundMessageId.toString()), throwable);
+        super(EXCEPTION_MESSAGE.formatted(inboundMessageId.toString().toUpperCase()), throwable);
     }
 }

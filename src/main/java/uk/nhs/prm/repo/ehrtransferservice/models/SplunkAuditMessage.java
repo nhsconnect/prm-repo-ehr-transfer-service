@@ -13,7 +13,7 @@ public class SplunkAuditMessage {
     private String nemsMessageId;
 
     public SplunkAuditMessage(UUID conversationId, ConversationTransferStatus transferStatus, Optional<UUID> nemsMessageId) {
-        this.conversationId = conversationId.toString();
+        this.conversationId = conversationId.toString().toUpperCase();
         this.status = transferStatus.name();
         this.nemsMessageId = nemsMessageId.isPresent()
             ? nemsMessageId.toString()

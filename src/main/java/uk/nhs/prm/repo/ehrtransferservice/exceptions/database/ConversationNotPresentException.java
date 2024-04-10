@@ -9,6 +9,6 @@ public class ConversationNotPresentException extends DatabaseException {
         "No transfer present for Inbound Conversation ID %s";
 
     public ConversationNotPresentException(UUID inboundConversationId) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString()));
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()));
     }
 }

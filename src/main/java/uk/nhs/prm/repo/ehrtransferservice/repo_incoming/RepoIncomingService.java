@@ -50,7 +50,7 @@ public class RepoIncomingService {
         String transferState;
 
         log.info("Awaiting for transfer status to become INBOUND_COMPLETE for Inbound Conversation ID {}",
-            inboundConversationId);
+            inboundConversationId.toString().toUpperCase());
 
         do {
             Thread.sleep(ehrResponsePollPeriodMilliseconds);
@@ -58,20 +58,20 @@ public class RepoIncomingService {
 
             log.info("Transfer status yet to be updated to INBOUND_COMPLETE (currently {}) for Inbound Conversation ID {} - attempt {} of {}",
                 transferState,
-                inboundConversationId,
+                inboundConversationId.toString().toUpperCase(),
                 pollCount + 1,
                 ehrResponsePollLimit
             );
 
             if (transferState.equals(INBOUND_COMPLETE.name())) {
-                log.info("Transfer status has been set to INBOUND_COMPLETE for Inbound Conversation ID {}", inboundConversationId);
+                log.info("Transfer status has been set to INBOUND_COMPLETE for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
                 return;
             }
 
             pollCount++;
         } while (pollCount < ehrResponsePollLimit);
 
-        log.warn("The transfer for Inbound Conversation ID {} has timed out", inboundConversationId);
+        log.warn("The transfer for Inbound Conversation ID {} has timed out", inboundConversationId.toString().toUpperCase());
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
         throw new EhrResponseTimedOutException(transferState);
     }
