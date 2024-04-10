@@ -108,6 +108,6 @@ class SmallEhrMessageHandlerTest {
             assertThrows(AcknowledgementException.class, () -> smallEhrMessageHandler.handleMessage(parsedMessage));
 
         // then
-        assertEquals(thrown.getMessage(), exceptionMessage.formatted(INBOUND_CONVERSATION_ID));
+        assertEquals(thrown.getMessage(), exceptionMessage.formatted(INBOUND_CONVERSATION_ID.toString().toUpperCase()));
     }
 }
