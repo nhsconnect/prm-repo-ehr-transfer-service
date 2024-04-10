@@ -101,7 +101,7 @@ class JmsConsumerTest {
         jmsConsumer.onMessage(message, headerMap);
 
         verify(tracer).createNewContext();
-        verify(traceContext).updateTraceId(conversationId.toString().toUpperCase());
+        verify(traceContext).updateTraceId(conversationId.toString());
         verify(traceContext).updateConversationId(conversationId.toString().toUpperCase());
     }
 
