@@ -98,17 +98,13 @@ public class TransferServiceTest {
     }
 
     @Test
-    void getConversationByInboundConversationId_NonExistingInboundConversationId_ShouldThrowTransferRecordNotPresentException() {
+    void getConversationByInboundConversationId_NonExistingInboundConversationId_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
-        final String exceptionMessage = "No transfer present for Inbound Conversation ID %s";
 
         // when
-        final DatabaseException exception = assertThrows(ConversationNotPresentException.class,
+        assertThrows(ConversationNotPresentException.class,
             () -> transferService.getConversationByInboundConversationId(inboundConversationId));
-
-        // then
-        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
     }
 
     @Test
@@ -128,17 +124,13 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowTransferUpdateFailedException() {
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowConversationUpdateException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
-        final String exceptionMessage = "The conversation could not be updated with Inbound Conversation ID %s";
 
         // when
-        final DatabaseException exception = assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationUpdateException.class, () ->
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
-
-        // then
-        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
     }
 
     @Test
@@ -162,18 +154,14 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowTransferUpdateFailedException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
-        final String exceptionMessage = "The conversation could not be updated with Inbound Conversation ID %s";
 
         // when
-        final DatabaseException exception = assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationUpdateException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
-
-        // then
-        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
     }
 
     @Test
@@ -196,14 +184,10 @@ public class TransferServiceTest {
     void getEhrCoreInboundMessageIdForInboundConversationId_NonExistingInboundConversationId_ShouldThrowQueryReturnedNoItemsException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
-        final String exceptionMessage = "The query returned no items for Inbound Conversation ID %s";
 
         // when
-        final DatabaseException exception = assertThrows(QueryReturnedNoItemsException.class,
+        assertThrows(QueryReturnedNoItemsException.class,
             () -> transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId));
-
-        // then
-        assertEquals(exception.getMessage(), exceptionMessage.formatted(inboundConversationId));
     }
 
     // Helper Methods

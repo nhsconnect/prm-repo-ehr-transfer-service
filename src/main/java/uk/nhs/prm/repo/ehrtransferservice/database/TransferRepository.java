@@ -40,12 +40,12 @@ public class TransferRepository {
         final String timestamp = getIsoTimestamp();
         final UUID inboundConversationId = UUID.fromString(event.getConversationId());
 
-        if(isInboundConversationPresent(inboundConversationId)) {
+        if (isInboundConversationPresent(inboundConversationId)) {
             throw new ConversationAlreadyPresentException(inboundConversationId);
         }
 
         tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
-            .s(event.getConversationId())
+            .s(inboundConversationId.toString().toUpperCase())
             .build());
 
         tableItem.put(LAYER.name, AttributeValue.builder()
@@ -136,8 +136,8 @@ public class TransferRepository {
     }
 
     void updateConversationStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
-        if(!isInboundConversationPresent(inboundConversationId)) {
-            throw new ConversationUpdateException(inboundConversationId);
+        if (!isInboundConversationPresent(inboundConversationId)) {
+            throw new ConversationNotPresentException(inboundConversationId);
         }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();
@@ -177,8 +177,8 @@ public class TransferRepository {
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        if(!isInboundConversationPresent(inboundConversationId)) {
-            throw new ConversationUpdateException(inboundConversationId);
+        if (!isInboundConversationPresent(inboundConversationId)) {
+            throw new ConversationNotPresentException(inboundConversationId);
         }
 
         final Map<String, AttributeValue> keyItems = new HashMap<>();

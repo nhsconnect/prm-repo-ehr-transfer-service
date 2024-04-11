@@ -43,7 +43,7 @@ public class JmsConsumer {
             log.info("Received Amqp Message from Inbound queue");
             var parsedMessage = parser.parse(messageBody);
 
-            traceContext.updateConversationId(parsedMessage.getConversationId().toString());
+            traceContext.updateConversationId(parsedMessage.getConversationId().toString().toUpperCase());
             log.info("Successfully parsed message");
 
             if (parsedMessage.getInteractionId() == null || parsedMessage.getInteractionId().isBlank()) {
