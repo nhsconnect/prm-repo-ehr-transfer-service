@@ -50,7 +50,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
     private static final String DESTINATION_GP = "A74854";
-    private static final String CONVERSATION_ID = "13962cb7-6d46-4986-bdb4-3201bb25f1f7";
+    private static final String CONVERSATION_ID = "13962CB7-6D46-4986-BDB4-3201BB25F1F7";
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @BeforeEach
