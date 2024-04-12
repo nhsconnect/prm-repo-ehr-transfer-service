@@ -9,6 +9,6 @@ public class ConversationAlreadyPresentException extends DatabaseException {
         "The conversation already exists for Inbound Conversation ID %s";
 
     public ConversationAlreadyPresentException(UUID inboundConversationId) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId));
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()));
     }
 }

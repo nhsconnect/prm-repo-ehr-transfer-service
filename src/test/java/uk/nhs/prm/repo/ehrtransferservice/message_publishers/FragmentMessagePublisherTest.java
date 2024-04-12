@@ -29,6 +29,6 @@ class FragmentMessagePublisherTest {
     void shouldPublishMessageToTheFragmentTopic() {
         var conversationId = UUID.randomUUID();
         fragmentMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
+        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

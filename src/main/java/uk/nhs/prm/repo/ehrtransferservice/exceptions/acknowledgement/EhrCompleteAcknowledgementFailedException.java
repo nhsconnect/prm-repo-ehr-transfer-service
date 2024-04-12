@@ -9,6 +9,6 @@ public class EhrCompleteAcknowledgementFailedException extends AcknowledgementEx
         "Failed to send an EHR Complete Acknowledgement for Inbound Conversation ID %s";
 
     public EhrCompleteAcknowledgementFailedException(UUID inboundConversationId, Throwable cause) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId), cause);
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()), cause);
     }
 }

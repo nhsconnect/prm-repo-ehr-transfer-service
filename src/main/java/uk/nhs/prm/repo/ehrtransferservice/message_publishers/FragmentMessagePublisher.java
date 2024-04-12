@@ -17,7 +17,7 @@ public class FragmentMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.fragmentsTopicArn, message, Map.of("conversationId", conversationId.toString()));
+        messagePublisher.sendMessage(this.fragmentsTopicArn, message, Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }
 

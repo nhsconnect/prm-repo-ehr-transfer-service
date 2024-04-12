@@ -17,6 +17,6 @@ public class EhrInUnhandledMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.ehrInUnhandledTopicArn, message, Map.of("conversationId", conversationId.toString()));
+        messagePublisher.sendMessage(this.ehrInUnhandledTopicArn, message, Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

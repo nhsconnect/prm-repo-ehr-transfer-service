@@ -21,7 +21,7 @@ public final class TestDataUtility {
             .nemsMessageId(NEMS_MESSAGE_ID)
             .destinationGp(DESTINATION_GP)
             .nemsEventLastUpdated(NEMS_EVENT_LAST_UPDATED)
-            .conversationId(inboundConversationId.toString())
+            .conversationId(inboundConversationId.toString().toUpperCase())
             .build();
     }
 }

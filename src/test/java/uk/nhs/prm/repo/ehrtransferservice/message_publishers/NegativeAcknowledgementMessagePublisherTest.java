@@ -29,6 +29,6 @@ class NegativeAcknowledgementMessagePublisherTest {
     void shouldPublishMessageToTheSmallEhrTopic() {
         var conversationId = UUID.randomUUID();
         negativeAcknowledgementMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
+        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

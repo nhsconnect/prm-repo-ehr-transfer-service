@@ -77,7 +77,7 @@ class EhrRepoClientTest {
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
-        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase()))
                 .withHeader("Authorization", equalTo("secret"))
                 .withHeader("traceId", equalTo(String.valueOf(traceId)))
                 .willReturn(aResponse()
@@ -88,7 +88,7 @@ class EhrRepoClientTest {
         EhrRepoClient ehrRepoClient = new EhrRepoClient(wireMockServer.baseUrl(), "secret", tracer);
         PresignedUrl response = ehrRepoClient.fetchStorageUrl(conversationId, messageId);
 
-        verify(getRequestedFor(urlMatching("/messages/" + conversationId + "/" + messageId))
+        verify(getRequestedFor(urlMatching("/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase()))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret"))
                 .withHeader("traceId", matching(String.valueOf(traceId))));
@@ -101,7 +101,7 @@ class EhrRepoClientTest {
         UUID conversationId = UUID.randomUUID();
         UUID messageId = UUID.randomUUID();
 
-        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase()))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(503)
@@ -113,7 +113,7 @@ class EhrRepoClientTest {
         );
         assertThat(expected, notNullValue());
 
-        verify(getRequestedFor(urlMatching("/messages/" + conversationId + "/" + messageId))
+        verify(getRequestedFor(urlMatching("/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase()))
                 .withHeader("Content-Type", matching("application/json"))
                 .withHeader("Authorization", matching("secret")));
     }
@@ -124,7 +124,7 @@ class EhrRepoClientTest {
         UUID messageId = UUID.randomUUID();
         String presignedUrl = "https://fake-presigned-url";
 
-        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId + "/" + messageId))
+        wireMockServer.stubFor(get(urlEqualTo("/messages/" + conversationId.toString().toUpperCase() + "/" + messageId.toString().toUpperCase()))
                 .withHeader("Authorization", equalTo("secret"))
                 .willReturn(aResponse()
                         .withStatus(409)

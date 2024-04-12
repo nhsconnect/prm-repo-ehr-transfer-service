@@ -34,6 +34,6 @@ class SmallEhrMessagePublisherTest {
     @Test
     void shouldPublishMessageToTheSmallEhrTopic() {
         smallEhrMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(smallEhrTopicArn, "message", Map.of("conversationId", conversationId.toString()));
+        verify(messagePublisher).sendMessage(smallEhrTopicArn, "message", Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

@@ -17,7 +17,7 @@ public class SmallEhrMessagePublisher {
     }
 
     public void sendMessage(String message, UUID conversationId) {
-        messagePublisher.sendMessage(this.smallEhrTopicArn, message, Map.of("conversationId", conversationId.toString()));
+        messagePublisher.sendMessage(this.smallEhrTopicArn, message, Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }
 

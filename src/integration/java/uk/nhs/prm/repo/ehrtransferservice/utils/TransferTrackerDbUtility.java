@@ -25,7 +25,7 @@ public class TransferTrackerDbUtility {
     private static final Logger LOGGER = LogManager.getLogger(TransferTrackerDbUtility.class);
     private final DynamoDbClient dynamoDbClient;
     private final String transferTrackerDbTableName;
-    private static final String CORE_LAYER = "CORE#%s";
+    private static final String CORE_LAYER = "CORE";
 
     @Autowired
     public TransferTrackerDbUtility(DynamoDbClient dynamoDbClient,
@@ -39,14 +39,13 @@ public class TransferTrackerDbUtility {
         final String timestamp = getIsoTimestamp();
 
         tableItem.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
-            .s(inboundConversationId.toString())
+            .s(inboundConversationId.toString().toUpperCase())
             .build());
 
-        tableItem.put(LAYER.name, AttributeValue.builder()
-            .s(CORE_LAYER.formatted(ehrCoreMessageId.toString())).build());
+        tableItem.put(LAYER.name, AttributeValue.builder().s(CORE_LAYER).build());
 
         tableItem.put(INBOUND_MESSAGE_ID.name, AttributeValue.builder()
-            .s(ehrCoreMessageId.toString()).build());
+            .s(ehrCoreMessageId.toString().toUpperCase()).build());
 
         tableItem.put(TRANSFER_STATUS.name, AttributeValue.builder()
             .s(OUTBOUND_SENT.name())
@@ -66,8 +65,8 @@ public class TransferTrackerDbUtility {
             .build();
 
         dynamoDbClient.putItem(itemRequest);
-        LOGGER.info("The CORE layer has been crated for Inbound Conversation ID: {}",
-            inboundConversationId.toString());
+        LOGGER.info("The CORE layer has been created for Inbound Conversation ID: {}",
+            inboundConversationId.toString().toUpperCase());
     }
 
     public void deleteItem(UUID inboundConversationId, Layer layer) {
@@ -76,16 +75,16 @@ public class TransferTrackerDbUtility {
                 .tableName(transferTrackerDbTableName)
                 .key(Map.of(
                     INBOUND_CONVERSATION_ID.name,
-                    AttributeValue.builder().s(inboundConversationId.toString()).build(),
+                    AttributeValue.builder().s(inboundConversationId.toString().toUpperCase()).build(),
                     LAYER.name,
                     AttributeValue.builder().s(layer.name()).build()
                 ))
                 .build();
 
             dynamoDbClient.deleteItem(request);
-            LOGGER.info("Deleted record for Inbound Conversation ID: {}", inboundConversationId);
+            LOGGER.info("Deleted record for Inbound Conversation ID: {}", inboundConversationId.toString().toUpperCase());
         } else {
-            LOGGER.warn("{} layer does not exist for Inbound Conversation ID {}", layer.name(), inboundConversationId);
+            LOGGER.warn("{} layer does not exist for Inbound Conversation ID {}", layer.name(), inboundConversationId.toString().toUpperCase());
         }
     }
 
@@ -93,7 +92,7 @@ public class TransferTrackerDbUtility {
         final Map<String, AttributeValue> keyItems = new HashMap<>();
 
         keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
-            .s(inboundConversationId.toString())
+            .s(inboundConversationId.toString().toUpperCase())
             .build());
 
         keyItems.put(LAYER.name, AttributeValue.builder()

@@ -29,6 +29,6 @@ class LargeSqsMessagePublisherTest {
     void shouldPublishMessageToTheLargeEhrTopic() {
         var conversationId = UUID.randomUUID();
         largeEhrMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
+        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

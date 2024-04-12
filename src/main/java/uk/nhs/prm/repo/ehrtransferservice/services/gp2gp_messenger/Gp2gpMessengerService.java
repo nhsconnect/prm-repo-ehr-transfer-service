@@ -34,15 +34,15 @@ public class Gp2gpMessengerService {
             repoIncomingEvent.getDestinationGp(),
             repositoryAsid,
             repoIncomingEvent.getSourceGp(),
-            repoIncomingEvent.getConversationId()
+            repoIncomingEvent.getConversationId().toUpperCase()
         );
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerEhrRequest(repoIncomingEvent.getNhsNumber(), requestBody);
-            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId);
+            log.info("EHR Request sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } catch (Exception exception) {
             throw new Exception(
-                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId),
+                "Error while sending EHR Request for Inbound Conversation ID %s".formatted(inboundConversationId.toString().toUpperCase()),
                 exception
             );
         }
@@ -70,13 +70,13 @@ public class Gp2gpMessengerService {
         final var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(
             repositoryAsid,
             record.sourceGp(),
-            inboundConversationId.toString(),
-            ehrCoreMessageId.toString()
+            inboundConversationId.toString().toUpperCase(),
+            ehrCoreMessageId.toString().toUpperCase()
         );
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
-            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId);
+            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
             log.error("An exception occurred while sending an EHR complete positive acknowledgement {}", exception.getMessage());
             throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);

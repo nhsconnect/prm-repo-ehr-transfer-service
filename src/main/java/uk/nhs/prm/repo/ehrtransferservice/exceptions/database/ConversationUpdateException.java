@@ -8,11 +8,7 @@ public class ConversationUpdateException extends DatabaseException {
     private static final String EXCEPTION_MESSAGE =
         "The conversation could not be updated with Inbound Conversation ID %s";
 
-    public ConversationUpdateException(UUID inboundConversationId) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId));
-    }
-
     public ConversationUpdateException(UUID inboundConversationId, Throwable throwable) {
-        super(EXCEPTION_MESSAGE.formatted(inboundConversationId), throwable);
+        super(EXCEPTION_MESSAGE.formatted(inboundConversationId.toString().toUpperCase()), throwable);
     }
 }

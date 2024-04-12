@@ -29,6 +29,6 @@ class EhrInUnhandledMessagePublisherTest {
     void shouldPublishMessageToThePositiveAcknowledgmentTopic() {
         var conversationId = UUID.randomUUID();
         ehrInUnhandledMessagePublisher.sendMessage("message", conversationId);
-        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString()));
+        verify(messagePublisher).sendMessage(topicArn, "message", Map.of("conversationId", conversationId.toString().toUpperCase()));
     }
 }

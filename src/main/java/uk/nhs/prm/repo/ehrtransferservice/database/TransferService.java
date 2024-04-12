@@ -32,7 +32,7 @@ public class TransferService {
         final ConversationRecord conversationRecord =
             transferRepository.findConversationByInboundConversationId(inboundConversationId);
 
-        log.info("Found conversation record for Inbound Conversation ID {}", inboundConversationId);
+        log.info("Found conversation record for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         return conversationRecord;
     }
 
@@ -53,9 +53,9 @@ public class TransferService {
             .isInboundConversationPresent(inboundConversationId);
 
         if (conversationPresent) {
-            log.info("Conversation record found for Inbound Conversation ID {}", inboundConversationId);
+            log.info("Conversation record found for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } else {
-            log.info("Conversation record not found for Inbound Conversation ID {}", inboundConversationId);
+            log.info("Conversation record not found for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         }
 
         return conversationPresent;
@@ -64,13 +64,13 @@ public class TransferService {
     public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
         log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
-            inboundConversationId, conversationTransferStatus.name());
+            inboundConversationId.toString().toUpperCase(), conversationTransferStatus.name());
     }
 
     public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
         transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
         log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
-            inboundConversationId, INBOUND_FAILED.name(), failureCode);
+            inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
     }
 
     public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
