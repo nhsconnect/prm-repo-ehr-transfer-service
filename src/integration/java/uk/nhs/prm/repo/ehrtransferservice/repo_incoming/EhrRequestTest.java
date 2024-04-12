@@ -99,7 +99,7 @@ class EhrRequestTest {
             """;
 
         return repoIncomingEvent.formatted(
-            INBOUND_CONVERSATION_ID,
+            INBOUND_CONVERSATION_ID.toString().toUpperCase(),
             NHS_NUMBER,
             NEMS_MESSAGE_ID,
             SOURCE_GP,
