@@ -124,12 +124,12 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
 
         // when
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
     }
 
@@ -154,13 +154,13 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
 
         // when
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
     }
 

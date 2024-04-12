@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,7 +45,7 @@ public class S3PointerHandlerTest {
     @Autowired
     private S3ExtendedMessageFetcher s3ExtendedMessageFetcher;
 
-    private static final String LARGE_MESSAGE_S3_KEY= "/large-message-key";
+    private static final String LARGE_MESSAGE_S3_KEY = UUID.randomUUID().toString();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -69,7 +70,7 @@ public class S3PointerHandlerTest {
     }
 
     private S3PointerMessage getStaticS3PointerMessage() {
-        var validMessage = "{\"s3BucketName\":\"test-s3-bucket-name-cant-have-underscores\",\"s3Key\":\"/large-message-key\"}";
+        var validMessage = "{\"s3BucketName\":\"test-s3-bucket-name-cant-have-underscores\",\"s3Key\":\"" + LARGE_MESSAGE_S3_KEY + "\"}";
         var json = (JsonObject) JsonParser.parseString(validMessage);
         return new S3PointerMessage(json);
     }
