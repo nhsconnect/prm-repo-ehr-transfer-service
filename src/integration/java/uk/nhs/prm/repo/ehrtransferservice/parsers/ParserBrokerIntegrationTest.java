@@ -217,7 +217,7 @@ public class ParserBrokerIntegrationTest {
 
     private RepoIncomingEvent createDefaultRepoIncomingEvent(UUID inboundConversationId) {
         return RepoIncomingEvent.builder()
-            .conversationId(inboundConversationId.toString())
+            .conversationId(inboundConversationId.toString().toUpperCase())
             .nhsNumber(NHS_NUMBER)
             .sourceGp(SOURCE_GP)
             .destinationGp(DESTINATION_GP)

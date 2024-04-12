@@ -70,13 +70,13 @@ public class Gp2gpMessengerService {
         final var requestBody = new Gp2gpMessengerPositiveAcknowledgementRequestBody(
             repositoryAsid,
             record.sourceGp(),
-            inboundConversationId.toString(),
+            inboundConversationId.toString().toUpperCase(),
             ehrCoreMessageId.toString().toUpperCase()
         );
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
-            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId);
+            log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
             log.error("An exception occurred while sending an EHR complete positive acknowledgement {}", exception.getMessage());
             throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
