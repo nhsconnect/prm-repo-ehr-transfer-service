@@ -41,6 +41,6 @@ public class RepoIncomingService {
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
 
         auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
-        timeoutService.add(inboundConversationId);
+        timeoutService.waitForRecordReceived(inboundConversationId);
     }
 }
