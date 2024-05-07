@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.utility.InboundTimeoutTracker.removeConversationActivityTimestamp;
 
 @Log4j2
 @Service
@@ -63,6 +64,12 @@ public class TransferService {
 
     public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
+
+        // if conversation reached a terminating Transfer Status, remove the in-memory activity to end the conversation
+        if (conversationTransferStatus.isTerminating) {
+            removeConversationActivityTimestamp(inboundConversationId);
+        }
+
         log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
             inboundConversationId.toString().toUpperCase(), conversationTransferStatus.name());
     }
