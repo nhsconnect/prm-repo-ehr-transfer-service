@@ -23,22 +23,21 @@ public class RepoIncomingService {
     private final TransferService transferService;
     private final Gp2gpMessengerService gp2gpMessengerService;
 
-    private final int pollPeriodMilliseconds;
-    private final int inboundTimeoutSeconds;
+    @Value("${ehrResponsePollPeriodMilliseconds}")
+    private int pollPeriodMilliseconds;
+
+    @Value("${inboundTimeoutSeconds}")
+    private int inboundTimeoutSeconds;
 
     @Autowired
     public RepoIncomingService(
         AuditService auditService,
         TransferService transferService,
-        Gp2gpMessengerService gp2gpMessengerService,
-        @Value("${ehrResponsePollPeriodMilliseconds}") int pollPeriodMilliseconds,
-        @Value("${inboundTimeoutSeconds}") int inboundTimeoutSeconds
+        Gp2gpMessengerService gp2gpMessengerService
     ) {
         this.auditService = auditService;
         this.transferService = transferService;
         this.gp2gpMessengerService = gp2gpMessengerService;
-        this.pollPeriodMilliseconds = pollPeriodMilliseconds;
-        this.inboundTimeoutSeconds = inboundTimeoutSeconds;
     }
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
