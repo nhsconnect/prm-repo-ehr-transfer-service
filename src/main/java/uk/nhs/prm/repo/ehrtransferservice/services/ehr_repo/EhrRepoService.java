@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
+import static uk.nhs.prm.repo.ehrtransferservice.utility.InboundTimeoutTracker.captureConversationActivityTimestamp;
+
 @Service
 @Slf4j
 public class EhrRepoService {
@@ -15,6 +17,8 @@ public class EhrRepoService {
     }
 
     public StoreMessageResult storeMessage(ParsedMessage parsedMessage) throws Exception {
+        captureConversationActivityTimestamp(parsedMessage.getConversationId());
+
         PresignedUrl presignedUrl = ehrRepoClient.fetchStorageUrl(parsedMessage.getConversationId(), parsedMessage.getMessageId());
         log.info("Retrieved Presigned URL");
         presignedUrl.uploadMessage(parsedMessage);
