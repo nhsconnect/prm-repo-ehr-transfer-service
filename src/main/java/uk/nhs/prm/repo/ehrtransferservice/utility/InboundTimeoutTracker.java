@@ -25,8 +25,12 @@ public final class InboundTimeoutTracker {
     }
 
     public static void removeConversationActivityTimestamp(UUID inboundConversationId) {
-        log.info("Removing inbound timeout activity for InboundConversationId: {}", inboundConversationId);
+        log.info("Activity removed for Inbound Conversation ID {}", inboundConversationId);
         CONVERSATION_ACTIVITY.remove(inboundConversationId);
+    }
+
+    public static boolean isConversationActive(UUID inboundConversationId) {
+        return CONVERSATION_ACTIVITY.containsKey(inboundConversationId);
     }
 
     public static boolean isConversationTimedOut(UUID inboundConversationId, int inboundMinutes) {
