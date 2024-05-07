@@ -33,9 +33,9 @@ public final class InboundTimeoutTracker {
         return CONVERSATION_ACTIVITY.containsKey(inboundConversationId);
     }
 
-    public static boolean isConversationTimedOut(UUID inboundConversationId, int inboundMinutes) {
+    public static boolean isConversationTimedOut(UUID inboundConversationId, int inboundSeconds) {
         return CONVERSATION_ACTIVITY.get(inboundConversationId)
-            .plus(inboundMinutes, ChronoUnit.MINUTES)
+            .plus(inboundSeconds, ChronoUnit.SECONDS)
             .isBefore(Instant.now());
     }
 }
