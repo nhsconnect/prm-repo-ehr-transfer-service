@@ -16,14 +16,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_COMPLETE;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_TIMEOUT;
+import static org.mockito.Mockito.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @TestPropertySource(locations = "classpath:application.properties")
 @ExtendWith(MockitoExtension.class)
@@ -103,15 +97,15 @@ class RepoIncomingServiceTest {
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_TIMEOUT);
     }
 
-    private void configureProcessingParameters(int ehrResponsePollLimit, int ehrResponsePollPeriodMilliseconds)
+    private void configureProcessingParameters(int inboundTimeoutSeconds, int pollPeriodMilliseconds)
         throws NoSuchFieldException, IllegalAccessException {
-        final Field ehrResponsePollLimitField = RepoIncomingService.class.getDeclaredField("ehrResponsePollLimit");
-        final Field ehrResponsePollPeriodField = RepoIncomingService.class.getDeclaredField("ehrResponsePollPeriodMilliseconds");
+        final Field inboundTimeoutSecondsField = RepoIncomingService.class.getDeclaredField("inboundTimeoutSeconds");
+        final Field pollPeriodMillisecondsField = RepoIncomingService.class.getDeclaredField("pollPeriodMilliseconds");
 
-        ehrResponsePollLimitField.setAccessible(true);
-        ehrResponsePollPeriodField.setAccessible(true);
+        inboundTimeoutSecondsField.setAccessible(true);
+        pollPeriodMillisecondsField.setAccessible(true);
 
-        ehrResponsePollLimitField.set(this.repoIncomingService, ehrResponsePollLimit);
-        ehrResponsePollPeriodField.set(this.repoIncomingService, ehrResponsePollPeriodMilliseconds);
+        inboundTimeoutSecondsField.set(this.repoIncomingService, inboundTimeoutSeconds);
+        pollPeriodMillisecondsField.set(this.repoIncomingService, pollPeriodMilliseconds);
     }
 }
