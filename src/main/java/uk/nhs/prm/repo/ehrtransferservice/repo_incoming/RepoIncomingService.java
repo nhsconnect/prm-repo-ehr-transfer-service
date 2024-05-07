@@ -24,7 +24,7 @@ public class RepoIncomingService {
     private final Gp2gpMessengerService gp2gpMessengerService;
 
     private final int pollPeriodMilliseconds;
-    private final int inboundTimeoutMinutes;
+    private final int inboundTimeoutSeconds;
 
     @Autowired
     public RepoIncomingService(
@@ -32,13 +32,13 @@ public class RepoIncomingService {
         TransferService transferService,
         Gp2gpMessengerService gp2gpMessengerService,
         @Value("${ehrResponsePollPeriodMilliseconds}") int pollPeriodMilliseconds,
-        @Value("${inboundTimeoutMinutes}") int inboundTimeoutMinutes
+        @Value("${inboundTimeoutSeconds}") int inboundTimeoutSeconds
     ) {
         this.auditService = auditService;
         this.transferService = transferService;
         this.gp2gpMessengerService = gp2gpMessengerService;
         this.pollPeriodMilliseconds = pollPeriodMilliseconds;
-        this.inboundTimeoutMinutes = inboundTimeoutMinutes;
+        this.inboundTimeoutSeconds = inboundTimeoutSeconds;
     }
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
@@ -58,9 +58,8 @@ public class RepoIncomingService {
         waitForConversationToComplete(inboundConversationId);
     }
 
-    private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException  {
-        log.info("Awaiting Inbound Conversation ID {} to complete",
-            inboundConversationId.toString().toUpperCase());
+    private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException {
+        log.info("Awaiting Inbound Conversation ID {} to complete", inboundConversationId.toString().toUpperCase());
 
         while (isConversationActive(inboundConversationId)) {
             Thread.sleep(pollPeriodMilliseconds);
@@ -69,7 +68,7 @@ public class RepoIncomingService {
     }
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
-        if (isConversationTimedOut(inboundConversationId, inboundTimeoutMinutes)) {
+        if (isConversationTimedOut(inboundConversationId, inboundTimeoutSeconds)) {
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
             throw new TimeoutExceededException(inboundConversationId);
         }
