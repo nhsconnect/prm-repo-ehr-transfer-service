@@ -25,10 +25,8 @@ import static org.mockito.Mockito.*;
 class EhrRepoServiceTest {
     @Mock
     private EhrRepoClient mockEhrRepoClient;
-
     @Mock
     private ConversationActivityService activityService;
-
     @InjectMocks
     private EhrRepoService ehrRepoService;
 
@@ -48,6 +46,7 @@ class EhrRepoServiceTest {
 
         Assertions.assertThat(result.isEhrComplete()).isTrue();
 
+        verify(activityService).captureConversationActivityTimestamp(conversationId);
         verify(mockEhrRepoClient, times(1)).fetchStorageUrl(conversationId, messageId);
         verify(mockPresignedUrl, times(1)).uploadMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).confirmMessageStored(mockParsedMessage);
