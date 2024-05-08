@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.timeout.TimeoutExceededException;
 import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.util.Optional;
@@ -14,7 +15,6 @@ import java.util.UUID;
 
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_TIMEOUT;
-import static uk.nhs.prm.repo.ehrtransferservice.utility.InboundTimeoutTracker.*;
 
 @Slf4j
 @Service
@@ -22,6 +22,7 @@ public class RepoIncomingService {
     private final AuditService auditService;
     private final TransferService transferService;
     private final Gp2gpMessengerService gp2gpMessengerService;
+    private final ConversationActivityService conversationActivityService;
 
     @Value("${ehrResponsePollPeriodMilliseconds}")
     private int pollPeriodMilliseconds;
@@ -33,11 +34,13 @@ public class RepoIncomingService {
     public RepoIncomingService(
         AuditService auditService,
         TransferService transferService,
-        Gp2gpMessengerService gp2gpMessengerService
+        Gp2gpMessengerService gp2gpMessengerService,
+        ConversationActivityService conversationActivityService
     ) {
         this.auditService = auditService;
         this.transferService = transferService;
         this.gp2gpMessengerService = gp2gpMessengerService;
+        this.conversationActivityService = conversationActivityService;
     }
 
     public void processIncomingEvent(RepoIncomingEvent repoIncomingEvent) throws Exception {
@@ -46,7 +49,7 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        captureConversationActivityTimestamp(inboundConversationId);
+        conversationActivityService.captureConversationActivityTimestamp(inboundConversationId);
 
         transferService.createConversation(repoIncomingEvent);
 
@@ -60,14 +63,14 @@ public class RepoIncomingService {
     private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException {
         log.info("Awaiting Inbound Conversation ID {} to complete", inboundConversationId.toString().toUpperCase());
 
-        while (isConversationActive(inboundConversationId)) {
+        while (conversationActivityService.isConversationActive(inboundConversationId)) {
             Thread.sleep(pollPeriodMilliseconds);
             verifyConversationNotTimedOut(inboundConversationId);
         }
     }
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
-        if (isConversationTimedOut(inboundConversationId, inboundTimeoutSeconds)) {
+        if (conversationActivityService.isConversationTimedOut(inboundConversationId, inboundTimeoutSeconds)) {
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
             throw new TimeoutExceededException(inboundConversationId);
         }
