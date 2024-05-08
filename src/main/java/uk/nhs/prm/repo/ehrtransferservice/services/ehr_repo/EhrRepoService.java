@@ -32,6 +32,7 @@ public class EhrRepoService {
         return new StoreMessageResult(confirmedMessageStored);
     }
 
+    @Deprecated
     public void softDeleteEhrRecord(String nhsNumber) {
         this.ehrRepoClient.softDeleteEhrRecord(nhsNumber);
     }
