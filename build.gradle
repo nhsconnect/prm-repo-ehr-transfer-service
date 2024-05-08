@@ -35,7 +35,6 @@ configurations {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-activemq'
-    implementation 'org.springframework.retry:spring-retry'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation('io.netty:netty-buffer') { version { strictly '4.1.104.Final' } }
