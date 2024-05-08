@@ -24,11 +24,8 @@ public class RepoIncomingService {
     private final Gp2gpMessengerService gp2gpMessengerService;
     private final ConversationActivityService conversationActivityService;
 
-    @Value("${ehrResponsePollPeriodMilliseconds}")
+    @Value("${ehrTransferFinalisedPollPeriodMilliseconds}")
     private int pollPeriodMilliseconds;
-
-    @Value("${inboundTimeoutSeconds}")
-    private int inboundTimeoutSeconds;
 
     @Autowired
     public RepoIncomingService(
@@ -70,7 +67,7 @@ public class RepoIncomingService {
     }
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
-        if (conversationActivityService.isConversationTimedOut(inboundConversationId, inboundTimeoutSeconds)) {
+        if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
             throw new TimeoutExceededException(inboundConversationId);
         }

@@ -81,12 +81,12 @@ class RepoIncomingServiceTest {
     @Test
     void processIncomingEvent_TransferStatusDoesNotUpdate_TransferStatusUpdatesToInboundTimeoutAndThrowsTimeoutExceededException() throws Exception {
         // when
-        configureProcessingParameters(10, 5000);
+        configurePollPeriod(5000);
 
         when(repoIncomingEvent.getConversationId()).thenReturn(INBOUND_CONVERSATION_ID.toString());
         when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
         when(activityService.isConversationActive(INBOUND_CONVERSATION_ID)).thenReturn(true);
-        when(activityService.isConversationTimedOut(INBOUND_CONVERSATION_ID, 10)).thenReturn(true);
+        when(activityService.isConversationTimedOut(INBOUND_CONVERSATION_ID)).thenReturn(true);
 
         // then
         assertThrows(TimeoutExceededException.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
@@ -98,15 +98,9 @@ class RepoIncomingServiceTest {
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_TIMEOUT);
     }
 
-    private void configureProcessingParameters(int inboundTimeoutSeconds, int pollPeriodMilliseconds)
-        throws NoSuchFieldException, IllegalAccessException {
-        final Field inboundTimeoutSecondsField = RepoIncomingService.class.getDeclaredField("inboundTimeoutSeconds");
+    private void configurePollPeriod(int pollPeriodMilliseconds) throws NoSuchFieldException, IllegalAccessException {
         final Field pollPeriodMillisecondsField = RepoIncomingService.class.getDeclaredField("pollPeriodMilliseconds");
-
-        inboundTimeoutSecondsField.setAccessible(true);
         pollPeriodMillisecondsField.setAccessible(true);
-
-        inboundTimeoutSecondsField.set(this.repoIncomingService, inboundTimeoutSeconds);
         pollPeriodMillisecondsField.set(this.repoIncomingService, pollPeriodMilliseconds);
     }
 }
