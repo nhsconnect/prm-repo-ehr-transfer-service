@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class QueueUtility {
+public final class SQSQueueUtility {
     private final AmazonSQSAsync amazonSQSAsync;
-    private static final Logger LOGGER = LogManager.getLogger(QueueUtility.class);
+    private static final Logger LOGGER = LogManager.getLogger(SQSQueueUtility.class);
 
     @Autowired
-    public QueueUtility(AmazonSQSAsync amazonSQSAsync) {
+    public SQSQueueUtility(AmazonSQSAsync amazonSQSAsync) {
         this.amazonSQSAsync = amazonSQSAsync;
     }
 

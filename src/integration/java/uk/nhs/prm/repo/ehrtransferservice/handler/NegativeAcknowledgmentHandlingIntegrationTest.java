@@ -16,7 +16,7 @@ import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.getTestDataAsString;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -44,8 +45,6 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     @Value("${aws.nackQueueName}")
     private String nackInternalQueueName;
 
-    private final TestDataLoader dataLoader = new TestDataLoader();
-
     private static final String NHS_NUMBER = "9798547485";
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
@@ -61,7 +60,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
     @Test
     void shouldUpdateDbWithNackErrorCodeWhenReceivedOnInternalQueue() throws IOException {
         // given
-        final String negativeAck = dataLoader.getDataAsString("MCCI_IN010000UK13Failure");
+        final String negativeAck = getTestDataAsString("negative-acknowledgement");
         final UUID inboundConversationId = createConversationRecord();
         final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
 
