@@ -17,17 +17,23 @@ import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.utils.SQSQueueUtility;
+import uk.nhs.prm.repo.ehrtransferservice.utils.SqsQueueUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_TIMEOUT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.DESTINATION_GP;
 import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.getTestDataAsString;
@@ -46,7 +52,7 @@ class EhrRequestTest {
     private TransferTrackerDbUtility transferTrackerDbUtility;
 
     @Autowired
-    private SQSQueueUtility SQSQueueUtility;
+    private SqsQueueUtility sqsQueueUtility;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -72,7 +78,7 @@ class EhrRequestTest {
 
     @AfterEach
     void afterEach() {
-        SQSQueueUtility.purgeQueue(repoIncomingQueueName);
+        sqsQueueUtility.purgeQueue(repoIncomingQueueName);
         transferTrackerDbUtility.deleteItem(INBOUND_CONVERSATION_ID, CONVERSATION);
     }
 
@@ -89,7 +95,7 @@ class EhrRequestTest {
                 .willReturn(aResponse().withStatus(204))
         );
 
-        SQSQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
+        sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
 
         // then
         waitForConversationTransferStatusMatching(INBOUND_REQUEST_SENT);
@@ -111,11 +117,9 @@ class EhrRequestTest {
                 .willReturn(aResponse().withStatus(204))
         );
 
-        // send request
-        SQSQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
+        sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
         waitForConversationTransferStatusMatching(INBOUND_REQUEST_SENT);
 
-        // send no ehr response
 
         // then
         waitForConversationTransferStatusMatching(INBOUND_TIMEOUT);
@@ -139,15 +143,12 @@ class EhrRequestTest {
                 .willReturn(aResponse().withStatus(204))
         );
 
-        // send request
-        SQSQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
+        sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
         waitForConversationTransferStatusMatching(INBOUND_REQUEST_SENT);
 
-        // send ehr core that references other messages (indicating a large EHR core)
         inboundQueueFromMhs.sendMessage(largeEhrCore);
         waitForConversationTransferStatusMatching(INBOUND_CONTINUE_REQUEST_SENT);
 
-        // do not send fragment
 
         // then
         waitForConversationTransferStatusMatching(INBOUND_TIMEOUT);
