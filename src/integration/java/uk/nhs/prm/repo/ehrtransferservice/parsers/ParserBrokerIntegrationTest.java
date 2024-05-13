@@ -19,7 +19,7 @@ import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoader;
+import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.io.IOException;
@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.getTestDataAsString;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -68,8 +69,6 @@ public class ParserBrokerIntegrationTest {
     @Value("${aws.ehrInUnhandledObservabilityQueueName}")
     private String ehrInUnhandledObservabilityQueueName;
 
-    private final TestDataLoader dataLoader = new TestDataLoader();
-
     private static final UUID COPC_INBOUND_CONVERSATION_ID = UUID.fromString("ff1457fb-4f58-4870-8d90-24d9c3ef8b91");
     private static final UUID EHR_CORE_INBOUND_CONVERSATION_ID = UUID.fromString("ff27abc3-9730-40f7-ba82-382152e6b90a");
     private static final String SOURCE_GP = "A74154";
@@ -100,7 +99,7 @@ public class ParserBrokerIntegrationTest {
     void shouldPublishCopcMessageToLargeMessageFragmentTopic() throws IOException {
         // given
         final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(COPC_INBOUND_CONVERSATION_ID);
-        final String fragmentMessageBody = dataLoader.getDataAsString("COPC_IN000001UK01");
+        final String fragmentMessageBody = getTestDataAsString("large-ehr-fragment-with-ref");
         final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         final String fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
 
@@ -121,7 +120,7 @@ public class ParserBrokerIntegrationTest {
     void shouldPublishEhrCoreToSmallEhrObservabilityQueue() throws IOException {
         // given
         final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(EHR_CORE_INBOUND_CONVERSATION_ID);
-        final String ehrCoreMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        final String ehrCoreMessageBody = getTestDataAsString("small-ehr");
         final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
@@ -146,7 +145,7 @@ public class ParserBrokerIntegrationTest {
     void shouldPassCorrelationIdToBeSetAsTraceId() throws IOException {
         // given
         final RepoIncomingEvent repoIncomingEvent = createDefaultRepoIncomingEvent(EHR_CORE_INBOUND_CONVERSATION_ID);
-        final String ehrCoreMessageBody = dataLoader.getDataAsString("RCMR_IN030000UK06");
+        final String ehrCoreMessageBody = getTestDataAsString("small-ehr");
         final SimpleAmqpQueue inboundQueueFromMhs = new SimpleAmqpQueue(inboundQueue);
         final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
         final String correlationId = UUID.randomUUID().toString();

@@ -60,7 +60,7 @@ public class S3PointerHandlerTest {
                 .build();
 
         s3Client.putObject(putOb,
-                RequestBody.fromBytes(Files.readAllBytes(Paths.get("src/integration/resources/data/RCMR_IN030000UK06"))));
+                RequestBody.fromBytes(Files.readAllBytes(Paths.get("src/integration/resources/data/small-ehr"))));
     }
 
     @Test

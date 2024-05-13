@@ -1,15 +1,16 @@
 package uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
 
 import java.util.UUID;
@@ -22,14 +23,12 @@ import static org.mockito.Mockito.*;
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
 class EhrRepoServiceTest {
-    EhrRepoService ehrRepoService;
     @Mock
-    EhrRepoClient mockEhrRepoClient;
-
-    @BeforeEach
-    void setUp() {
-        ehrRepoService = new EhrRepoService(mockEhrRepoClient);
-    }
+    private EhrRepoClient mockEhrRepoClient;
+    @Mock
+    private ConversationActivityService activityService;
+    @InjectMocks
+    private EhrRepoService ehrRepoService;
 
     @Test
     void shouldCoordinateEhrRepoClientCalls() throws Exception {
@@ -47,6 +46,7 @@ class EhrRepoServiceTest {
 
         Assertions.assertThat(result.isEhrComplete()).isTrue();
 
+        verify(activityService).captureConversationActivityTimestamp(conversationId);
         verify(mockEhrRepoClient, times(1)).fetchStorageUrl(conversationId, messageId);
         verify(mockPresignedUrl, times(1)).uploadMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).confirmMessageStored(mockParsedMessage);

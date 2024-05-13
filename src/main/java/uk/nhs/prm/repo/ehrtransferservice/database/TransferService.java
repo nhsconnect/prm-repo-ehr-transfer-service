@@ -7,6 +7,7 @@ import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTrans
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -18,6 +19,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Conversati
 @RequiredArgsConstructor
 public class TransferService {
     private final TransferRepository transferRepository;
+    private final ConversationActivityService activityService;
 
     public void createConversation(RepoIncomingEvent event) {
         try {
@@ -63,6 +65,12 @@ public class TransferService {
 
     public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
+
+        // if conversation reached a terminating Transfer Status, remove the in-memory activity to end the conversation
+        if (conversationTransferStatus.isTerminating) {
+            activityService.removeConversationActivityTimestamp(inboundConversationId);
+        }
+
         log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
             inboundConversationId.toString().toUpperCase(), conversationTransferStatus.name());
     }
