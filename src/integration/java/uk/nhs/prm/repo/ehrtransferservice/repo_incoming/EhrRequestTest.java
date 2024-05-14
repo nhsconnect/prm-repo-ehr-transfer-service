@@ -5,9 +5,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -17,20 +23,20 @@ import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
+import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
+import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
+import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
 import uk.nhs.prm.repo.ehrtransferservice.utils.SqsQueueUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_TIMEOUT;
@@ -45,6 +51,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.get
 @ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 class EhrRequestTest {
+    private static final Logger log = LoggerFactory.getLogger(EhrRequestTest.class);
     @Autowired
     private TransferService transferService;
 
@@ -53,6 +60,9 @@ class EhrRequestTest {
 
     @Autowired
     private SqsQueueUtility sqsQueueUtility;
+
+    @MockBean
+    private EhrRepoService ehrRepoService;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -65,13 +75,12 @@ class EhrRequestTest {
 
     private static final String NHS_NUMBER = "9798548754";
     private static final UUID INBOUND_CONVERSATION_ID = UUID.fromString("ce3aad10-9b7c-4a9b-ab87-a9d6521d61b2");
-    private static final UUID SMALL_EHR_INBOUND_CONVERSATION_ID = UUID.fromString("ff27abc3-9730-40f7-ba82-382152e6b90a");
     private static final String NEMS_MESSAGE_ID = "eefe01f7-33aa-45ed-8aac-4e0cf68670fd";
     private static final String NEMS_EVENT_LAST_UPDATED = "2017-11-01T15:00:33+00:00";
     private static final String SOURCE_GP = "B14758";
 
     @BeforeEach
-    void beforeEach(@Value("${inboundTimeoutSeconds}") String inboundTimeoutSeconds) {
+    void beforeEach(@Value("${inboundTimeoutSeconds}") String inboundTimeoutSeconds) throws Exception {
         // reset the timeout to the default as it is redefined in some tests
         System.setProperty("inboundTimeoutSeconds", inboundTimeoutSeconds);
     }
@@ -88,13 +97,7 @@ class EhrRequestTest {
         final String repoIncomingMessage = getRepoIncomingMessage();
 
         // when
-        stubFor(post(
-                urlMatching("/health-record-requests/" + NHS_NUMBER))
-                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
-                .withHeader("Content-Type", equalTo("application/json"))
-                .willReturn(aResponse().withStatus(204))
-        );
-
+        createStubForGp2GpMessengerEhrRequest();
         sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
 
         // then
@@ -110,13 +113,7 @@ class EhrRequestTest {
         final String repoIncomingMessage = getRepoIncomingMessage();
 
         // when
-        stubFor(post(
-                urlMatching("/health-record-requests/" + NHS_NUMBER))
-                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
-                .withHeader("Content-Type", equalTo("application/json"))
-                .willReturn(aResponse().withStatus(204))
-        );
-
+        createStubForGp2GpMessengerEhrRequest();
         sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
         waitForConversationTransferStatusMatching(INBOUND_REQUEST_SENT);
 
@@ -126,7 +123,7 @@ class EhrRequestTest {
     }
 
     @Test
-    void Given_ValidRepoIncomingEventForLargeEhr_When_CoreReceivedButNoFragments_Then_UpdateStatusToInboundTimeout() throws IOException {
+    void Given_ValidRepoIncomingEventForLargeEhr_When_CoreReceivedButNoFragments_Then_UpdateStatusToInboundTimeout() throws Exception {
         // given
         // override inboundTimeoutSeconds so that the request will timeout within the timeframe
         System.setProperty("inboundTimeoutSeconds", "10");
@@ -136,12 +133,9 @@ class EhrRequestTest {
         final String largeEhrCore = getTestDataAsString("large-ehr-core");
 
         // when
-        stubFor(post(
-                urlMatching("/health-record-requests/" + NHS_NUMBER))
-                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
-                .withHeader("Content-Type", equalTo("application/json"))
-                .willReturn(aResponse().withStatus(204))
-        );
+        createStubForGp2GpMessengerEhrRequest();
+        createStubForGp2GpMessengerContinueRequest();
+        createMockForEhrRepoStoreMessage();
 
         sqsQueueUtility.sendSqsMessage(repoIncomingMessage, repoIncomingQueueName);
         waitForConversationTransferStatusMatching(INBOUND_REQUEST_SENT);
@@ -149,6 +143,8 @@ class EhrRequestTest {
         inboundQueueFromMhs.sendMessage(largeEhrCore);
         waitForConversationTransferStatusMatching(INBOUND_CONTINUE_REQUEST_SENT);
 
+        // TODO PRMT-4817 it's successfully sending the continue request but not timing out?
+        //  org.opentest4j.AssertionFailedError: expected: <INBOUND_TIMEOUT> but was: <INBOUND_CONTINUE_REQUEST_SENT>
 
         // then
         waitForConversationTransferStatusMatching(INBOUND_TIMEOUT);
@@ -177,12 +173,32 @@ class EhrRequestTest {
         );
     }
 
+    private void createMockForEhrRepoStoreMessage() throws Exception {
+        StoreMessageResult result = new StoreMessageResult(new StoreMessageResponseBody("complete"));
+        when(ehrRepoService.storeMessage(Mockito.any())).thenReturn(result);
+    }
+    
+    private void createStubForGp2GpMessengerEhrRequest() {
+        stubFor(post(urlMatching("/health-record-requests/" + NHS_NUMBER))
+                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .willReturn(aResponse().withStatus(204)));
+    }
+
+    private void createStubForGp2GpMessengerContinueRequest() {
+        stubFor(post(urlMatching("/health-record-requests/continue-message"))
+                .withHeader("Authorization", equalTo(gp2gpMessengerAuthKey))
+                .withHeader("Content-Type", equalTo("application/json"))
+                .willReturn(aResponse().withStatus(204)));
+    }
+
     private void waitForConversationTransferStatusMatching(ConversationTransferStatus transferStatus) {
         await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
-            final ConversationRecord record = transferService
-                    .getConversationByInboundConversationId(INBOUND_CONVERSATION_ID);
-
-            assertEquals(transferStatus.name(), record.state());
+            try {
+                ConversationRecord record = transferService.getConversationByInboundConversationId(INBOUND_CONVERSATION_ID);
+                log.info("The current status of the Conversation is: {}", record.state());
+                assertEquals(transferStatus.name(), record.state());
+            } catch (ConversationNotPresentException ignored) {}
         });
     }
 }

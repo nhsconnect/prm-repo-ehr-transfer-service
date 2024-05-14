@@ -50,7 +50,7 @@ public class RepoIncomingService {
 
         transferService.createConversation(repoIncomingEvent);
 
-        gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
+        gp2gpMessengerService.sendEhrRequest(repoIncomingEvent); // TODO - WIREMOCK STUB
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
 
         auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
