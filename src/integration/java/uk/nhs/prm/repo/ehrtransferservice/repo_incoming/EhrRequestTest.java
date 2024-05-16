@@ -54,7 +54,6 @@ class EhrRequestTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2017-11-01T15:00:33+00:00";
     private static final String SOURCE_GP = "B14758";
     private static final String PRESIGNED_URL = "http://localhost:8080/presigned/url";
-
     private static final String REPO_INCOMING_MESSAGE = getRepoIncomingMessage();
 
     @Autowired
