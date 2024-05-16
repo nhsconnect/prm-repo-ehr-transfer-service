@@ -96,8 +96,8 @@ class LargeMessageFragmentHandlerTest {
         StoreMessageResponseBody responseBody;
 
         switch (type) {
-            case Type.COMPLETE -> responseBody = new StoreMessageResponseBody("complete");
-            case Type.INCOMPLETE -> responseBody = new StoreMessageResponseBody("incomplete");
+            case COMPLETE -> responseBody = new StoreMessageResponseBody("complete");
+            case INCOMPLETE -> responseBody = new StoreMessageResponseBody("incomplete");
             default -> throw new JUnitException("Invalid type provided for getResponseBody(String type)");
         }
 
