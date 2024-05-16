@@ -153,3 +153,10 @@ Please follow this design to ensure the ssm keys are easy to maintain and naviga
 | -------------------| ----------------------------------------| ------------------------------------------------------|
 | **User-specified** |`/repo/<env>?/user-input/`               | `/repo/${var.environment}/user-input/db-username`     |
 | **Auto-generated** |`/repo/<env>?/output/<name-of-git-repo>/`| `/repo/output/prm-deductions-base-infra/root-zone-id` |
+
+## WireMock for Integration Testing
+
+Integration tests that utilise WireMock will need to configure their endpoints so that they point to localhost.
+
+WireMock is configured within tests by using `@WireMockTest(httpPort = 8080)` at class level where `8080` can be configured 
+to any port of your choice. When stubbing, we need to ensure that the URL is `http://localhost:{PORT DEFINED ABOVE}`.
