@@ -92,7 +92,7 @@ class EhrRequestTest {
     }
 
     @Test
-    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSent() {
+    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSentAndCheckInMemoryConversationIsInactive() {
         // when
         createStubForGp2GpMessengerEhrRequest();
         sqsQueueUtility.sendSqsMessage(REPO_INCOMING_MESSAGE, repoIncomingQueueName);
