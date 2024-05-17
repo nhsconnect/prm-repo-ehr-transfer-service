@@ -80,7 +80,6 @@ class EhrRequestTest {
     @AfterEach
     void afterEach() {
         sqsQueueUtility.purgeQueue(repoIncomingQueueName);
-        transferService.updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_COMPLETE);
         transferTrackerDbUtility.deleteItem(INBOUND_CONVERSATION_ID, CONVERSATION);
     }
 
