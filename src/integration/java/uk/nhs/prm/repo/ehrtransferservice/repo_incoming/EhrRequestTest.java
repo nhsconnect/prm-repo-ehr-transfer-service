@@ -70,7 +70,7 @@ class EhrRequestTest {
     @Autowired
     private SqsQueueUtility sqsQueueUtility;
 
-    @SpyBean
+    @Autowired
     private ConversationActivityService activityService;
 
     @Value("${aws.repoIncomingQueueName}")
