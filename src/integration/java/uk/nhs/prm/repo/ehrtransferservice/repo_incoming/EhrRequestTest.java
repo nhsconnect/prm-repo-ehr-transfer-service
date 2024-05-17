@@ -89,10 +89,11 @@ class EhrRequestTest {
     void afterEach() {
         sqsQueueUtility.purgeQueue(repoIncomingQueueName);
         transferTrackerDbUtility.deleteItem(INBOUND_CONVERSATION_ID, CONVERSATION);
+        assertFalse(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
     }
 
     @Test
-    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSentAndCheckInMemoryConversationIsInactive() {
+    void Given_ValidRepoIncomingEvent_When_PublishedToRepoIncomingQueue_Then_CreateConversationAndUpdateStatusToInboundRequestSentAndCheckInMemoryConversationIsActive() {
         // when
         createStubForGp2GpMessengerEhrRequest();
         sqsQueueUtility.sendSqsMessage(REPO_INCOMING_MESSAGE, repoIncomingQueueName);
@@ -101,9 +102,10 @@ class EhrRequestTest {
         await().atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> assertTrue(conversationStatusMatches(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT)));
 
+        assertTrue(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
+
         // The following is to stop the activity from interfering with tests run afterwards
         transferService.updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_COMPLETE);
-        assertFalse(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
     }
 
     @Test
