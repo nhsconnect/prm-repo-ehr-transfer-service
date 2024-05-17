@@ -4,9 +4,11 @@ import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -16,6 +18,7 @@ import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.utils.SqsQueueUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
@@ -31,6 +34,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_COMPLETE;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_CONTINUE_REQUEST_SENT;
@@ -45,6 +49,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.get
 @ActiveProfiles("test")
 @WireMockTest(httpPort = 8080)
 @ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 @ExtendWith(ForceXercesParserExtension.class)
 @ContextConfiguration(classes = LocalStackAwsConfig.class)
 class EhrRequestTest {
@@ -64,6 +69,9 @@ class EhrRequestTest {
 
     @Autowired
     private SqsQueueUtility sqsQueueUtility;
+
+    @SpyBean
+    private ConversationActivityService activityService;
 
     @Value("${aws.repoIncomingQueueName}")
     private String repoIncomingQueueName;
@@ -92,6 +100,10 @@ class EhrRequestTest {
         // then
         await().atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> assertTrue(conversationStatusMatches(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT)));
+
+        // The following is to stop the activity from interfering with tests run afterwards
+        transferService.updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_COMPLETE);
+        assertFalse(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
     }
 
     @Test
