@@ -153,3 +153,46 @@ Please follow this design to ensure the ssm keys are easy to maintain and naviga
 | -------------------| ----------------------------------------| ------------------------------------------------------|
 | **User-specified** |`/repo/<env>?/user-input/`               | `/repo/${var.environment}/user-input/db-username`     |
 | **Auto-generated** |`/repo/<env>?/output/<name-of-git-repo>/`| `/repo/output/prm-deductions-base-infra/root-zone-id` |
+
+## WireMock for Integration Testing
+
+When using WireMock for integration testing, it is essential to configure your endpoints to point to `localhost`.
+
+### Configuration
+
+To set up WireMock within your tests, use the `@WireMockTest(httpPort = 8080)` annotation at the class level. The port number `8080` is configurable and can be replaced with any port of your choice. This annotation ensures that WireMock is active on the specified port during the test execution.
+
+### Stubbing
+
+When stubbing responses with WireMock, you must ensure that the URL used in the stubs matches the local server configuration. Specifically, the URL should be in the format `http://localhost:{PORT}` where `{PORT}` corresponds to the port number defined in the `@WireMockTest` annotation.
+
+### Example
+
+Here is an example of a test class using WireMock:
+
+```java
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+
+@WireMockTest(httpPort = 8080)
+public class MyIntegrationTest {
+
+    @Test
+    public void testEndpoint() {
+        stubFor(get(urlEqualTo("/some-endpoint"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody("Hello, WireMock!")));
+
+        // Your test code here, e.g., making an HTTP request to http://localhost:8080/some-endpoint
+    }
+}
+```
+
+In this example:
+
+* The @WireMockTest(httpPort = 8080) annotation configures WireMock to run on port 8080.
+* The stubFor method is used to define a stub for the endpoint /some-endpoint, returning a 200 OK response with the body "Hello, WireMock!".
+* Your test logic would involve making an HTTP request to http://localhost:8080/some-endpoint to verify the stubbed response.
+
+By following this approach, you can effectively use WireMock to simulate and test interactions with external services in your integration tests.
