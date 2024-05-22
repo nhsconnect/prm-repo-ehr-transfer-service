@@ -136,12 +136,7 @@ public class TransferRepository {
     }
 
     void updateConversationStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
-        if (!isInboundConversationPresent(inboundConversationId)) {
-            throw new ConversationNotPresentException(inboundConversationId);
-        }
-
         final Map<String, AttributeValue> keyItems = new HashMap<>();
-        final String updateTimestamp = getIsoTimestamp();
 
         keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
             .s(inboundConversationId.toString().toUpperCase())
@@ -159,7 +154,7 @@ public class TransferRepository {
             .build());
 
         updateItems.put(UPDATED_AT.name, AttributeValueUpdate.builder()
-            .value(AttributeValue.builder().s(updateTimestamp).build())
+            .value(AttributeValue.builder().s(getIsoTimestamp()).build())
             .action(AttributeAction.PUT)
             .build());
 
@@ -167,6 +162,7 @@ public class TransferRepository {
             .tableName(config.transferTrackerDbTableName())
             .key(keyItems)
             .attributeUpdates(updateItems)
+            .conditionExpression("attribute_exists(CreatedAt)")
             .build();
 
         try {
