@@ -77,6 +77,10 @@ public class TransferService {
 
     public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
         transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
+
+        // remove the in-memory activity to end the conversation
+        activityService.removeConversationActivityTimestamp(inboundConversationId);
+
         log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
             inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
     }
