@@ -146,22 +146,22 @@ public class TransferRepository {
             .s(CONVERSATION.name())
             .build());
 
-        final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
-
-        updateItems.put(TRANSFER_STATUS.name, AttributeValueUpdate.builder()
-            .value(AttributeValue.builder().s(conversationTransferStatus.name()).build())
-            .action(AttributeAction.PUT)
-            .build());
-
-        updateItems.put(UPDATED_AT.name, AttributeValueUpdate.builder()
-            .value(AttributeValue.builder().s(getIsoTimestamp()).build())
-            .action(AttributeAction.PUT)
-            .build());
-
         final UpdateItemRequest itemRequest = UpdateItemRequest.builder()
             .tableName(config.transferTrackerDbTableName())
             .key(keyItems)
-            .attributeUpdates(updateItems)
+            .updateExpression("SET #TransferStatus = :tsValue, #UpdatedAt = :uaValue")
+            .expressionAttributeNames(Map.of(
+                    "#TransferStatus", TRANSFER_STATUS.name,
+                    "#UpdatedAt", UPDATED_AT.name
+            ))
+            .expressionAttributeValues(Map.of(
+                    ":tsValue", AttributeValue.builder()
+                            .s(conversationTransferStatus.name())
+                            .build(),
+                    ":uaValue", AttributeValue.builder()
+                            .s(getIsoTimestamp())
+                            .build()
+            ))
             .conditionExpression("attribute_exists(CreatedAt)")
             .build();
 
@@ -173,12 +173,7 @@ public class TransferRepository {
     }
 
     void updateConversationStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        if (!isInboundConversationPresent(inboundConversationId)) {
-            throw new ConversationNotPresentException(inboundConversationId);
-        }
-
         final Map<String, AttributeValue> keyItems = new HashMap<>();
-        final String updateTimestamp = getIsoTimestamp();
 
         keyItems.put(INBOUND_CONVERSATION_ID.name, AttributeValue.builder()
                 .s(inboundConversationId.toString().toUpperCase())
@@ -188,27 +183,27 @@ public class TransferRepository {
                 .s(CONVERSATION.name())
                 .build());
 
-        final Map<String, AttributeValueUpdate> updateItems = new HashMap<>();
-
-        updateItems.put(TRANSFER_STATUS.name, AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(INBOUND_FAILED.name()).build())
-                .action(AttributeAction.PUT)
-                .build());
-
-        updateItems.put(FAILURE_CODE.name, AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(failureCode).build())
-                .action(AttributeAction.PUT)
-                .build());
-
-        updateItems.put(UPDATED_AT.name, AttributeValueUpdate.builder()
-                .value(AttributeValue.builder().s(updateTimestamp).build())
-                .action(AttributeAction.PUT)
-                .build());
-
         final UpdateItemRequest itemRequest = UpdateItemRequest.builder()
                 .tableName(config.transferTrackerDbTableName())
                 .key(keyItems)
-                .attributeUpdates(updateItems)
+                .updateExpression("SET #TransferStatus = :tsValue, #FailureCode = :fcValue, #UpdatedAt = :uaValue")
+                .expressionAttributeNames(Map.of(
+                        "#TransferStatus", TRANSFER_STATUS.name,
+                        "#UpdatedAt", UPDATED_AT.name,
+                        "#FailureCode", FAILURE_CODE.name
+                ))
+                .expressionAttributeValues(Map.of(
+                        ":tsValue", AttributeValue.builder()
+                                .s(INBOUND_FAILED.name())
+                                .build(),
+                        ":fcValue", AttributeValue.builder()
+                                .s(failureCode)
+                                .build(),
+                        ":uaValue", AttributeValue.builder()
+                                .s(getIsoTimestamp())
+                                .build()
+                ))
+                .conditionExpression("attribute_exists(CreatedAt)")
                 .build();
 
         try {
