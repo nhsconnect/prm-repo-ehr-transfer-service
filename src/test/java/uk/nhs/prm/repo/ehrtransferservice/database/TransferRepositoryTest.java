@@ -34,6 +34,7 @@ class TransferRepositoryTest {
 
     private static final String TABLE_NAME = "ehr-transfer-tracker";
     private static final String CREATED_AT_CONDITION_EXPRESSION = "attribute_exists(CreatedAt)";
+    private static final String UPDATE_STATUS_CODE_EXPRESSION = "SET #TransferStatus = :tsValue, #UpdatedAt = :uaValue";
     private static final String UPDATE_WITH_FAILURE_CODE_EXPRESSION = "SET #TransferStatus = :tsValue, #FailureCode = :fcValue, #UpdatedAt = :uaValue";
     private static final ArgumentCaptor<UpdateItemRequest> updateItemRequestCaptor = ArgumentCaptor.forClass(UpdateItemRequest.class);
 
@@ -57,8 +58,9 @@ class TransferRepositoryTest {
         verify(appConfig).transferTrackerDbTableName();
         verify(dynamoDbClient).updateItem(updateItemRequestCaptor.capture());
         assertEquals(inboundConversationId, updateItemRequestCaptor.getValue().key().get(INBOUND_CONVERSATION_ID.name).s());
-        assertEquals(CREATED_AT_CONDITION_EXPRESSION, updateItemRequestCaptor.getValue().conditionExpression());
         assertEquals(status.name(), updateItemRequestCaptor.getValue().expressionAttributeValues().get(":tsValue").s());
+        assertEquals(CREATED_AT_CONDITION_EXPRESSION, updateItemRequestCaptor.getValue().conditionExpression());
+        assertEquals(UPDATE_STATUS_CODE_EXPRESSION, updateItemRequestCaptor.getValue().updateExpression());
     }
 
     @Test
