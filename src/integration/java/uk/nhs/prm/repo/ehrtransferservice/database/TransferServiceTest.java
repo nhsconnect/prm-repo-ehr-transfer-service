@@ -122,16 +122,6 @@ public class TransferServiceTest {
         assertEquals(record.state(), INBOUND_FAILED.name());
     }
 
-//    @Test
-//    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowConversationNotPresentException() {
-//        // given
-//        final UUID inboundConversationId = UUID.randomUUID();
-//
-//        // when
-//        assertThrows(ConversationNotPresentException.class, () ->
-//            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
-//    }
-
     @Test
     void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationUpdateException() {
         // given
