@@ -32,12 +32,12 @@ class TransferRepositoryTest {
     @InjectMocks
     private TransferRepository transferRepository;
 
-    private static final String DATABASE_NAME = "database";
+    private static final String TABLE_NAME = "ehr-transfer-tracker";
     private static final ArgumentCaptor<UpdateItemRequest> updateItemRequestCaptor = ArgumentCaptor.forClass(UpdateItemRequest.class);
 
     @BeforeEach
     void beforeEach() {
-        doReturn(DATABASE_NAME)
+        doReturn(TABLE_NAME)
                 .when(appConfig)
                 .transferTrackerDbTableName();
     }
@@ -57,11 +57,11 @@ class TransferRepositoryTest {
         verify(dynamoDbClient).updateItem(updateItemRequestCaptor.capture());
         assertEquals(conditionExpression, updateItemRequestCaptor.getValue().conditionExpression());
         assertEquals(inboundConversationId, updateItemRequestCaptor.getValue().key().get(INBOUND_CONVERSATION_ID.name).s());
-        assertEquals(DATABASE_NAME, updateItemRequestCaptor.getValue().tableName());
+        assertEquals(TABLE_NAME, updateItemRequestCaptor.getValue().tableName());
     }
 
     @Test
-    void updateConversationStatus_InvalidInboundConversationIdAndValidStatus_ShouldThrowConversationUpdateException() {
+    void updateConversationStatus_ValidInboundConversationIdAndStatusWithNoCreatedAtDate_ShouldThrowConversationUpdateException() {
         // given
         final String inboundConversationId = "C68082F9-EFB9-4144-BAA0-3A2F2E2A88B9";
         final ConversationTransferStatus status = ConversationTransferStatus.INBOUND_COMPLETE;
@@ -77,7 +77,6 @@ class TransferRepositoryTest {
                 () -> transferRepository.updateConversationStatus(UUID.fromString(inboundConversationId), status)
         );
 
-        verify(appConfig).transferTrackerDbTableName();
         verify(dynamoDbClient).updateItem(updateItemRequestCaptor.capture());
         assertEquals(inboundConversationId, updateItemRequestCaptor.getValue().key().get(INBOUND_CONVERSATION_ID.name).s());
     }
