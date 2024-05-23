@@ -8,15 +8,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import uk.nhs.prm.repo.ehrtransferservice.config.AppConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.INBOUND_CONVERSATION_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,5 +58,27 @@ class TransferRepositoryTest {
         assertEquals(conditionExpression, updateItemRequestCaptor.getValue().conditionExpression());
         assertEquals(inboundConversationId, updateItemRequestCaptor.getValue().key().get(INBOUND_CONVERSATION_ID.name).s());
         assertEquals(DATABASE_NAME, updateItemRequestCaptor.getValue().tableName());
+    }
+
+    @Test
+    void updateConversationStatus_InvalidInboundConversationIdAndValidStatus_ShouldThrowConversationUpdateException() {
+        // given
+        final String inboundConversationId = "C68082F9-EFB9-4144-BAA0-3A2F2E2A88B9";
+        final ConversationTransferStatus status = ConversationTransferStatus.INBOUND_COMPLETE;
+
+        // when
+        doThrow(ConditionalCheckFailedException.class)
+                .when(dynamoDbClient)
+                .updateItem(any(UpdateItemRequest.class));
+
+        // then
+        assertThrows(
+                ConversationUpdateException.class,
+                () -> transferRepository.updateConversationStatus(UUID.fromString(inboundConversationId), status)
+        );
+
+        verify(appConfig).transferTrackerDbTableName();
+        verify(dynamoDbClient).updateItem(updateItemRequestCaptor.capture());
+        assertEquals(inboundConversationId, updateItemRequestCaptor.getValue().key().get(INBOUND_CONVERSATION_ID.name).s());
     }
 }
