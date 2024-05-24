@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.TestPropertySource;
-import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingService;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
@@ -30,23 +29,23 @@ class ConversationActivityServiceTest {
 
     @AfterEach
     void afterEach() {
-        activityService.removeConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.concludeConversationActivity(INBOUND_CONVERSATION_ID);
     }
 
     @Test
-    void captureConversationActivityTimestamp_ValidInboundConversationId_Ok() {
+    void captureConversationActivity_ValidInboundConversationId_Ok() {
         // when
-        activityService.captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.captureConversationActivity(INBOUND_CONVERSATION_ID);
 
         // then
         assertTrue(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
     }
 
     @Test
-    void removeConversationActivityTimestamp_ValidInboundConversationId_Ok() {
+    void concludeConversationActivity_ValidInboundConversationId_Ok() {
         // when
-        activityService.captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
-        activityService.removeConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.captureConversationActivity(INBOUND_CONVERSATION_ID);
+        activityService.concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
         // then
         assertFalse(activityService.isConversationActive(INBOUND_CONVERSATION_ID));
@@ -55,7 +54,7 @@ class ConversationActivityServiceTest {
     @Test
     void isConversationActive_ActiveInboundConversationId_ReturnTrue() {
         // when
-        activityService.captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.captureConversationActivity(INBOUND_CONVERSATION_ID);
         final boolean result = activityService.isConversationActive(INBOUND_CONVERSATION_ID);
 
         // then
@@ -77,7 +76,7 @@ class ConversationActivityServiceTest {
         configureTimeout(5);
 
         // when
-        activityService.captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.captureConversationActivity(INBOUND_CONVERSATION_ID);
 
         // then
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -92,7 +91,7 @@ class ConversationActivityServiceTest {
         configureTimeout(5);
 
         // when
-        activityService.captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        activityService.captureConversationActivity(INBOUND_CONVERSATION_ID);
         final boolean result = activityService.isConversationTimedOut(INBOUND_CONVERSATION_ID);
 
         // then

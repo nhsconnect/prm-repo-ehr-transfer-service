@@ -66,9 +66,8 @@ public class TransferService {
     public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
 
-        // if conversation reached a terminating Transfer Status, remove the in-memory activity to end the conversation
         if (conversationTransferStatus.isTerminating) {
-            activityService.removeConversationActivityTimestamp(inboundConversationId);
+            activityService.concludeConversationActivity(inboundConversationId);
         }
 
         log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
@@ -78,8 +77,7 @@ public class TransferService {
     public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
         transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
 
-        // remove the in-memory activity to end the conversation
-        activityService.removeConversationActivityTimestamp(inboundConversationId);
+        activityService.concludeConversationActivity(inboundConversationId);
 
         log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
             inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);

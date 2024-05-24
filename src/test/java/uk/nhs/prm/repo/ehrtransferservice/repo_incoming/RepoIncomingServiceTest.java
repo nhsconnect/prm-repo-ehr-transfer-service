@@ -50,7 +50,7 @@ class RepoIncomingServiceTest {
         repoIncomingService.processIncomingEvent(repoIncomingEvent);
 
         // then
-        verify(activityService).captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        verify(activityService).captureConversationActivity(INBOUND_CONVERSATION_ID);
         verify(transferService).createConversation(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
@@ -71,7 +71,7 @@ class RepoIncomingServiceTest {
 
         // then
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
-        verify(activityService).captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        verify(activityService).captureConversationActivity(INBOUND_CONVERSATION_ID);
         verify(transferService).createConversation(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
@@ -90,7 +90,7 @@ class RepoIncomingServiceTest {
 
         // then
         assertThrows(TimeoutExceededException.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
-        verify(activityService).captureConversationActivityTimestamp(INBOUND_CONVERSATION_ID);
+        verify(activityService).captureConversationActivity(INBOUND_CONVERSATION_ID);
         verify(transferService).createConversation(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
