@@ -69,5 +69,5 @@ variable "ehr_transfer_finalised_poll_period_milliseconds" {
 
 variable "inbound_timeout_seconds" {
  type = string
- default = "1200"
+ default = "1200" # 1200 seconds = 20 minutes
 }
