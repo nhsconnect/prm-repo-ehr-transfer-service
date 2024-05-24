@@ -22,7 +22,7 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
 
         if (storeMessageResult.isEhrComplete()) {
             log.info("Successfully stored all fragments for Inbound Conversation ID {}",
-                fragmentMessage.getConversationId());
+                    fragmentMessage.getConversationId().toString().toUpperCase());
             gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(fragmentMessage.getConversationId());
         }
     }
@@ -30,9 +30,9 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
     private StoreMessageResult storeFragmentMessage(ParsedMessage fragmentMessage) throws Exception {
         LargeEhrFragmentMessage largeEhrFragment = new LargeEhrFragmentMessage(fragmentMessage);
         StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(largeEhrFragment);
-        log.info("Successfully stored fragment with Inbound Message ID {} for Outbound Conversation ID {}",
-            fragmentMessage.getMessageId(),
-            fragmentMessage.getConversationId()
+        log.info("Successfully stored fragment with Inbound Message ID {} for Inbound Conversation ID {}",
+                fragmentMessage.getMessageId().toString().toUpperCase(),
+                fragmentMessage.getConversationId().toString().toUpperCase()
         );
         return storeMessageResult;
     }
