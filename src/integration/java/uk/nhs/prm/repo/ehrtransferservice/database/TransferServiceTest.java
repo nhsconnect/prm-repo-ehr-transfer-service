@@ -10,7 +10,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.QueryReturnedNoItemsException;
@@ -124,13 +123,13 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndConversationTransferStatus_ShouldThrowConversationNotPresentException() {
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationUpdateException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
 
-        // when
-        assertThrows(ConversationNotPresentException.class, () ->
-            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
+        // then
+        assertThrows(ConversationUpdateException.class, () ->
+                transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
     }
 
     @Test
@@ -154,13 +153,13 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationNotPresentException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
 
         // when
-        assertThrows(ConversationNotPresentException.class, () ->
+        assertThrows(ConversationUpdateException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
     }
 
