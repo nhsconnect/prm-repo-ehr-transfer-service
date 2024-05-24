@@ -9,6 +9,9 @@ import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
 
         if (storeMessageResult.isEhrComplete()) {
             log.info("Successfully stored all fragments for Inbound Conversation ID {}",
-                    fragmentMessage.getConversationId().toString().toUpperCase());
+                    getIdAsUpperCasedStringIfNotNull(fragmentMessage.getConversationId()));
             gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(fragmentMessage.getConversationId());
         }
     }
@@ -30,10 +33,22 @@ public class LargeMessageFragmentHandler implements MessageHandler<ParsedMessage
     private StoreMessageResult storeFragmentMessage(ParsedMessage fragmentMessage) throws Exception {
         LargeEhrFragmentMessage largeEhrFragment = new LargeEhrFragmentMessage(fragmentMessage);
         StoreMessageResult storeMessageResult = ehrRepoService.storeMessage(largeEhrFragment);
+
         log.info("Successfully stored fragment with Inbound Message ID {} for Inbound Conversation ID {}",
-                fragmentMessage.getMessageId().toString().toUpperCase(),
-                fragmentMessage.getConversationId().toString().toUpperCase()
-        );
+                getIdAsUpperCasedStringIfNotNull(fragmentMessage.getMessageId()),
+                getIdAsUpperCasedStringIfNotNull(fragmentMessage.getConversationId()));
+
         return storeMessageResult;
+    }
+
+    /**
+     * ParsedMessage getters can return null, wrapping as optional to avoid NullPointerException
+     * @param id the UUID to uppercase
+     * @return UUID as uppercased string
+     */
+    private String getIdAsUpperCasedStringIfNotNull(UUID id) {
+        return id != null
+                ? id.toString().toUpperCase()
+                : null;
     }
 }
