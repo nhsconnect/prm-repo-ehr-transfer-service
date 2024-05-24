@@ -46,7 +46,7 @@ class EhrRepoServiceTest {
 
         Assertions.assertThat(result.isEhrComplete()).isTrue();
 
-        verify(activityService).captureConversationActivityTimestamp(conversationId);
+        verify(activityService).captureConversationActivity(conversationId);
         verify(mockEhrRepoClient, times(1)).fetchStorageUrl(conversationId, messageId);
         verify(mockPresignedUrl, times(1)).uploadMessage(mockParsedMessage);
         verify(mockEhrRepoClient, times(1)).confirmMessageStored(mockParsedMessage);

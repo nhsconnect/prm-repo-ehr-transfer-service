@@ -46,7 +46,7 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        conversationActivityService.captureConversationActivityTimestamp(inboundConversationId);
+        conversationActivityService.captureConversationActivity(inboundConversationId);
 
         transferService.createConversation(repoIncomingEvent);
 

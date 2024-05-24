@@ -21,7 +21,7 @@ public class EhrRepoService {
     }
 
     public StoreMessageResult storeMessage(ParsedMessage parsedMessage) throws Exception {
-        activityService.captureConversationActivityTimestamp(parsedMessage.getConversationId());
+        activityService.captureConversationActivity(parsedMessage.getConversationId());
 
         PresignedUrl presignedUrl = ehrRepoClient.fetchStorageUrl(parsedMessage.getConversationId(), parsedMessage.getMessageId());
         log.info("Retrieved Presigned URL");

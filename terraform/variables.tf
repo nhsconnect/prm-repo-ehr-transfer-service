@@ -57,18 +57,17 @@ variable "enable_scale_action" {
   default = true
 }
 
-# TODO PRMT-4204 - After FoT have discussions if this is required.
-#variable "processing_period_milliseconds" {
-#  type = string
-#  default = "10000"
-#}
-#
-#variable "ehr_response_poll_period_milliseconds" {
-#  type = string
-#  default = "10000"
-#}
-#
-#variable "ehr_response_poll_limit" {
-#  type = string
-#  default = "60"
-#}
+variable "processing_period_milliseconds" {
+ type = string
+ default = "10000"
+}
+
+variable "ehr_transfer_finalised_poll_period_milliseconds" {
+ type = string
+ default = "1000"
+}
+
+variable "inbound_timeout_seconds" {
+ type = string
+ default = "1200" # 1200 seconds = 20 minutes
+}
