@@ -11,7 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Capture a timestamp of the most recent activity for a given conversation ID. If the conversation has not been
- * active for a set duration of time, the conversation status will be set to timed out. Upon the
+ * active for a set duration of time, the conversation status will be set to timed out. Upon the conclusion of the
+ * conversation, this timestamp will be removed.
  */
 @Service
 public final class ConversationActivityService {
