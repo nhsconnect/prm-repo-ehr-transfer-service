@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeEhrFragmentMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.LargeSqsMessage;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
@@ -27,6 +28,9 @@ class LargeMessageFragmentHandlerTest {
 
     @Mock
     EhrRepoService ehrRepoService;
+
+    @Mock
+    ConversationActivityService conversationActivityService;
 
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
@@ -55,11 +59,15 @@ class LargeMessageFragmentHandlerTest {
             .thenReturn(COMPLETE_RESULT);
         when(largeSqsMessage.getConversationId())
             .thenReturn(INBOUND_CONVERSATION_ID);
+        doNothing()
+            .when(conversationActivityService)
+            .concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
         largeMessageFragmentHandler.handleMessage(largeSqsMessage);
 
         // then
         verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
+        verify(conversationActivityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
         verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
@@ -73,6 +81,7 @@ class LargeMessageFragmentHandlerTest {
 
         // then
         verify(ehrRepoService).storeMessage(largeMessageFragmentsArgumentCaptor.capture());
+        verify(conversationActivityService, never()).concludeConversationActivity(any(UUID.class));
         verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
@@ -88,6 +97,7 @@ class LargeMessageFragmentHandlerTest {
 
         // then
         assertThrows(Exception.class, () -> largeMessageFragmentHandler.handleMessage(largeSqsMessage));
+        verify(conversationActivityService, never()).concludeConversationActivity(any(UUID.class));
         verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 

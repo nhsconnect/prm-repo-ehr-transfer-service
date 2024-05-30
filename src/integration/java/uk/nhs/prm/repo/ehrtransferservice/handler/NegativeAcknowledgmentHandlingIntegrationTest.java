@@ -68,12 +68,9 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         inboundQueueFromMhs.sendMessage(negativeAck);
 
         // then
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            String transferStatus = transferService
-                .getConversationTransferStatus(inboundConversationId);
-
-            assertThat(transferStatus).isEqualTo(INBOUND_FAILED.name());
-        });
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
+                assertThat(transferService.getConversationTransferStatus(inboundConversationId)).isEqualTo(INBOUND_FAILED)
+        );
     }
 
     private UUID createConversationRecord() {

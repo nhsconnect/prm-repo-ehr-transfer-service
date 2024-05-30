@@ -27,6 +27,7 @@ public class TransferService {
             log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
         } catch (DatabaseException exception) {
             log.warn(exception.getMessage());
+            throw exception;
         }
     }
 
@@ -43,11 +44,8 @@ public class TransferService {
         return conversation.nemsMessageId();
     }
 
-    public String getConversationTransferStatus(UUID inboundConversationId) {
-        final ConversationRecord conversation =
-            getConversationByInboundConversationId(inboundConversationId);
-
-        return conversation.state();
+    public ConversationTransferStatus getConversationTransferStatus(UUID inboundConversationId) {
+        return getConversationByInboundConversationId(inboundConversationId).transferStatus();
     }
 
     public boolean isInboundConversationPresent(UUID inboundConversationId) {
@@ -63,24 +61,58 @@ public class TransferService {
         return conversationPresent;
     }
 
-    public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
-        transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
+    public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus newTransferStatus) {
+        ConversationTransferStatus currentTransferStatus = getConversationTransferStatus(inboundConversationId);
 
-        if (conversationTransferStatus.isTerminating) {
+        if (currentTransferStatus.isTerminating) {
+            rejectConversationTransferStatusUpdateForTerminatedConversation(inboundConversationId, newTransferStatus, currentTransferStatus);
+        } else {
+            updateConversationTransferStatusForPendingConversation(inboundConversationId, newTransferStatus);
+        }
+    }
+
+    private void rejectConversationTransferStatusUpdateForTerminatedConversation(
+            UUID inboundConversationId,
+            ConversationTransferStatus newTransferStatus,
+            ConversationTransferStatus currentTransferStatus
+    ) {
+        log.warn("Cannot update conversation record with Inbound Conversation ID {} to new status {} as the " +
+                        "conversation has already terminated with status {}",
+                inboundConversationId.toString().toUpperCase(),
+                newTransferStatus.name(),
+                currentTransferStatus.name());
+
+        // the conversation activity should already be concluded, but just in case
+        activityService.concludeConversationActivity(inboundConversationId);
+    }
+
+    private void updateConversationTransferStatusForPendingConversation(
+            UUID inboundConversationId,
+            ConversationTransferStatus newTransferStatus
+    ) {
+        transferRepository.updateConversationStatus(inboundConversationId, newTransferStatus);
+
+        log.info("Updated conversation record with Inbound Conversation ID {} with TransferStatus of {}",
+                inboundConversationId.toString().toUpperCase(), newTransferStatus.name());
+
+        if (newTransferStatus.isTerminating) {
             activityService.concludeConversationActivity(inboundConversationId);
         }
-
-        log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
-            inboundConversationId.toString().toUpperCase(), conversationTransferStatus.name());
     }
 
     public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
+        ConversationTransferStatus currentTransferStatus = getConversationTransferStatus(inboundConversationId);
 
-        activityService.concludeConversationActivity(inboundConversationId);
+        if (currentTransferStatus.isTerminating) {
+            rejectConversationTransferStatusUpdateForTerminatedConversation(inboundConversationId, INBOUND_FAILED, currentTransferStatus);
+        } else {
+            transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
 
-        log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
-            inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
+            activityService.concludeConversationActivity(inboundConversationId);
+
+            log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
+                    inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
+        }
     }
 
     public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {

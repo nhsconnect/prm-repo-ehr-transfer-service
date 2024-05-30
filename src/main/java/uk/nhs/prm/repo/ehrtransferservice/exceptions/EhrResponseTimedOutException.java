@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class EhrResponseTimedOutException extends RuntimeException {
-    private static final String BASE_MESSAGE = "EHR Request has remained in a pending state and timed out in " +
+    private static final String BASE_MESSAGE = "EHR Request has remained in a pending transferStatus and timed out in " +
             "Transfer status: %s";
 
     public EhrResponseTimedOutException(String message) {

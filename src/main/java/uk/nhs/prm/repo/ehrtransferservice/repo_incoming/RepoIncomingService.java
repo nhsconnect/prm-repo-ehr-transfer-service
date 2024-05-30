@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.timeout.TimeoutExceededException;
 import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
@@ -46,15 +47,20 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        conversationActivityService.captureConversationActivity(inboundConversationId);
+        try {
+            conversationActivityService.captureConversationActivity(inboundConversationId);
 
-        transferService.createConversation(repoIncomingEvent);
+            transferService.createConversation(repoIncomingEvent);
 
-        gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
+            gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
+            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
 
-        auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
-        waitForConversationToComplete(inboundConversationId);
+            auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
+            waitForConversationToComplete(inboundConversationId);
+        } catch (Exception exception) {
+            conversationActivityService.concludeConversationActivity(inboundConversationId);
+            throw exception;
+        }
     }
 
     private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException {

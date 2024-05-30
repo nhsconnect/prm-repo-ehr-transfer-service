@@ -58,7 +58,7 @@ class RepoIncomingServiceTest {
     }
 
     @Test
-    void processIncomingEvent_SendEhrRequestThrowsException_ShouldNotProceed() throws Exception {
+    void processIncomingEvent_SendEhrRequestThrowsException_ShouldNotProceedAndShouldConcludeConversation() throws Exception {
         // given
         final Exception exception = new Exception();
 
@@ -74,6 +74,7 @@ class RepoIncomingServiceTest {
         verify(activityService).captureConversationActivity(INBOUND_CONVERSATION_ID);
         verify(transferService).createConversation(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
+        verify(activityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
         verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
         verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
     }

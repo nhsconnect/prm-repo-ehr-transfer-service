@@ -251,7 +251,7 @@ public class TransferRepository {
             item.get(SOURCE_GP.name).s(),
             Optional.ofNullable(item.get(DESTINATION_GP.name))
                 .map(AttributeValue::s),
-            item.get(TRANSFER_STATUS.name).s(),
+            ConversationTransferStatus.valueOf(item.get(TRANSFER_STATUS.name).s()),
             Optional.ofNullable(item.get(FAILURE_CODE.name))
                 .map(AttributeValue::s),
             Optional.ofNullable(item.get(NEMS_MESSAGE_ID.name))

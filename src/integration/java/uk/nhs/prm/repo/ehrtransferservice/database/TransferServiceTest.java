@@ -42,6 +42,7 @@ public class TransferServiceTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
     private static final String EHR_CORE_MESSAGE_ID = "13CD1199-4B3A-44DC-9A60-6ABCC22B8A44";
 
+
     @Test
     void createConversation_ValidRepoIncomingEvent_ShouldCreateConversation() {
         // given
@@ -51,17 +52,17 @@ public class TransferServiceTest {
         // when
         transferService.createConversation(repoIncomingEvent);
         ConversationRecord record = transferService
-            .getConversationByInboundConversationId(inboundConversationId);
+                .getConversationByInboundConversationId(inboundConversationId);
 
         String nemsMessageIdResult = record.nemsMessageId()
-            .orElseThrow()
-            .toString();
+                .orElseThrow()
+                .toString();
 
         // then
         assertEquals(record.inboundConversationId().toString(), inboundConversationId.toString());
         assertEquals(record.nhsNumber(), NHS_NUMBER);
         assertEquals(record.sourceGp(), SOURCE_GP);
-        assertEquals(record.state(), INBOUND_STARTED.name());
+        assertEquals(record.transferStatus(), INBOUND_STARTED);
         assertEquals(record.failureCode(), Optional.empty());
         assertEquals(nemsMessageIdResult, NEMS_MESSAGE_ID);
         assertNotNull(record.createdAt());
@@ -119,16 +120,16 @@ public class TransferServiceTest {
             .getConversationByInboundConversationId(inboundConversationId);
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_FAILED);
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
 
         // then
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
                 transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
     }
 
@@ -148,18 +149,18 @@ public class TransferServiceTest {
         final String failureCodeResult = record.failureCode().orElseThrow();
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_FAILED);
         assertEquals(failureCodeResult, failureCode);
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
 
         // when
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
     }
 

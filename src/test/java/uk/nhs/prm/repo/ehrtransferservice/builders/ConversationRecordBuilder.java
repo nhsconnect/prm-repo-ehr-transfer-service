@@ -1,5 +1,6 @@
 package uk.nhs.prm.repo.ehrtransferservice.builders;
 
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 
 import java.time.Instant;
@@ -24,7 +25,7 @@ public class ConversationRecordBuilder {
 
     private Optional<String> destinationGp;
 
-    private String state;
+    private ConversationTransferStatus transferStatus;
 
     private Optional<String> failureCode;
 
@@ -42,7 +43,7 @@ public class ConversationRecordBuilder {
         nhsNumber = "1234567890";
         sourceGp = "ODSCODE";
         destinationGp = Optional.empty();
-        state = INBOUND_STARTED.name();
+        transferStatus = INBOUND_STARTED;
         failureCode = Optional.empty();
         nemsMessageId = Optional.of(UUID.fromString("d221cbca-7e76-4eac-83b6-98dcc615dd60"));
         createdAt = ZonedDateTime.of(
@@ -62,6 +63,11 @@ public class ConversationRecordBuilder {
         return this;
     }
 
+    public ConversationRecordBuilder withTransferStatus(ConversationTransferStatus transferStatus) {
+        this.transferStatus = transferStatus;
+        return this;
+    }
+
     public ConversationRecord build() {
         return new ConversationRecord(
             inboundConversationId,
@@ -69,7 +75,7 @@ public class ConversationRecordBuilder {
             nhsNumber,
             sourceGp,
             destinationGp,
-            state,
+            transferStatus,
             failureCode,
             nemsMessageId,
             createdAt,
