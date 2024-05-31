@@ -46,15 +46,22 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        conversationActivityService.captureConversationActivity(inboundConversationId);
+        transferService.verifyIfConversationIneligibleForRetry(inboundConversationId);
 
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            conversationActivityService.captureConversationActivity(inboundConversationId);
 
-        gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
+            transferService.createConversation(repoIncomingEvent);
 
-        auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
-        waitForConversationToComplete(inboundConversationId);
+            gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
+            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
+
+            auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
+            waitForConversationToComplete(inboundConversationId);
+        } catch (Exception exception) {
+            conversationActivityService.concludeConversationActivity(inboundConversationId);
+            throw exception;
+        }
     }
 
     private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException {

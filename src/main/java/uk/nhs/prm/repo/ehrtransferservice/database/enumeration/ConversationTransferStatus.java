@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.database.enumeration;
 public enum ConversationTransferStatus {
     INBOUND_STARTED(false),
     INBOUND_REQUEST_SENT(false),
+    INBOUND_CORE_RECEIVED(false),
     INBOUND_CONTINUE_REQUEST_SENT(false),
     INBOUND_COMPLETE(true),
     INBOUND_FAILED(true),

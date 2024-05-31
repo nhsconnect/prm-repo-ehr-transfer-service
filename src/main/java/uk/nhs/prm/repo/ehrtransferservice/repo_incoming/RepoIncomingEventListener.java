@@ -3,6 +3,7 @@ package uk.nhs.prm.repo.ehrtransferservice.repo_incoming;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.JMSException;
@@ -30,6 +31,14 @@ public class RepoIncomingEventListener implements MessageListener {
             repoIncomingService.processIncomingEvent(parsedMessage);
             message.acknowledge();
             log.info("ACKNOWLEDGED: Message from RepoIncoming");
+            // TODO PRMT-4840 build this out. I think a private method is more appropriate here so we can process
+            //  different exceptions that require acknowledging the message such as PRMT-4859's EhrCompleteAcknowledgementFailedException
+        } catch (ConversationIneligibleForRetryException exception) {
+            try {
+                message.acknowledge();
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
+            }
         } catch (Exception exception) {
             log.error("Error while processing message", exception);
         }
