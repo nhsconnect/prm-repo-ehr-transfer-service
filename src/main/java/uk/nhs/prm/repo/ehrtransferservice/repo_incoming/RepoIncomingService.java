@@ -74,8 +74,12 @@ public class RepoIncomingService {
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
         if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
-            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
-            throw new TimeoutExceededException(inboundConversationId);
+            if (transferService.getConversationTransferStatus(inboundConversationId).isTerminating) {
+                conversationActivityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
+                throw new TimeoutExceededException(inboundConversationId);
+            }
         }
     }
 }
