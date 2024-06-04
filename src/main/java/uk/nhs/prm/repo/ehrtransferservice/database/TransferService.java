@@ -55,7 +55,7 @@ public class TransferService {
                 log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
                 activityService.concludeConversationActivity(inboundConversationId);
             } else {
-                throw new ConversationAlreadyInProgressException("Transfer is already in progress.");
+                throw new ConversationAlreadyInProgressException(inboundConversationId);
             }
         }
     }
