@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationAlreadyInProgressException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.timeout.TimeoutExceededException;
 import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
@@ -54,6 +55,8 @@ public class RepoIncomingService {
 
             auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
             waitForConversationToComplete(inboundConversationId);
+        } catch (ConversationAlreadyInProgressException exception) { // Do not want to concludeConversationActivity here
+            throw exception;
         } catch (Exception exception) {
             conversationActivityService.concludeConversationActivity(inboundConversationId);
             throw exception;
