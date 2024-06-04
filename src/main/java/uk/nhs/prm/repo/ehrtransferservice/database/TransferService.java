@@ -7,15 +7,14 @@ import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTrans
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationAlreadyInProgressException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 
 import java.util.Optional;
 import java.util.UUID;
 
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
 
 @Log4j2
 @Service
@@ -24,12 +23,40 @@ public class TransferService {
     private final TransferRepository transferRepository;
     private final ConversationActivityService activityService;
 
-    public void createConversation(RepoIncomingEvent event) {
-        try {
+    public void createOrRetryConversation(RepoIncomingEvent event)
+            throws ConversationAlreadyInProgressException, ConversationIneligibleForRetryException {
+        UUID inboundConversationId = UUID.fromString(event.getConversationId());
+
+        verifyIfConversationAlreadyInProgress(inboundConversationId);
+
+        if (isInboundConversationPresent(inboundConversationId)) {
+            verifyIfConversationIsInRetryableTransferStatus(inboundConversationId);
+            log.info("Retrying RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
+            activityService.captureConversationActivity(inboundConversationId);
+            transferRepository.updateConversationStatus(inboundConversationId, INBOUND_STARTED);
+        } else {
+            log.info("Processing new RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
+            activityService.captureConversationActivity(inboundConversationId);
             transferRepository.createConversation(event);
-            log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
-        } catch (DatabaseException exception) {
-            log.warn(exception.getMessage());
+        }
+    }
+
+    private void verifyIfConversationIsInRetryableTransferStatus(UUID inboundConversationId) throws ConversationIneligibleForRetryException {
+        ConversationTransferStatus transferStatus = getConversationTransferStatus(inboundConversationId);
+
+        if (!transferStatus.isInboundRetryable) {
+            throw new ConversationIneligibleForRetryException(inboundConversationId);
+        }
+    }
+
+    private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
+        if (activityService.isConversationActive(inboundConversationId)) {
+            if (activityService.isConversationTimedOut(inboundConversationId)) {
+                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
+                activityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                throw new ConversationAlreadyInProgressException("Transfer is already in progress.");
+            }
         }
     }
 
@@ -46,11 +73,8 @@ public class TransferService {
         return conversation.nemsMessageId();
     }
 
-    public String getConversationTransferStatus(UUID inboundConversationId) {
-        final ConversationRecord conversation =
-            getConversationByInboundConversationId(inboundConversationId);
-
-        return conversation.state();
+    public ConversationTransferStatus getConversationTransferStatus(UUID inboundConversationId) {
+        return getConversationByInboundConversationId(inboundConversationId).transferStatus();
     }
 
     public boolean isInboundConversationPresent(UUID inboundConversationId) {
@@ -66,84 +90,58 @@ public class TransferService {
         return conversationPresent;
     }
 
-    public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
-        transferRepository.updateConversationStatus(inboundConversationId, conversationTransferStatus);
+    public void updateConversationTransferStatus(UUID inboundConversationId, ConversationTransferStatus newTransferStatus) {
+        ConversationTransferStatus currentTransferStatus = getConversationTransferStatus(inboundConversationId);
 
-        if (conversationTransferStatus.isTerminating) {
-            activityService.concludeConversationActivity(inboundConversationId);
+        if (currentTransferStatus.isInboundTerminating) {
+            rejectConversationTransferStatusUpdateForTerminatedConversation(inboundConversationId, newTransferStatus, currentTransferStatus);
+        } else {
+            updateConversationTransferStatusForPendingConversation(inboundConversationId, newTransferStatus);
         }
-
-        log.info("Updated conversation record with Inbound Conversation ID {} with the status of {}",
-            inboundConversationId.toString().toUpperCase(), conversationTransferStatus.name());
     }
 
     public void updateConversationTransferStatusWithFailure(UUID inboundConversationId, String failureCode) {
-        transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
+        ConversationTransferStatus currentTransferStatus = getConversationTransferStatus(inboundConversationId);
+
+        if (currentTransferStatus.isInboundTerminating) {
+            rejectConversationTransferStatusUpdateForTerminatedConversation(inboundConversationId, INBOUND_FAILED, currentTransferStatus);
+        } else {
+            transferRepository.updateConversationStatusWithFailure(inboundConversationId, failureCode);
+            activityService.concludeConversationActivity(inboundConversationId);
+            log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
+                    inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
+        }
+    }
+
+    private void rejectConversationTransferStatusUpdateForTerminatedConversation(
+            UUID inboundConversationId,
+            ConversationTransferStatus newTransferStatus,
+            ConversationTransferStatus currentTransferStatus
+    ) {
+        log.warn("Cannot update conversation record with Inbound Conversation ID {} to new status {} as the " +
+                        "conversation has already terminated with status {}",
+                inboundConversationId.toString().toUpperCase(),
+                newTransferStatus.name(),
+                currentTransferStatus.name());
 
         activityService.concludeConversationActivity(inboundConversationId);
+    }
 
-        log.info("Updated conversation record with Inbound Conversation ID {} to {}, with failure code {}",
-            inboundConversationId.toString().toUpperCase(), INBOUND_FAILED.name(), failureCode);
+    private void updateConversationTransferStatusForPendingConversation(
+            UUID inboundConversationId,
+            ConversationTransferStatus newTransferStatus
+    ) {
+        transferRepository.updateConversationStatus(inboundConversationId, newTransferStatus);
+
+        log.info("Updated conversation record with Inbound Conversation ID {} with TransferStatus of {}",
+                inboundConversationId.toString().toUpperCase(), newTransferStatus.name());
+
+        if (newTransferStatus.isInboundTerminating) {
+            activityService.concludeConversationActivity(inboundConversationId);
+        }
     }
 
     public UUID getEhrCoreInboundMessageIdForInboundConversationId(UUID inboundConversationId) {
         return transferRepository.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
-    }
-
-    public void verifyIfConversationIneligibleForRetry(UUID inboundConversationId)
-            throws ConversationAlreadyInProgressException, ConversationIneligibleForRetryException {
-        verifyIfConversationAlreadyInProgress(inboundConversationId);
-
-        if (isInboundConversationPresent(inboundConversationId)) {
-            verifyIfConversationIsInRetryableTransferStatus(inboundConversationId);
-        } else {
-            log.info("Processing new RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
-        }
-
-//
-//        String transferStatus;
-//        try {
-//            transferStatus = getConversationTransferStatus(inboundConversationId);
-//        } catch (ConversationNotPresentException exception) {
-//            log.info("Processing new RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
-//            return false;
-//        }
-//
-//        if (transferStatus == null) {
-//            log.info("Processing new RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
-//            return false;
-//        } else if (transferStatus.equals(INBOUND_STARTED.name()) || transferStatus.equals(INBOUND_TIMEOUT.name())) {
-//            log.info("Retrying RepoIncomingEvent for Inbound Conversation ID: {}", inboundConversationId);
-//            return false;
-//        } else if (transferStatus.equals(INBOUND_FAILED.name()) || transferStatus.equals(INBOUND_COMPLETE.name()) || transferStatus.contains("OUTBOUND_")) {
-//            log.warn("RepoIncomingEvent is not eligible for retry for Inbound Conversation ID: {}", inboundConversationId);
-//            return true;
-//        } else if (transferStatus.equals(INBOUND_REQUEST_SENT.name()) || transferStatus.equals(INBOUND_CORE_RECEIVED.name()) || transferStatus.equals(INBOUND_CONTINUE_REQUEST_SENT.name())) {
-//            // TODO: COMMENT THIS IF STATEMENT OUT!
-//        }
-//        return true;
-    }
-
-    private void verifyIfConversationIsInRetryableTransferStatus(UUID inboundConversationId) throws ConversationIneligibleForRetryException {
-        String transferStatus = getConversationTransferStatus(inboundConversationId);
-
-        if (transferStatus.equals(INBOUND_FAILED.name()) ||
-            transferStatus.equals(INBOUND_COMPLETE.name()) ||
-            transferStatus.startsWith("OUTBOUND_")
-        ) {
-            throw new ConversationIneligibleForRetryException(inboundConversationId);
-        }
-        log.info("Retrying RepoIncomingEvent for Inbound Conversation ID: {}", inboundConversationId);
-    }
-
-    private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
-        if (activityService.isConversationActive(inboundConversationId)) {
-            if (activityService.isConversationTimedOut(inboundConversationId)) {
-                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
-                activityService.concludeConversationActivity(inboundConversationId);
-            } else {
-                throw new ConversationAlreadyInProgressException("Transfer is already in progress.");
-            }
-        }
     }
 }

@@ -12,7 +12,6 @@ import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
@@ -46,26 +45,27 @@ public class TransferServiceTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
     private static final String EHR_CORE_MESSAGE_ID = "13CD1199-4B3A-44DC-9A60-6ABCC22B8A44";
 
+
     @Test
-    void createConversation_ValidRepoIncomingEvent_ShouldCreateConversation() {
+    void createConversation_ValidRepoIncomingEvent_ShouldCreateOrRetryConversation() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        transferService.createOrRetryConversation(repoIncomingEvent);
         ConversationRecord record = transferService
-            .getConversationByInboundConversationId(inboundConversationId);
+                .getConversationByInboundConversationId(inboundConversationId);
 
         String nemsMessageIdResult = record.nemsMessageId()
-            .orElseThrow()
-            .toString();
+                .orElseThrow()
+                .toString();
 
         // then
         assertEquals(record.inboundConversationId().toString(), inboundConversationId.toString());
         assertEquals(record.nhsNumber(), NHS_NUMBER);
         assertEquals(record.sourceGp(), SOURCE_GP);
-        assertEquals(record.state(), INBOUND_STARTED.name());
+        assertEquals(record.transferStatus(), INBOUND_STARTED);
         assertEquals(record.failureCode(), Optional.empty());
         assertEquals(nemsMessageIdResult, NEMS_MESSAGE_ID);
         assertNotNull(record.createdAt());
@@ -79,7 +79,7 @@ public class TransferServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         boolean isConversationPresent = transferService
             .isInboundConversationPresent(inboundConversationId);
 
@@ -117,22 +117,22 @@ public class TransferServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED);
         ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_FAILED);
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
 
         // then
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
                 transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
     }
 
@@ -144,7 +144,7 @@ public class TransferServiceTest {
         final String failureCode = "19";
 
         // when
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode);
         final ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);
@@ -152,18 +152,18 @@ public class TransferServiceTest {
         final String failureCodeResult = record.failureCode().orElseThrow();
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_FAILED);
         assertEquals(failureCodeResult, failureCode);
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
 
         // when
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
     }
 
@@ -222,7 +222,7 @@ public class TransferServiceTest {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         final ConversationRecord record = transferService
                 .getConversationByInboundConversationId(inboundConversationId);
         final String transferStatus = record.state();
@@ -240,7 +240,7 @@ public class TransferServiceTest {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
         final ConversationRecord record = transferService
                 .getConversationByInboundConversationId(inboundConversationId);

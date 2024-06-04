@@ -8,7 +8,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -227,8 +226,7 @@ class EhrRequestTest {
 
     private boolean conversationStatusMatches(UUID inboundConversationId, ConversationTransferStatus conversationTransferStatus) {
         try {
-            final ConversationRecord foundRecord = transferService.getConversationByInboundConversationId(inboundConversationId);
-            return ConversationTransferStatus.valueOf(foundRecord.state()).equals(conversationTransferStatus);
+            return transferService.getConversationTransferStatus(inboundConversationId).equals(conversationTransferStatus);
         } catch (Exception exception) { return false; }
     }
 }

@@ -46,12 +46,8 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        transferService.verifyIfConversationIneligibleForRetry(inboundConversationId);
-
         try {
-            conversationActivityService.captureConversationActivity(inboundConversationId);
-
-            transferService.createConversation(repoIncomingEvent);
+            transferService.createOrRetryConversation(repoIncomingEvent);
 
             gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
@@ -75,8 +71,12 @@ public class RepoIncomingService {
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
         if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
-            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
-            throw new TimeoutExceededException(inboundConversationId);
+            if (transferService.getConversationTransferStatus(inboundConversationId).isInboundTerminating) {
+                conversationActivityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
+                throw new TimeoutExceededException(inboundConversationId);
+            }
         }
     }
 }

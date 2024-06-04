@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 
 import javax.jms.JMSException;
@@ -24,23 +25,14 @@ public class RepoIncomingEventListener implements MessageListener {
 
     @Override
     public void onMessage(Message message) {
+        log.info("RECEIVED: Message from RepoIncoming");
+
         try {
             tracer.setMDCContextFromSqs(message);
-            log.info("RECEIVED: Message from RepoIncoming");
             RepoIncomingEvent parsedMessage = parseMessage(message);
-            repoIncomingService.processIncomingEvent(parsedMessage);
-            message.acknowledge();
-            log.info("ACKNOWLEDGED: Message from RepoIncoming");
-            // TODO PRMT-4840 build this out. I think a private method is more appropriate here so we can process
-            //  different exceptions that require acknowledging the message such as PRMT-4859's EhrCompleteAcknowledgementFailedException
-        } catch (ConversationIneligibleForRetryException exception) {
-            try {
-                message.acknowledge();
-            } catch (JMSException e) {
-                throw new RuntimeException(e);
-            }
-        } catch (Exception exception) {
-            log.error("Error while processing message", exception);
+            processIncomingEventAndAcknowledgeMessageOnQueue(message, parsedMessage);
+        } catch (JMSException e) {
+            log.error("Caught JMSException while processing incoming event. Exception message is: {}", e.getMessage());
         }
         waitForEmisProcessingPeriod();
     }
@@ -50,6 +42,33 @@ public class RepoIncomingEventListener implements MessageListener {
         RepoIncomingEvent parsedMessage = parser.parse(payload);
         log.info("PARSED: message with conversationId " + parsedMessage.getConversationId());
         return parsedMessage;
+    }
+
+    private void processIncomingEventAndAcknowledgeMessageOnQueue(Message message, RepoIncomingEvent parsedMessage) {
+        String inboundConversationId = parsedMessage.getConversationId();
+        String inboundConversationIdUppercased = inboundConversationId.toUpperCase();
+
+        try {
+            repoIncomingService.processIncomingEvent(parsedMessage);
+            acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
+        } catch (ConversationIneligibleForRetryException | EhrCompleteAcknowledgementFailedException exception) {
+            log.warn("Exception while attempting to process incoming event with inboundConversationId {}. " +
+                    "Will acknowledge message on queue.", inboundConversationIdUppercased, exception);
+            acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
+        } catch (Exception exception) {
+            log.error("Error while processing message with inboundConversationId {}",
+                    inboundConversationIdUppercased, exception);
+        }
+    }
+
+    private void acknowledgeMessageOnQueue(Message message, String inboundConversationIdUppercased) {
+        try {
+            message.acknowledge();
+            log.info("ACKNOWLEDGED: Message from RepoIncoming with inboundConversationId {}", inboundConversationIdUppercased);
+        } catch (JMSException jmsException) {
+            log.warn("Error while attempting to acknowledge message on RepoIncoming queue with inboundConversationId {}",
+                    inboundConversationIdUppercased, jmsException);
+        }
     }
 
     private void waitForEmisProcessingPeriod() {

@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.AcknowledgementException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.EhrRepoService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ehr_repo.StoreMessageResult;
 import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
@@ -23,6 +24,9 @@ import static org.mockito.Mockito.*;
 class SmallEhrMessageHandlerTest {
     @Mock
     EhrRepoService ehrRepoService;
+
+    @Mock
+    ConversationActivityService conversationActivityService;
 
     @Mock
     Gp2gpMessengerService gp2gpMessengerService;
@@ -47,11 +51,15 @@ class SmallEhrMessageHandlerTest {
             .thenReturn(INBOUND_CONVERSATION_ID);
         when(storeMessageResult.isEhrComplete())
             .thenReturn(true);
+        doNothing()
+            .when(conversationActivityService)
+            .concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
         smallEhrMessageHandler.handleMessage(parsedMessage);
 
         // then
         verify(ehrRepoService).storeMessage(parsedMessage);
+        verify(conversationActivityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
         verify(gp2gpMessengerService).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
@@ -60,8 +68,6 @@ class SmallEhrMessageHandlerTest {
         // when
         when(ehrRepoService.storeMessage(parsedMessage))
             .thenReturn(storeMessageResult);
-        when(parsedMessage.getConversationId())
-            .thenReturn(INBOUND_CONVERSATION_ID);
         when(storeMessageResult.isEhrComplete())
             .thenReturn(false);
 
@@ -69,6 +75,7 @@ class SmallEhrMessageHandlerTest {
 
         // then
         verify(ehrRepoService).storeMessage(parsedMessage);
+        verify(conversationActivityService, never()).concludeConversationActivity(any(UUID.class));
         verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
     }
 
@@ -81,6 +88,7 @@ class SmallEhrMessageHandlerTest {
         // then
         assertThrows(Exception.class, () -> smallEhrMessageHandler.handleMessage(parsedMessage));
         verify(storeMessageResult, never()).isEhrComplete();
+        verify(conversationActivityService, never()).concludeConversationActivity(any(UUID.class));
         verify(gp2gpMessengerService, never()).sendEhrCompletePositiveAcknowledgement(any(UUID.class));
         verify(parsedMessage, never()).getConversationId();
     }
@@ -100,6 +108,9 @@ class SmallEhrMessageHandlerTest {
             .thenReturn(INBOUND_CONVERSATION_ID);
         when(storeMessageResult.isEhrComplete())
             .thenReturn(true);
+        doNothing()
+            .when(conversationActivityService)
+            .concludeConversationActivity(INBOUND_CONVERSATION_ID);
         doThrow(exception)
             .when(gp2gpMessengerService)
             .sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);

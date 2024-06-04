@@ -1,5 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.database.model;
 
+import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
+
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -11,7 +13,7 @@ public record ConversationRecord(
     String nhsNumber,
     String sourceGp,
     Optional<String> destinationGp,
-    String state,
+    ConversationTransferStatus transferStatus,
     Optional<String> failureCode,
     Optional<UUID> nemsMessageId,
     ZonedDateTime createdAt,

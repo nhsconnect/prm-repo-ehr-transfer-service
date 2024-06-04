@@ -19,7 +19,6 @@ import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.io.IOException;
@@ -104,7 +103,7 @@ public class ParserBrokerIntegrationTest {
         final String fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        transferService.createOrRetryConversation(repoIncomingEvent);
         inboundQueueFromMhs.sendMessage(fragmentMessageBody);
 
         // then
@@ -125,7 +124,7 @@ public class ParserBrokerIntegrationTest {
         final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        transferService.createOrRetryConversation(repoIncomingEvent);
         transferService.updateConversationTransferStatus(
             EHR_CORE_INBOUND_CONVERSATION_ID,
             INBOUND_REQUEST_SENT
@@ -151,7 +150,7 @@ public class ParserBrokerIntegrationTest {
         final String correlationId = UUID.randomUUID().toString();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        transferService.createOrRetryConversation(repoIncomingEvent);
         transferService.updateConversationTransferStatus(
             EHR_CORE_INBOUND_CONVERSATION_ID,
             INBOUND_REQUEST_SENT

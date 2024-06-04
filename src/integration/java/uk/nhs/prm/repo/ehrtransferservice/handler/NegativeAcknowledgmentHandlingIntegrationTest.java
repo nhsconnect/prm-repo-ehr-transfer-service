@@ -16,7 +16,6 @@ import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -68,12 +67,9 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         inboundQueueFromMhs.sendMessage(negativeAck);
 
         // then
-        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-            String transferStatus = transferService
-                .getConversationTransferStatus(inboundConversationId);
-
-            assertThat(transferStatus).isEqualTo(INBOUND_FAILED.name());
-        });
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
+                assertThat(transferService.getConversationTransferStatus(inboundConversationId)).isEqualTo(INBOUND_FAILED)
+        );
     }
 
     private UUID createConversationRecord() {
@@ -86,7 +82,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
             CONVERSATION_ID
         );
 
-        transferService.createConversation(event);
+        transferService.createOrRetryConversation(event);
         return UUID.fromString(event.getConversationId());
     }
 
