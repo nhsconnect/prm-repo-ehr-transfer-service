@@ -8,26 +8,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.nhs.prm.repo.ehrtransferservice.builders.ConversationRecordBuilder;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.FailedToPersistException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.base.DatabaseException;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransferServiceTest {
-
     @Mock
     private TransferRepository transferRepository;
 
     @Mock
-    private ConversationActivityService conversationActivityService;
+    private ConversationActivityService activityService;
 
     @InjectMocks
     private TransferService transferService;
@@ -41,29 +42,66 @@ class TransferServiceTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @Test
-    void createOrRetryConversation_ValidRepoIncomingEvent_DoesNotThrow() {
-        // given
-        final UUID inboundConversationId = UUID.randomUUID();
-        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
-
-        // then
-        assertDoesNotThrow(() -> transferService.createOrRetryConversation(repoIncomingEvent));
-    }
-
-    @Test
-    void createConversation_TransferRepositoryThrowsDatabaseException_CreateOrRetryConversationThrows() {
+    void createOrRetryConversation_ValidNewConversationRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        doThrow(FailedToPersistException.class)
-                .when(transferRepository)
-                .createConversation(repoIncomingEvent);
+        when(transferRepository.isInboundConversationPresent(inboundConversationId)).thenReturn(false);
 
         // then
-        assertThrows(DatabaseException.class,
-                () -> transferService.createOrRetryConversation(repoIncomingEvent));
+        assertDoesNotThrow(() -> transferService.createOrRetryConversation(repoIncomingEvent));
+
+        verify(transferRepository).isInboundConversationPresent(inboundConversationId);
+        verify(activityService).captureConversationActivity(inboundConversationId);
+        verify(transferRepository).createConversation(repoIncomingEvent);
+
+        verify(transferRepository, never()).updateConversationStatus(any(), any());
+    }
+
+    @Test
+    void createOrRetryConversation_ValidRetriedConversationRequest_Ok() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, INBOUND_REQUEST_SENT);
+
+        // when
+        when(transferRepository.isInboundConversationPresent(inboundConversationId)).thenReturn(true);
+        when(transferRepository.findConversationByInboundConversationId(inboundConversationId)).thenReturn(conversationRecord);
+
+        // then
+        assertDoesNotThrow(() -> transferService.createOrRetryConversation(repoIncomingEvent));
+
+        verify(transferRepository).isInboundConversationPresent(inboundConversationId);
+        verify(transferRepository).findConversationByInboundConversationId(inboundConversationId);
+        verify(activityService).captureConversationActivity(inboundConversationId);
+        verify(transferRepository).updateConversationStatus(inboundConversationId, INBOUND_STARTED);
+
+        verify(transferRepository, never()).createConversation(any());
+    }
+
+    @Test
+    void createOrRetryConversation_RetriedConversationRequestNotRetryable_ThrowsConversationIneligibleForRetryException() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, INBOUND_FAILED);
+
+        // when
+        when(transferRepository.isInboundConversationPresent(inboundConversationId)).thenReturn(true);
+        when(transferRepository.findConversationByInboundConversationId(inboundConversationId)).thenReturn(conversationRecord);
+
+        // then
+        assertThrows(ConversationIneligibleForRetryException.class, () -> transferService.createOrRetryConversation(repoIncomingEvent));
+
+        verify(transferRepository).isInboundConversationPresent(inboundConversationId);
+        verify(transferRepository).findConversationByInboundConversationId(inboundConversationId);
+
+        verify(activityService, never()).captureConversationActivity(any());
+        verify(transferRepository, never()).updateConversationStatus(any(), any());
+        verify(transferRepository, never()).createConversation(any());
     }
 
     @Test
@@ -72,7 +110,7 @@ class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_COMPLETE;
         final ConversationTransferStatus newTransferStatus = INBOUND_TIMEOUT;
-        final ConversationRecord conversationRecord = createOrRetryConversationRecord(inboundConversationId, currentTransferStatus);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
 
         // when
@@ -83,7 +121,7 @@ class TransferServiceTest {
 
         // then
         verify(transferRepository, never()).updateConversationStatus(any(), any());
-        verify(conversationActivityService).concludeConversationActivity(inboundConversationId);
+        verify(activityService).concludeConversationActivity(inboundConversationId);
     }
 
     @Test
@@ -92,7 +130,7 @@ class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_STARTED;
         final ConversationTransferStatus newTransferStatus = INBOUND_REQUEST_SENT;
-        final ConversationRecord conversationRecord = createOrRetryConversationRecord(inboundConversationId, currentTransferStatus);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
         // when
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId))
@@ -102,7 +140,7 @@ class TransferServiceTest {
 
         // then
         verify(transferRepository).updateConversationStatus(inboundConversationId, newTransferStatus);
-        verify(conversationActivityService, never()).concludeConversationActivity(any());
+        verify(activityService, never()).concludeConversationActivity(any());
     }
 
     @Test
@@ -111,7 +149,7 @@ class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_REQUEST_SENT;
         final ConversationTransferStatus newTransferStatus = INBOUND_COMPLETE;
-        final ConversationRecord conversationRecord = createOrRetryConversationRecord(inboundConversationId, currentTransferStatus);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
         // when
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId))
@@ -121,7 +159,7 @@ class TransferServiceTest {
 
         // then
         verify(transferRepository).updateConversationStatus(inboundConversationId, newTransferStatus);
-        verify(conversationActivityService).concludeConversationActivity(inboundConversationId);
+        verify(activityService).concludeConversationActivity(inboundConversationId);
     }
 
     @Test
@@ -130,7 +168,7 @@ class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_COMPLETE;
         final String failureCode = "06";
-        final ConversationRecord conversationRecord = createOrRetryConversationRecord(inboundConversationId, currentTransferStatus);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
         // when
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId))
@@ -140,7 +178,7 @@ class TransferServiceTest {
 
         // then
         verify(transferRepository, never()).updateConversationStatusWithFailure(any(), any());
-        verify(conversationActivityService).concludeConversationActivity(inboundConversationId);
+        verify(activityService).concludeConversationActivity(inboundConversationId);
     }
 
     @Test
@@ -149,7 +187,7 @@ class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_REQUEST_SENT;
         final String failureCode = "06";
-        final ConversationRecord conversationRecord = createOrRetryConversationRecord(inboundConversationId, currentTransferStatus);
+        final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
         // when
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId))
@@ -159,12 +197,12 @@ class TransferServiceTest {
 
         // then
         verify(transferRepository).updateConversationStatusWithFailure(inboundConversationId, failureCode);
-        verify(conversationActivityService).concludeConversationActivity(inboundConversationId);
+        verify(activityService).concludeConversationActivity(inboundConversationId);
     }
 
 
     // Helper Methods
-    private ConversationRecord createOrRetryConversationRecord(
+    private ConversationRecord createConversationRecord(
             UUID inboundConversationId,
             ConversationTransferStatus currentTransferStatus
     ) {
