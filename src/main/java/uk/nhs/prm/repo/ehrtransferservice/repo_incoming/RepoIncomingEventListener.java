@@ -52,7 +52,7 @@ public class RepoIncomingEventListener implements MessageListener {
             repoIncomingService.processIncomingEvent(parsedMessage);
             acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
         } catch (ConversationIneligibleForRetryException | EhrCompleteAcknowledgementFailedException exception) {
-            log.warn("Exception while attempting to process incoming event with inboundConversationId {}. " +
+            log.warn("Error while attempting to process incoming event with inboundConversationId {}. " +
                     "Will acknowledge message on queue.", inboundConversationIdUppercased, exception);
             acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
         } catch (Exception exception) {
