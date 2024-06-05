@@ -44,7 +44,7 @@ class RepoIncomingEventListenerTest {
     RepoIncomingEventListener repoIncomingEventListener;
 
     @Test
-    void shouldCallTracerWithMessageAndConversation() throws Exception {
+    void onMessage_ValidIncomingEvent_ShouldCallTracerWithMessageAndConversation() throws Exception {
         // given
         String payload = "payload";
         RepoIncomingEvent incomingEvent = getIncomingEvent();
@@ -61,7 +61,7 @@ class RepoIncomingEventListenerTest {
     }
 
     @Test
-    void shouldAcknowledgeTheMessageWhenRequestIsSuccessful() throws Exception {
+    void onMessage_ValidIncomingEvent_ShouldAcknowledgeTheMessageWhenRequestIsSuccessful() throws Exception {
         // given
         RepoIncomingEvent incomingEvent = getIncomingEvent();
         String payload = "payload";
@@ -78,7 +78,7 @@ class RepoIncomingEventListenerTest {
 
     @ParameterizedTest
     @MethodSource({"ArgumentsOfExceptionsThatShouldAcknowledge"})
-    void shouldAcknowledgeTheMessageWhenIneligibleForRetryOrEhrCompleteAcknowledgementFailedExceptionThrown(Exception exception) throws Exception {
+    void onMessage_ProcessIncomingEventThrowsIneligibleForRetryOrEhrCompleteAcknowledgementFailedException_ShouldAcknowledgeTheMessage(Exception exception) throws Exception {
         // given
         RepoIncomingEvent incomingEvent = getIncomingEvent();
         String payload = "payload";
@@ -104,7 +104,7 @@ class RepoIncomingEventListenerTest {
 
     @ParameterizedTest
     @MethodSource({"ArgumentsOfExceptionsThatShouldNotAcknowledge"})
-    void shouldNotAcknowledgeTheMessageWhenAnyOtherExceptionThrown(Exception exception) throws Exception {
+    void onMessage_ProcessIncomingEventThrowsAnyOtherException_ShouldNotAcknowledgeTheMessage(Exception exception) throws Exception {
         // given
         RepoIncomingEvent incomingEvent = getIncomingEvent();
         String payload = "payload";
