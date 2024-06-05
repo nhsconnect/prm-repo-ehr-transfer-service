@@ -66,7 +66,8 @@ public class RepoIncomingService {
     private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
         if (conversationActivityService.isConversationActive(inboundConversationId)) {
             if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
-                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
+                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that " +
+                        "should have already timed out. Concluding the conversation and continuing the request", inboundConversationId);
                 conversationActivityService.concludeConversationActivity(inboundConversationId);
             } else {
                 throw new ConversationAlreadyInProgressException(inboundConversationId);
