@@ -91,6 +91,7 @@ class RepoIncomingEventListenerTest {
         repoIncomingEventListener.onMessage(message);
 
         // then
+        verify(repoIncomingService).processIncomingEvent(incomingEvent);
         verify(message).acknowledge();
     }
 
@@ -114,8 +115,10 @@ class RepoIncomingEventListenerTest {
         when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
         doThrow(exception).when(repoIncomingService).processIncomingEvent(incomingEvent);
 
-        // then
         repoIncomingEventListener.onMessage(message);
+
+        // then
+        verify(repoIncomingService).processIncomingEvent(incomingEvent);
         verify(message, never()).acknowledge();
     }
 
