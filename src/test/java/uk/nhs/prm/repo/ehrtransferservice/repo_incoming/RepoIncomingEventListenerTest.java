@@ -46,9 +46,9 @@ class RepoIncomingEventListenerTest {
     @Test
     void shouldCallTracerWithMessageAndConversation() throws Exception {
         // given
-        var payload = "payload";
-        var incomingEvent = getIncomingEvent();
-        var message = spy(new SQSTextMessage(payload));
+        String payload = "payload";
+        RepoIncomingEvent incomingEvent = getIncomingEvent();
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         // when
         when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
@@ -102,14 +102,13 @@ class RepoIncomingEventListenerTest {
         );
     }
 
-
     @ParameterizedTest
     @MethodSource({"ArgumentsOfExceptionsThatShouldNotAcknowledge"})
     void shouldNotAcknowledgeTheMessageWhenAnyOtherExceptionThrown(Exception exception) throws Exception {
         // given
         RepoIncomingEvent incomingEvent = getIncomingEvent();
-        var payload = "payload";
-        var message = spy(new SQSTextMessage(payload));
+        String payload = "payload";
+        SQSTextMessage message = spy(new SQSTextMessage(payload));
 
         // when
         when(incomingEventParser.parse(payload)).thenReturn(incomingEvent);
