@@ -23,11 +23,8 @@ public class TransferService {
     private final TransferRepository transferRepository;
     private final ConversationActivityService activityService;
 
-    public void createOrRetryConversation(RepoIncomingEvent event)
-            throws ConversationAlreadyInProgressException, ConversationIneligibleForRetryException {
+    public void createOrRetryConversation(RepoIncomingEvent event) throws ConversationIneligibleForRetryException {
         UUID inboundConversationId = UUID.fromString(event.getConversationId());
-
-        verifyIfConversationAlreadyInProgress(inboundConversationId);
 
         if (isInboundConversationPresent(inboundConversationId)) {
             verifyIfConversationIsInRetryableTransferStatus(inboundConversationId);
@@ -46,17 +43,6 @@ public class TransferService {
 
         if (!transferStatus.isInboundRetryable) {
             throw new ConversationIneligibleForRetryException(inboundConversationId);
-        }
-    }
-
-    private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
-        if (activityService.isConversationActive(inboundConversationId)) {
-            if (activityService.isConversationTimedOut(inboundConversationId)) {
-                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
-                activityService.concludeConversationActivity(inboundConversationId);
-            } else {
-                throw new ConversationAlreadyInProgressException(inboundConversationId);
-            }
         }
     }
 

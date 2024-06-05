@@ -47,6 +47,8 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
+        verifyIfConversationAlreadyInProgress(inboundConversationId);
+
         try {
             transferService.createOrRetryConversation(repoIncomingEvent);
 
@@ -55,11 +57,20 @@ public class RepoIncomingService {
 
             auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
             waitForConversationToComplete(inboundConversationId);
-        } catch (ConversationAlreadyInProgressException exception) { // Do not want to concludeConversationActivity here
-            throw exception;
         } catch (Exception exception) {
             conversationActivityService.concludeConversationActivity(inboundConversationId);
             throw exception;
+        }
+    }
+
+    private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
+        if (conversationActivityService.isConversationActive(inboundConversationId)) {
+            if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
+                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that should have already timed out", inboundConversationId);
+                conversationActivityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                throw new ConversationAlreadyInProgressException(inboundConversationId);
+            }
         }
     }
 
