@@ -105,11 +105,11 @@ class RepoIncomingServiceTest {
         verify(activityService).isConversationActive(INBOUND_CONVERSATION_ID);
         verify(activityService).isConversationTimedOut(INBOUND_CONVERSATION_ID);
         
-        verify(activityService, never()).concludeConversationActivity(INBOUND_CONVERSATION_ID);
-        verify(transferService, never()).createOrRetryConversation(repoIncomingEvent);
-        verify(gp2gpMessengerService, never()).sendEhrRequest(repoIncomingEvent);
-        verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
-        verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(activityService, never()).concludeConversationActivity(any());
+        verify(transferService, never()).createOrRetryConversation(any());
+        verify(gp2gpMessengerService, never()).sendEhrRequest(any());
+        verify(transferService, never()).updateConversationTransferStatus(any(), any());
+        verify(auditService, never()).publishAuditMessage(any(), any(), any());
     }
 
     @Test
@@ -130,9 +130,9 @@ class RepoIncomingServiceTest {
         verify(transferService).createOrRetryConversation(repoIncomingEvent);
         verify(activityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
-        verify(gp2gpMessengerService, never()).sendEhrRequest(repoIncomingEvent);
-        verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
-        verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(gp2gpMessengerService, never()).sendEhrRequest(any());
+        verify(transferService, never()).updateConversationTransferStatus(any(), any());
+        verify(auditService, never()).publishAuditMessage(any(), any(), any());
     }
 
     @Test
@@ -154,8 +154,8 @@ class RepoIncomingServiceTest {
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(activityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
-        verify(transferService, never()).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
-        verify(auditService, never()).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
+        verify(transferService, never()).updateConversationTransferStatus(any(), any());
+        verify(auditService, never()).publishAuditMessage(any(), any(), any());
     }
 
     @Test
