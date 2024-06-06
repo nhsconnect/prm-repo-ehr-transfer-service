@@ -45,16 +45,15 @@ public class RepoIncomingEventListener implements MessageListener {
     }
 
     private void processIncomingEventAndAcknowledgeMessageOnQueue(Message message, RepoIncomingEvent parsedMessage) {
-        String inboundConversationId = parsedMessage.getConversationId();
-        String inboundConversationIdUppercased = inboundConversationId.toUpperCase();
+        String inboundConversationIdUppercased = parsedMessage.getConversationId().toUpperCase();
 
         try {
             repoIncomingService.processIncomingEvent(parsedMessage);
-            acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
+            acknowledgeMessageOnQueue(message, inboundConversationIdUppercased);
         } catch (ConversationIneligibleForRetryException | EhrCompleteAcknowledgementFailedException exception) {
             log.warn("Error while attempting to process incoming event with inboundConversationId {}. " +
                     "Will acknowledge message on queue.", inboundConversationIdUppercased, exception);
-            acknowledgeMessageOnQueue(message, parsedMessage.getConversationId());
+            acknowledgeMessageOnQueue(message, inboundConversationIdUppercased);
         } catch (Exception exception) {
             log.error("Error while processing message with inboundConversationId {}",
                     inboundConversationIdUppercased, exception);

@@ -106,7 +106,7 @@ public class ParserBrokerIntegrationTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
@@ -132,7 +132,7 @@ public class ParserBrokerIntegrationTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
@@ -163,7 +163,7 @@ public class ParserBrokerIntegrationTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }

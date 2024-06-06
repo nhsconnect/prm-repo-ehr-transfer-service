@@ -42,7 +42,7 @@ class TransferServiceTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @Test
-    void createOrRetryConversation_ValidNewConversationRequest_Ok() {
+    void createConversation_ValidNewConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -51,7 +51,7 @@ class TransferServiceTest {
         when(transferRepository.isInboundConversationPresent(inboundConversationId)).thenReturn(false);
 
         // then
-        assertDoesNotThrow(() -> transferService.createOrRetryConversation(repoIncomingEvent));
+        assertDoesNotThrow(() -> transferService.createConversationOrResetForRetry(repoIncomingEvent));
 
         verify(transferRepository).isInboundConversationPresent(inboundConversationId);
         verify(activityService).captureConversationActivity(inboundConversationId);
@@ -61,7 +61,7 @@ class TransferServiceTest {
     }
 
     @Test
-    void createOrRetryConversation_ValidRetriedConversationRequest_Ok() {
+    void createConversation_ValidRetriedConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -72,7 +72,7 @@ class TransferServiceTest {
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId)).thenReturn(conversationRecord);
 
         // then
-        assertDoesNotThrow(() -> transferService.createOrRetryConversation(repoIncomingEvent));
+        assertDoesNotThrow(() -> transferService.createConversationOrResetForRetry(repoIncomingEvent));
 
         verify(transferRepository).isInboundConversationPresent(inboundConversationId);
         verify(transferRepository).findConversationByInboundConversationId(inboundConversationId);
@@ -83,7 +83,7 @@ class TransferServiceTest {
     }
 
     @Test
-    void createOrRetryConversation_RetriedConversationRequestNotRetryable_ThrowsConversationIneligibleForRetryException() {
+    void createExceptionOrResetForRetry() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -94,7 +94,7 @@ class TransferServiceTest {
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId)).thenReturn(conversationRecord);
 
         // then
-        assertThrows(ConversationIneligibleForRetryException.class, () -> transferService.createOrRetryConversation(repoIncomingEvent));
+        assertThrows(ConversationIneligibleForRetryException.class, () -> transferService.createConversationOrResetForRetry(repoIncomingEvent));
 
         verify(transferRepository).isInboundConversationPresent(inboundConversationId);
         verify(transferRepository).findConversationByInboundConversationId(inboundConversationId);

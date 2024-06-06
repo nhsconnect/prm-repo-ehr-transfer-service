@@ -85,7 +85,7 @@ public class NegativeAcknowledgmentHandlingIntegrationTest {
         );
 
         try {
-            transferService.createOrRetryConversation(event);
+            transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }

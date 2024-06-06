@@ -50,7 +50,7 @@ public class RepoIncomingService {
         verifyIfConversationAlreadyInProgress(inboundConversationId);
 
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
 
             gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
             transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);

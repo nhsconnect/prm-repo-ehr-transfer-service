@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationAlreadyInProgressException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 
@@ -23,22 +22,22 @@ public class TransferService {
     private final TransferRepository transferRepository;
     private final ConversationActivityService activityService;
 
-    public void createOrRetryConversation(RepoIncomingEvent event) throws ConversationIneligibleForRetryException {
+    public void createConversationOrResetForRetry(RepoIncomingEvent event) throws ConversationIneligibleForRetryException {
         UUID inboundConversationId = UUID.fromString(event.getConversationId());
 
         if (isInboundConversationPresent(inboundConversationId)) {
-            verifyIfConversationIsInRetryableTransferStatus(inboundConversationId);
+            verifyConversationIsRetryable(inboundConversationId);
             log.info("Retrying RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
-            activityService.captureConversationActivity(inboundConversationId);
             transferRepository.updateConversationStatus(inboundConversationId, INBOUND_STARTED);
         } else {
             log.info("Processing new RepoIncomingEvent with Inbound Conversation ID: {}", inboundConversationId);
-            activityService.captureConversationActivity(inboundConversationId);
             transferRepository.createConversation(event);
         }
+
+        activityService.captureConversationActivity(inboundConversationId);
     }
 
-    private void verifyIfConversationIsInRetryableTransferStatus(UUID inboundConversationId) throws ConversationIneligibleForRetryException {
+    private void verifyConversationIsRetryable(UUID inboundConversationId) throws ConversationIneligibleForRetryException {
         ConversationTransferStatus transferStatus = getConversationTransferStatus(inboundConversationId);
 
         if (!transferStatus.isInboundRetryable) {

@@ -22,9 +22,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_TIMEOUT;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -52,14 +50,14 @@ public class TransferServiceTest {
     private static final String EHR_CORE_MESSAGE_ID = "13CD1199-4B3A-44DC-9A60-6ABCC22B8A44";
 
     @Test
-    void createOrRetryConversation_ValidNewConversationRequest_Ok() {
+    void createConversation_ValidNewConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
 
         // when
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
@@ -83,7 +81,7 @@ public class TransferServiceTest {
     }
 
     @Test
-    void createOrRetryConversation_ValidRetriedConversationRequest_Ok() {
+    void createConversation_ValidRetriedConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -92,7 +90,7 @@ public class TransferServiceTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(repoIncomingEvent);
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be eligible for retry");
         }
@@ -123,7 +121,7 @@ public class TransferServiceTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(event);
+            transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
@@ -166,7 +164,7 @@ public class TransferServiceTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(event);
+            transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
@@ -198,7 +196,7 @@ public class TransferServiceTest {
 
         // when
         try {
-            transferService.createOrRetryConversation(event);
+            transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }

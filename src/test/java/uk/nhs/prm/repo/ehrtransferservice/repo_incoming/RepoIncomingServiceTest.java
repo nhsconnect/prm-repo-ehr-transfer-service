@@ -58,7 +58,7 @@ class RepoIncomingServiceTest {
         assertDoesNotThrow(() -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
 
         verify(activityService, times(3)).isConversationActive(INBOUND_CONVERSATION_ID);
-        verify(transferService).createOrRetryConversation(repoIncomingEvent);
+        verify(transferService).createConversationOrResetForRetry(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
         verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
@@ -85,7 +85,7 @@ class RepoIncomingServiceTest {
 
         verify(activityService, times(3)).isConversationActive(INBOUND_CONVERSATION_ID);
         verify(activityService, times(2)).isConversationTimedOut(INBOUND_CONVERSATION_ID);
-        verify(transferService).createOrRetryConversation(repoIncomingEvent);
+        verify(transferService).createConversationOrResetForRetry(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
         verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
@@ -106,7 +106,7 @@ class RepoIncomingServiceTest {
         verify(activityService).isConversationTimedOut(INBOUND_CONVERSATION_ID);
         
         verify(activityService, never()).concludeConversationActivity(any());
-        verify(transferService, never()).createOrRetryConversation(any());
+        verify(transferService, never()).createConversationOrResetForRetry(any());
         verify(gp2gpMessengerService, never()).sendEhrRequest(any());
         verify(transferService, never()).updateConversationTransferStatus(any(), any());
         verify(auditService, never()).publishAuditMessage(any(), any(), any());
@@ -122,12 +122,12 @@ class RepoIncomingServiceTest {
         when(repoIncomingEvent.getNemsMessageId()).thenReturn(NEMS_MESSAGE_ID.toString());
         doThrow(exception)
                 .when(transferService)
-                .createOrRetryConversation(repoIncomingEvent);
+                .createConversationOrResetForRetry(repoIncomingEvent);
 
         // then
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
 
-        verify(transferService).createOrRetryConversation(repoIncomingEvent);
+        verify(transferService).createConversationOrResetForRetry(repoIncomingEvent);
         verify(activityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
         verify(gp2gpMessengerService, never()).sendEhrRequest(any());
@@ -150,7 +150,7 @@ class RepoIncomingServiceTest {
         // then
         assertThrows(Exception.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
 
-        verify(transferService).createOrRetryConversation(repoIncomingEvent);
+        verify(transferService).createConversationOrResetForRetry(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(activityService).concludeConversationActivity(INBOUND_CONVERSATION_ID);
 
@@ -174,7 +174,7 @@ class RepoIncomingServiceTest {
         // then
         assertThrows(TimeoutExceededException.class, () -> repoIncomingService.processIncomingEvent(repoIncomingEvent));
 
-        verify(transferService).createOrRetryConversation(repoIncomingEvent);
+        verify(transferService).createConversationOrResetForRetry(repoIncomingEvent);
         verify(gp2gpMessengerService).sendEhrRequest(repoIncomingEvent);
         verify(transferService).updateConversationTransferStatus(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT);
         verify(auditService).publishAuditMessage(INBOUND_CONVERSATION_ID, INBOUND_REQUEST_SENT, Optional.of(NEMS_MESSAGE_ID));
