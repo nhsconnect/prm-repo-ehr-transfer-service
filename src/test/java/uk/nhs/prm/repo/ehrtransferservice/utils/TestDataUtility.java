@@ -11,7 +11,7 @@ public final class TestDataUtility {
     public static final String SOURCE_GP = "B45744";
     public static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
     public static final String REPOSITORY_ODS_CODE = "REPOSITORY_ODS_CODE";
-    public static final String REPOSITORY_ASID = "REPOSITORY";
+    public static final String REPOSITORY_ASID = "REPOSITORY_ASID";
 
     public static RepoIncomingEvent createRepoIncomingEvent(UUID inboundConversationId) {
         return RepoIncomingEvent.builder()
