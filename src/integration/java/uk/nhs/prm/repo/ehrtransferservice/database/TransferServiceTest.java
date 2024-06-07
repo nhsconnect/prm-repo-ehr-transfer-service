@@ -21,8 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -162,19 +161,44 @@ public class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
 
-        // when
         try {
             transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
 
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED);
+        // when
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
         ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);
 
         // then
-        assertEquals(record.transferStatus(), INBOUND_FAILED);
+        assertEquals(record.transferStatus(), INBOUND_COMPLETE);
+    }
+
+    @Test
+    void updateConversationTransferStatus_ConversationIsAlreadyComplete_ShouldThrowExceptionAndNotUpdateTransferStatus() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        try {
+            transferService.createConversationOrResetForRetry(event);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
+        // when
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
+
+        // then
+        assertThrows(ConversationIneligibleForRetryException.class,
+                () -> transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT));
+
+        ConversationRecord record = transferService
+                .getConversationByInboundConversationId(inboundConversationId);
+
+        assertEquals(record.transferStatus(), INBOUND_COMPLETE);
     }
 
     @Test
@@ -194,12 +218,13 @@ public class TransferServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
         final String failureCode = "19";
 
-        // when
         try {
             transferService.createConversationOrResetForRetry(event);
         } catch (ConversationIneligibleForRetryException e) {
             fail("Conversation should be new and eligible.");
         }
+
+        // when
         transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode);
         final ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);

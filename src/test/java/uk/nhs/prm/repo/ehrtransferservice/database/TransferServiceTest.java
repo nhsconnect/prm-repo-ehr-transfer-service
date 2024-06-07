@@ -42,7 +42,7 @@ class TransferServiceTest {
     private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @Test
-    void createConversation_ValidNewConversationOrResetForRetryRequest_Ok() {
+    void createExceptionOrResetForRetry_ValidNewConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -61,7 +61,7 @@ class TransferServiceTest {
     }
 
     @Test
-    void createConversation_ValidRetriedConversationOrResetForRetryRequest_Ok() {
+    void createExceptionOrResetForRetry_ValidRetriedConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -83,7 +83,7 @@ class TransferServiceTest {
     }
 
     @Test
-    void createExceptionOrResetForRetry() {
+    void createExceptionOrResetForRetry_RetriedConversationRequestNotRetryable_ThrowsConversationIneligibleForRetryException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
@@ -105,18 +105,18 @@ class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatus_ConversationIsTerminated_DoNotUpdateTransferStatusAndConcludeConversation() {
+    void updateConversationTransferStatus_ConversationIsAlreadyComplete_DoNotUpdateTransferStatusAndConcludeConversation() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_COMPLETE;
         final ConversationTransferStatus newTransferStatus = INBOUND_TIMEOUT;
         final ConversationRecord conversationRecord = createConversationRecord(inboundConversationId, currentTransferStatus);
 
-
         // when
         when(transferRepository.findConversationByInboundConversationId(inboundConversationId))
                 .thenReturn(conversationRecord);
 
+        // this should only result in a warn log message, nothing else can be checked
         transferService.updateConversationTransferStatus(inboundConversationId, newTransferStatus);
 
         // then
@@ -163,7 +163,7 @@ class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_ConversationIsTerminated_DoNotUpdateTransferStatusToFailedAndConcludeConversation() {
+    void updateConversationTransferStatusWithFailure_ConversationIsAlreadyComplete_DoNotUpdateTransferStatusToFailedAndConcludeConversation() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final ConversationTransferStatus currentTransferStatus = INBOUND_COMPLETE;
@@ -199,7 +199,6 @@ class TransferServiceTest {
         verify(transferRepository).updateConversationStatusWithFailure(inboundConversationId, failureCode);
         verify(activityService).concludeConversationActivity(inboundConversationId);
     }
-
 
     // Helper Methods
     private ConversationRecord createConversationRecord(
