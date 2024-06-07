@@ -18,8 +18,8 @@ import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.SimpleAmqpQueue;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
-import uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.fail;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_REQUEST_SENT;
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CONVERSATION;
 import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataLoaderUtility.getTestDataAsString;
@@ -104,7 +105,12 @@ public class ParserBrokerIntegrationTest {
         final String fragmentsQueueUrl = sqs.getQueueUrl(largeMessageFragmentsObservabilityQueueName).getQueueUrl();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         inboundQueueFromMhs.sendMessage(fragmentMessageBody);
 
         // then
@@ -125,7 +131,12 @@ public class ParserBrokerIntegrationTest {
         final String smallEhrObservabilityQueueUrl = sqs.getQueueUrl(smallEhrObservabilityQueueName).getQueueUrl();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         transferService.updateConversationTransferStatus(
             EHR_CORE_INBOUND_CONVERSATION_ID,
             INBOUND_REQUEST_SENT
@@ -151,7 +162,12 @@ public class ParserBrokerIntegrationTest {
         final String correlationId = UUID.randomUUID().toString();
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         transferService.updateConversationTransferStatus(
             EHR_CORE_INBOUND_CONVERSATION_ID,
             INBOUND_REQUEST_SENT

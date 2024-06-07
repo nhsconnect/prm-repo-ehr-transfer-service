@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationAlreadyInProgressException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.timeout.TimeoutExceededException;
 import uk.nhs.prm.repo.ehrtransferservice.services.AuditService;
 import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
@@ -46,15 +47,32 @@ public class RepoIncomingService {
             UUID.fromString(repoIncomingEvent.getNemsMessageId())
         );
 
-        conversationActivityService.captureConversationActivity(inboundConversationId);
+        verifyIfConversationAlreadyInProgress(inboundConversationId);
 
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
 
-        gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
+            gp2gpMessengerService.sendEhrRequest(repoIncomingEvent);
+            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_REQUEST_SENT);
 
-        auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
-        waitForConversationToComplete(inboundConversationId);
+            auditService.publishAuditMessage(inboundConversationId, INBOUND_REQUEST_SENT, nemsMessageId);
+            waitForConversationToComplete(inboundConversationId);
+        } catch (Exception exception) {
+            conversationActivityService.concludeConversationActivity(inboundConversationId);
+            throw exception;
+        }
+    }
+
+    private void verifyIfConversationAlreadyInProgress(UUID inboundConversationId) throws ConversationAlreadyInProgressException {
+        if (conversationActivityService.isConversationActive(inboundConversationId)) {
+            if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
+                log.warn("On conversation being retried with Inbound Conversation ID: {}, found active transfer that " +
+                        "should have already timed out. Concluding the conversation and continuing the request", inboundConversationId);
+                conversationActivityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                throw new ConversationAlreadyInProgressException(inboundConversationId);
+            }
+        }
     }
 
     private void waitForConversationToComplete(UUID inboundConversationId) throws InterruptedException {
@@ -68,8 +86,12 @@ public class RepoIncomingService {
 
     private void verifyConversationNotTimedOut(UUID inboundConversationId) {
         if (conversationActivityService.isConversationTimedOut(inboundConversationId)) {
-            transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
-            throw new TimeoutExceededException(inboundConversationId);
+            if (transferService.getConversationTransferStatus(inboundConversationId).isInboundTerminating) {
+                conversationActivityService.concludeConversationActivity(inboundConversationId);
+            } else {
+                transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_TIMEOUT);
+                throw new TimeoutExceededException(inboundConversationId);
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 package uk.nhs.prm.repo.ehrtransferservice.database;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -29,6 +30,7 @@ import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.Layer.CORE
 import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.TransferTableAttribute.*;
 import static uk.nhs.prm.repo.ehrtransferservice.utility.DateUtility.getIsoTimestamp;
 
+@Log4j2
 @Component
 @RequiredArgsConstructor
 public class TransferRepository {
@@ -86,6 +88,7 @@ public class TransferRepository {
 
         try {
             dynamoDbClient.putItem(itemRequest);
+            log.info("Initial conversation record created for Inbound Conversation ID {}", event.getConversationId());
         } catch (SdkException exception) {
             throw new FailedToPersistException(inboundConversationId, exception);
         }
@@ -251,7 +254,7 @@ public class TransferRepository {
             item.get(SOURCE_GP.name).s(),
             Optional.ofNullable(item.get(DESTINATION_GP.name))
                 .map(AttributeValue::s),
-            item.get(TRANSFER_STATUS.name).s(),
+            ConversationTransferStatus.valueOf(item.get(TRANSFER_STATUS.name).s()),
             Optional.ofNullable(item.get(FAILURE_CODE.name))
                 .map(AttributeValue::s),
             Optional.ofNullable(item.get(NEMS_MESSAGE_ID.name))

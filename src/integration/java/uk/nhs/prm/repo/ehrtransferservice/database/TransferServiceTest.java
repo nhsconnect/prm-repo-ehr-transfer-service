@@ -10,18 +10,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.nhs.prm.repo.ehrtransferservice.activemq.ForceXercesParserExtension;
 import uk.nhs.prm.repo.ehrtransferservice.configuration.LocalStackAwsConfig;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.ConversationIneligibleForRetryException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationNotPresentException;
-import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.ConversationUpdateException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.database.QueryReturnedNoItemsException;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
+import uk.nhs.prm.repo.ehrtransferservice.services.ConversationActivityService;
 import uk.nhs.prm.repo.ehrtransferservice.utils.TransferTrackerDbUtility;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_FAILED;
-import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.INBOUND_STARTED;
+import static uk.nhs.prm.repo.ehrtransferservice.database.enumeration.ConversationTransferStatus.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -35,6 +35,12 @@ public class TransferServiceTest {
     @Autowired
     TransferTrackerDbUtility transferTrackerDbUtility;
 
+    @Autowired
+    ConversationActivityService conversationActivityService;
+
+    @Autowired
+    private TransferRepository transferRepository;
+
     private static final String NHS_NUMBER = "9798547485";
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
@@ -43,25 +49,63 @@ public class TransferServiceTest {
     private static final String EHR_CORE_MESSAGE_ID = "13CD1199-4B3A-44DC-9A60-6ABCC22B8A44";
 
     @Test
-    void createConversation_ValidRepoIncomingEvent_ShouldCreateConversation() {
+    void createConversation_ValidNewConversationOrResetForRetryRequest_Ok() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        transferService.createConversation(repoIncomingEvent);
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         ConversationRecord record = transferService
-            .getConversationByInboundConversationId(inboundConversationId);
+                .getConversationByInboundConversationId(inboundConversationId);
 
         String nemsMessageIdResult = record.nemsMessageId()
-            .orElseThrow()
-            .toString();
+                .orElseThrow()
+                .toString();
 
         // then
         assertEquals(record.inboundConversationId().toString(), inboundConversationId.toString());
         assertEquals(record.nhsNumber(), NHS_NUMBER);
         assertEquals(record.sourceGp(), SOURCE_GP);
-        assertEquals(record.state(), INBOUND_STARTED.name());
+        assertEquals(record.transferStatus(), INBOUND_STARTED);
+        assertEquals(record.failureCode(), Optional.empty());
+        assertEquals(nemsMessageIdResult, NEMS_MESSAGE_ID);
+        assertNotNull(record.createdAt());
+        assertNotNull(record.updatedAt());
+    }
+
+    @Test
+    void createConversation_ValidRetriedConversationOrResetForRetryRequest_Ok() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent repoIncomingEvent = createRepoIncomingEvent(inboundConversationId);
+        // create an already existing conversation that we can retry
+        transferRepository.createConversation(repoIncomingEvent);
+
+        // when
+        try {
+            transferService.createConversationOrResetForRetry(repoIncomingEvent);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be eligible for retry");
+        }
+
+        ConversationRecord record = transferService
+                .getConversationByInboundConversationId(inboundConversationId);
+
+        String nemsMessageIdResult = record.nemsMessageId()
+                .orElseThrow()
+                .toString();
+
+        // then
+        assertEquals(record.inboundConversationId().toString(), inboundConversationId.toString());
+        assertEquals(record.nhsNumber(), NHS_NUMBER);
+        assertEquals(record.sourceGp(), SOURCE_GP);
+        assertEquals(record.transferStatus(), INBOUND_STARTED);
         assertEquals(record.failureCode(), Optional.empty());
         assertEquals(nemsMessageIdResult, NEMS_MESSAGE_ID);
         assertNotNull(record.createdAt());
@@ -75,7 +119,12 @@ public class TransferServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
 
         // when
-        transferService.createConversation(event);
+        try {
+            transferService.createConversationOrResetForRetry(event);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         boolean isConversationPresent = transferService
             .isInboundConversationPresent(inboundConversationId);
 
@@ -112,23 +161,53 @@ public class TransferServiceTest {
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
 
+        try {
+            transferService.createConversationOrResetForRetry(event);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         // when
-        transferService.createConversation(event);
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED);
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
         ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_COMPLETE);
     }
 
     @Test
-    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatus_ConversationIsAlreadyComplete_ShouldThrowExceptionAndNotUpdateTransferStatus() {
+        // given
+        final UUID inboundConversationId = UUID.randomUUID();
+        final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
+
+        try {
+            transferService.createConversationOrResetForRetry(event);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
+        // when
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
+
+        // then
+        assertThrows(ConversationIneligibleForRetryException.class,
+                () -> transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT));
+
+        ConversationRecord record = transferService
+                .getConversationByInboundConversationId(inboundConversationId);
+
+        assertEquals(record.transferStatus(), INBOUND_COMPLETE);
+    }
+
+    @Test
+    void updateConversationTransferStatus_NonExistingInboundConversationIdAndExistingConversationTransferStatus_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
 
         // then
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
                 transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_FAILED));
     }
 
@@ -139,8 +218,13 @@ public class TransferServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
         final String failureCode = "19";
 
+        try {
+            transferService.createConversationOrResetForRetry(event);
+        } catch (ConversationIneligibleForRetryException e) {
+            fail("Conversation should be new and eligible.");
+        }
+
         // when
-        transferService.createConversation(event);
         transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode);
         final ConversationRecord record = transferService
             .getConversationByInboundConversationId(inboundConversationId);
@@ -148,18 +232,18 @@ public class TransferServiceTest {
         final String failureCodeResult = record.failureCode().orElseThrow();
 
         // then
-        assertEquals(record.state(), INBOUND_FAILED.name());
+        assertEquals(record.transferStatus(), INBOUND_FAILED);
         assertEquals(failureCodeResult, failureCode);
     }
 
     @Test
-    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationUpdateException() {
+    void updateConversationTransferStatusWithFailure_NonExistingInboundConversationIdAndFailureCode_ShouldThrowConversationNotPresentException() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final String failureCode = "19";
 
         // when
-        assertThrows(ConversationUpdateException.class, () ->
+        assertThrows(ConversationNotPresentException.class, () ->
             transferService.updateConversationTransferStatusWithFailure(inboundConversationId, failureCode));
     }
 
