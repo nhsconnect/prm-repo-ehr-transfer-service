@@ -73,10 +73,8 @@ public class ParserBrokerIntegrationTest {
     private static final UUID COPC_INBOUND_CONVERSATION_ID = UUID.fromString("ff1457fb-4f58-4870-8d90-24d9c3ef8b91");
     private static final UUID EHR_CORE_INBOUND_CONVERSATION_ID = UUID.fromString("ff27abc3-9730-40f7-ba82-382152e6b90a");
     private static final String SOURCE_GP = "A74154";
-    private static final String DESTINATION_GP = "B74158";
     private static final UUID NEMS_MESSAGE_ID = UUID.fromString("ad9246ce-b337-4ba9-973f-e1284e1f79c7");
     private static final String NHS_NUMBER = "9896589658";
-    private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
 
     @AfterEach
     public void tearDown() {
@@ -235,9 +233,7 @@ public class ParserBrokerIntegrationTest {
             .conversationId(inboundConversationId.toString().toUpperCase())
             .nhsNumber(NHS_NUMBER)
             .sourceGp(SOURCE_GP)
-            .destinationGp(DESTINATION_GP)
             .nemsMessageId(NEMS_MESSAGE_ID.toString())
-            .nemsEventLastUpdated(NEMS_EVENT_LAST_UPDATED)
             .build();
     }
 }

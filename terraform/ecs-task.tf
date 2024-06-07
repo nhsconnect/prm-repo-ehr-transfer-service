@@ -25,6 +25,7 @@ locals {
       name  = "EHR_TRANSFER_SERVICE_GP2GP_MESSENGER_URL",
       value = "https://gp2gp-messenger.${data.aws_ssm_parameter.env_domain_name.value}"
     },
+    { name = "REPOSITORY_ODS_CODE", value = data.aws_ssm_parameter.repository_ods_code.value },
     { name = "REPOSITORY_ASID", value = data.aws_ssm_parameter.repository_asid.value },
     { name = "SQS_LARGE_MESSAGE_BUCKET_NAME", value = aws_s3_bucket.sqs_large_message_bucket.bucket },
     { name = "SMALL_EHR_TOPIC_ARN", value = aws_sns_topic.small_ehr.arn },

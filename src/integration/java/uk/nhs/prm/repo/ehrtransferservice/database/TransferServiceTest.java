@@ -44,8 +44,6 @@ public class TransferServiceTest {
     private static final String NHS_NUMBER = "9798547485";
     private static final String SOURCE_GP = "B45744";
     private static final String NEMS_MESSAGE_ID = "2d74a113-1076-4c63-91bc-e50d232b6a79";
-    private static final String DESTINATION_GP = "A74854";
-    private static final String NEMS_EVENT_LAST_UPDATED = "2023-10-09T15:38:03.291499328Z";
     private static final String EHR_CORE_MESSAGE_ID = "13CD1199-4B3A-44DC-9A60-6ABCC22B8A44";
 
     @Test
@@ -279,8 +277,6 @@ public class TransferServiceTest {
             .nhsNumber(NHS_NUMBER)
             .sourceGp(SOURCE_GP)
             .nemsMessageId(NEMS_MESSAGE_ID)
-            .destinationGp(DESTINATION_GP)
-            .nemsEventLastUpdated(NEMS_EVENT_LAST_UPDATED)
             .conversationId(inboundConversationId.toString().toUpperCase())
             .build();
     }

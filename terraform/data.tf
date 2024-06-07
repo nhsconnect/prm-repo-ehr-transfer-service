@@ -36,6 +36,10 @@ data "aws_ssm_parameter" "ehr_transfer_service_authorization_keys_for_gp2gp_mess
   name = "/repo/${var.environment}/user-input/api-keys/gp2gp-messenger/ehr-transfer-service"
 }
 
+data "aws_ssm_parameter" "repository_ods_code" {
+  name = "/repo/${var.environment}/user-input/external/repository-ods-code"
+}
+
 data "aws_ssm_parameter" "repository_asid" {
   name = "/repo/${var.environment}/user-input/external/repository-asid"
 }

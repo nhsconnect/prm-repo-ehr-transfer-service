@@ -61,10 +61,6 @@ public class TransferRepository {
             .s(event.getSourceGp())
             .build());
 
-        tableItem.put(DESTINATION_GP.name, AttributeValue.builder()
-            .s(event.getDestinationGp())
-            .build());
-
         tableItem.put(TRANSFER_STATUS.name, AttributeValue.builder()
             .s(INBOUND_STARTED.name())
             .build());

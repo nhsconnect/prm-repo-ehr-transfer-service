@@ -26,8 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.REPOSITORY_ASID;
-import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.createRepoIncomingEvent;
+import static uk.nhs.prm.repo.ehrtransferservice.utils.TestDataUtility.*;
 
 @ExtendWith(MockitoExtension.class)
 class Gp2gpMessengerServiceTest {
@@ -66,6 +65,7 @@ class Gp2gpMessengerServiceTest {
         final RepoIncomingEvent event = createRepoIncomingEvent(INBOUND_CONVERSATION_ID);
 
         // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryOdsCode", REPOSITORY_ODS_CODE);
         ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
         gp2gpMessengerService.sendEhrRequest(event);
 
@@ -83,6 +83,7 @@ class Gp2gpMessengerServiceTest {
         final Exception exception = new HttpException();
 
         // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryOdsCode", REPOSITORY_ODS_CODE);
         ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
         doThrow(exception)
             .when(gp2gpMessengerClient)
@@ -130,6 +131,7 @@ class Gp2gpMessengerServiceTest {
         final Exception exception = new HttpException();
 
         // when
+        ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryOdsCode", REPOSITORY_ODS_CODE);
         ReflectionTestUtils.setField(gp2gpMessengerService, "repositoryAsid", REPOSITORY_ASID);
         when(transferService.getConversationByInboundConversationId(INBOUND_CONVERSATION_ID))
             .thenReturn(conversationRecord);
