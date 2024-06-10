@@ -192,7 +192,7 @@ public class TransferServiceTest {
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
 
         // then
-        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT));
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT);
 
         ConversationRecord record = transferService
                 .getConversationByInboundConversationId(inboundConversationId);
