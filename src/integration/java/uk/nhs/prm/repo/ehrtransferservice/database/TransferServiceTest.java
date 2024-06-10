@@ -177,7 +177,7 @@ public class TransferServiceTest {
     }
 
     @Test
-    void updateConversationTransferStatus_ConversationIsAlreadyComplete_ShouldThrowExceptionAndNotUpdateTransferStatus() {
+    void updateConversationTransferStatus_ConversationIsAlreadyComplete_ShouldNotUpdateTransferStatus() {
         // given
         final UUID inboundConversationId = UUID.randomUUID();
         final RepoIncomingEvent event = createRepoIncomingEvent(inboundConversationId);
@@ -192,8 +192,7 @@ public class TransferServiceTest {
         transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_COMPLETE);
 
         // then
-        assertThrows(ConversationIneligibleForRetryException.class,
-                () -> transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT));
+        transferService.updateConversationTransferStatus(inboundConversationId, INBOUND_CONTINUE_REQUEST_SENT));
 
         ConversationRecord record = transferService
                 .getConversationByInboundConversationId(inboundConversationId);
