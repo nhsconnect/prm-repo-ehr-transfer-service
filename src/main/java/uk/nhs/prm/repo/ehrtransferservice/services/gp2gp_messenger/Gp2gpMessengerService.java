@@ -25,13 +25,16 @@ public class Gp2gpMessengerService {
     private final Gp2gpMessengerClient gp2gpMessengerClient;
     private final TransferService transferService;
 
+    @Value("${repositoryOdsCode}")
+    private String repositoryOdsCode;
+
     @Value("${repositoryAsid}")
     private String repositoryAsid;
 
     public void sendEhrRequest(RepoIncomingEvent repoIncomingEvent) throws Exception {
         final UUID inboundConversationId = UUID.fromString(repoIncomingEvent.getConversationId());
         final Gp2gpMessengerEhrRequestBody requestBody = new Gp2gpMessengerEhrRequestBody(
-            repoIncomingEvent.getDestinationGp(),
+            repositoryOdsCode,
             repositoryAsid,
             repoIncomingEvent.getSourceGp(),
             repoIncomingEvent.getConversationId().toUpperCase()
