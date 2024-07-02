@@ -13,7 +13,9 @@ import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
+import uk.nhs.prm.repo.ehrtransferservice.models.enums.AcknowledgementErrorCode;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,21 +26,25 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
 
+import static uk.nhs.prm.repo.ehrtransferservice.models.enums.AcknowledgementErrorCode.ERROR_CODE_12;
+
 @Slf4j
 @Service
 public class EhrRepoClient {
     private final String ehrRepoAuthKey;
     private final URL ehrRepoUrl;
     private final Tracer tracer;
+    private final Gp2gpMessengerService gp2gpMessengerService;
 
     public EhrRepoClient(
             @Value("${ehrRepoUrl}") String ehrRepoUrl,
             @Value("${ehrRepoAuthKey}") String ehrRepoAuthKey,
-            Tracer tracer
-    ) throws MalformedURLException {
+            Tracer tracer,
+            Gp2gpMessengerService gp2gpMessengerService) throws MalformedURLException {
         this.ehrRepoUrl = new URL(ehrRepoUrl);
         this.ehrRepoAuthKey = ehrRepoAuthKey;
         this.tracer = tracer;
+        this.gp2gpMessengerService = gp2gpMessengerService;
     }
 
     public PresignedUrl fetchStorageUrl(UUID conversationId, UUID messageId) throws DuplicateMessageException, RuntimeException, IOException, URISyntaxException, InterruptedException {
@@ -55,6 +61,7 @@ public class EhrRepoClient {
                 .send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 409) {
+            gp2gpMessengerService.sendNegativeAcknowledgement(conversationId, ERROR_CODE_12);
             throw new DuplicateMessageException("Tried to store and already existing message in EHR Repo.");
         }
         if (response.statusCode() != 200) {

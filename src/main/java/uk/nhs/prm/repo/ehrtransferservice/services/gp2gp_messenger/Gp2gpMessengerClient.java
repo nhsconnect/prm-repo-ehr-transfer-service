@@ -4,11 +4,11 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerAcknowledgementRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -47,7 +47,7 @@ public class Gp2gpMessengerClient {
         }
     }
 
-    public void sendGp2gpMessengerPositiveAcknowledgement(String nhsNumber, Gp2gpMessengerPositiveAcknowledgementRequestBody body) throws IOException, URISyntaxException, InterruptedException, HttpException {
+    public void sendGp2gpMessengerAcknowledgement(String nhsNumber, Gp2gpMessengerAcknowledgementRequestBody body) throws IOException, URISyntaxException, InterruptedException, HttpException {
         String jsonPayloadString = new Gson().toJson(body);
         HttpRequest.BodyPublisher jsonPayload = HttpRequest.BodyPublishers.ofString(jsonPayloadString);
         String endpoint = "/health-record-requests/" + nhsNumber + "/acknowledgement";

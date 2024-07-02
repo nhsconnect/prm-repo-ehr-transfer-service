@@ -4,20 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class Gp2gpMessengerPositiveAcknowledgementRequestBody {
-    private final String repositoryAsid;
-    private final String odsCode;
-    private final String conversationId;
-    private final String messageId;
-
-    public Gp2gpMessengerPositiveAcknowledgementRequestBody(@JsonProperty("repositoryAsid") String repositoryAsid,
-                                                            @JsonProperty("odsCode") String odsCode,
-                                                            @JsonProperty("conversationId") String conversationId,
-                                                            @JsonProperty("messageId") String messageId
+public class Gp2gpMessengerPositiveAcknowledgementRequestBody extends Gp2gpMessengerAcknowledgementRequestBody{
+    public Gp2gpMessengerPositiveAcknowledgementRequestBody(
+            String repositoryAsid,
+            String odsCode,
+            String conversationId,
+            String messageId
     ) {
-        this.repositoryAsid = repositoryAsid;
-        this.odsCode = odsCode;
-        this.conversationId = conversationId;
-        this.messageId = messageId;
+        super(repositoryAsid, odsCode, conversationId, messageId);
     }
 }

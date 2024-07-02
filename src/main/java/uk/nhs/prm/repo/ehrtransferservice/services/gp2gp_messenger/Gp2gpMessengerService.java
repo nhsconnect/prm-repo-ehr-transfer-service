@@ -8,10 +8,9 @@ import uk.nhs.prm.repo.ehrtransferservice.database.TransferService;
 import uk.nhs.prm.repo.ehrtransferservice.database.model.ConversationRecord;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.HttpException;
 import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.EhrCompleteAcknowledgementFailedException;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerContinueMessageRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerEhrRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.Gp2gpMessengerPositiveAcknowledgementRequestBody;
-import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.ParsedMessage;
+import uk.nhs.prm.repo.ehrtransferservice.exceptions.acknowledgement.NegativeAcknowledgementFailedException;
+import uk.nhs.prm.repo.ehrtransferservice.gp2gp_message_models.*;
+import uk.nhs.prm.repo.ehrtransferservice.models.enums.AcknowledgementErrorCode;
 import uk.nhs.prm.repo.ehrtransferservice.repo_incoming.RepoIncomingEvent;
 
 import java.io.IOException;
@@ -78,11 +77,38 @@ public class Gp2gpMessengerService {
         );
 
         try {
-            gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement(record.nhsNumber(), requestBody);
+            gp2gpMessengerClient.sendGp2gpMessengerAcknowledgement(record.nhsNumber(), requestBody);
             log.info("EHR complete positive acknowledgement sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
         } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
             log.error("An exception occurred while sending an EHR complete positive acknowledgement {}", exception.getMessage());
             throw new EhrCompleteAcknowledgementFailedException(inboundConversationId, exception);
+        }
+    }
+
+    public void sendNegativeAcknowledgement(
+            UUID inboundConversationId,
+            AcknowledgementErrorCode acknowledgementErrorCode
+    ) {
+        final ConversationRecord record =
+                transferService.getConversationByInboundConversationId(inboundConversationId);
+
+        final UUID ehrCoreMessageId =
+                transferService.getEhrCoreInboundMessageIdForInboundConversationId(inboundConversationId);
+
+        final var requestBody = new Gp2gpMessengerNegativeAcknowledgementRequestBody(
+                repositoryAsid,
+                record.sourceGp(),
+                inboundConversationId.toString().toUpperCase(),
+                ehrCoreMessageId.toString().toUpperCase(),
+                acknowledgementErrorCode.errorCode
+        );
+
+        try {
+            gp2gpMessengerClient.sendGp2gpMessengerAcknowledgement(record.nhsNumber(), requestBody);
+            log.info("Negative acknowledgement sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
+        } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
+            log.error("An exception occurred while sending a negative acknowledgement {}", exception.getMessage());
+            throw new NegativeAcknowledgementFailedException(acknowledgementErrorCode.errorCode, inboundConversationId, exception);
         }
     }
 }
