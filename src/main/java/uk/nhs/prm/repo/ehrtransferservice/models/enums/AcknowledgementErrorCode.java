@@ -11,5 +11,5 @@ public enum AcknowledgementErrorCode {
     // TODO PRMP-534 identify and add the remaining error types
 
     public final String errorCode;
-    public final String label;
+    public final String displayName;
 }

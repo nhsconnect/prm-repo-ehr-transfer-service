@@ -100,14 +100,17 @@ public class Gp2gpMessengerService {
                 record.sourceGp(),
                 inboundConversationId.toString().toUpperCase(),
                 ehrCoreMessageId.toString().toUpperCase(),
-                acknowledgementErrorCode.errorCode
+                acknowledgementErrorCode
         );
 
         try {
             gp2gpMessengerClient.sendGp2gpMessengerAcknowledgement(record.nhsNumber(), requestBody);
-            log.info("Negative acknowledgement sent for Inbound Conversation ID {}", inboundConversationId.toString().toUpperCase());
+            log.info("Negative acknowledgement with code {} sent for Inbound Conversation ID {}",
+                    requestBody.getErrorCode(), inboundConversationId.toString().toUpperCase());
         } catch (IOException | URISyntaxException | InterruptedException | HttpException exception) {
-            log.error("An exception occurred while sending a negative acknowledgement {}", exception.getMessage());
+            log.error("An exception occurred while sending a negative acknowledgement with code {} " +
+                            "sent for Inbound Conversation ID {}. Exception message is: {}",
+                    requestBody.getErrorCode(), inboundConversationId.toString().toUpperCase(), exception.getMessage());
             throw new NegativeAcknowledgementFailedException(acknowledgementErrorCode.errorCode, inboundConversationId, exception);
         }
     }
