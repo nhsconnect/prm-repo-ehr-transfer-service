@@ -98,7 +98,7 @@ class Gp2gpMessengerClientTest {
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
-        gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody);
+        gp2gpMessengerClient.sendGp2gpMessengerAcknowledgement("1234567890", requestBody);
 
         verify(postRequestedFor(urlMatching("/health-record-requests/1234567890/acknowledgement"))
                 .withRequestBody(equalToJson((jsonPayloadString)))
@@ -122,7 +122,7 @@ class Gp2gpMessengerClientTest {
         tracer.directlyUpdateTraceIdButNotConversationId("some-trace-id");
 
         Gp2gpMessengerClient gp2gpMessengerClient = new Gp2gpMessengerClient(wireMockServer.baseUrl(), "secret", tracer);
-        assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendGp2gpMessengerPositiveAcknowledgement("1234567890", requestBody));
+        assertThrows(HttpException.class, () -> gp2gpMessengerClient.sendGp2gpMessengerAcknowledgement("1234567890", requestBody));
     }
 
     @Test

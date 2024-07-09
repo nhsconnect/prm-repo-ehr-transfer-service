@@ -14,6 +14,7 @@ import uk.nhs.prm.repo.ehrtransferservice.logging.Tracer;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageRequestBody;
 import uk.nhs.prm.repo.ehrtransferservice.models.confirmmessagestored.StoreMessageResponseBody;
 import uk.nhs.prm.repo.ehrtransferservice.services.PresignedUrl;
+import uk.nhs.prm.repo.ehrtransferservice.services.gp2gp_messenger.Gp2gpMessengerService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -23,6 +24,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.UUID;
+
+import static uk.nhs.prm.repo.ehrtransferservice.models.enums.AcknowledgementErrorCode.ERROR_CODE_12;
 
 @Slf4j
 @Service

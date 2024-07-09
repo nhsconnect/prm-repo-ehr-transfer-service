@@ -119,7 +119,7 @@ class Gp2gpMessengerServiceTest {
         gp2gpMessengerService.sendEhrCompletePositiveAcknowledgement(INBOUND_CONVERSATION_ID);
 
         // then
-        verify(gp2gpMessengerClient).sendGp2gpMessengerPositiveAcknowledgement(
+        verify(gp2gpMessengerClient).sendGp2gpMessengerAcknowledgement(
             eq(NHS_NUMBER),
             gp2gpMessengerPositiveAcknowledgementRequestBodyArgumentCaptor.capture()
         );
@@ -141,7 +141,7 @@ class Gp2gpMessengerServiceTest {
         when(conversationRecord.nhsNumber()).thenReturn(NHS_NUMBER);
         doThrow(exception)
             .when(gp2gpMessengerClient)
-            .sendGp2gpMessengerPositiveAcknowledgement(
+            .sendGp2gpMessengerAcknowledgement(
                 any(String.class),
                 gp2gpMessengerPositiveAcknowledgementRequestBodyArgumentCaptor.capture()
             );
