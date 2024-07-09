@@ -8,7 +8,6 @@ public enum AcknowledgementErrorCode {
     ERROR_CODE_09("09", "EHR Extract received without corresponding request"),
     ERROR_CODE_10("10", "Failed to successfully generate EHR Extract"),
     ERROR_CODE_12("12", "Duplicate EHR Extract received");
-    // TODO PRMP-534 identify and add the remaining error types
 
     public final String errorCode;
     public final String displayName;
