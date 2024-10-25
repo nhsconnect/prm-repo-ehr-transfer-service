@@ -343,6 +343,8 @@ resource "aws_cloudwatch_metric_alarm" "splunk_uploader_sns_topic_error_log_alar
 }
 
 resource "aws_cloudwatch_metric_alarm" "scale_up" {
+  count = contains(["dev", "test", "perf"], var.environment) ? 1 : 0
+
   alarm_name          = "${var.environment}-${var.component_name}-scale-up"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
@@ -376,6 +378,8 @@ resource "aws_cloudwatch_metric_alarm" "scale_up" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "scale_down" {
+  count = contains(["dev", "test", "perf"], var.environment) ? 1 : 0
+
   alarm_name          = "${var.environment}-${var.component_name}-scale-down"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = "1"
