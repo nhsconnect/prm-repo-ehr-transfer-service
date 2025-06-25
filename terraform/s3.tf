@@ -74,9 +74,7 @@ resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
   bucket        = "${local.sqs_large_messages_bucket_name}-access-logs"
   acl           = "private"
   force_destroy = true
-  versioning {
-    enabled = false
-  }
+
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -87,6 +85,14 @@ resource "aws_s3_bucket" "sqs_large_messages_s3_access_logs" {
   tags = {
     CreatedBy   = var.repo_name
     Environment = var.environment
+  }
+}
+
+resource "aws_s3_bucket_versioning" "access_logs" {
+  bucket = aws_s3_bucket.sqs_large_messages_s3_access_logs.bucket
+
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
