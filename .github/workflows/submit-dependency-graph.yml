@@ -17,7 +17,7 @@ jobs:
           distribution: 'adopt'
           java-version: '21'
       - name: Setup Gradle to generate and submit dependency graphs
-        uses: gradle/gradle-build-action@v2.11.1
+        uses: gradle/gradle-build-action@v3.5.0
         with:
           dependency-graph: generate-and-submit
       - name: Run a build and generate the dependency graph which will be submitted post-job
