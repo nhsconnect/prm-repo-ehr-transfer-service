@@ -72,6 +72,7 @@ resource "aws_ecs_task_definition" "task" {
     image_tag             = var.task_image_tag,
     cpu                   = var.task_cpu,
     memory                = var.task_memory,
+    readonlyRootFilesystem = true
     log_region            = var.region,
     log_group             = local.task_log_group
     environment_variables = jsonencode(local.environment_variables),
