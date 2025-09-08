@@ -12,20 +12,22 @@ pipelines:
       - build:
           clean_workspace: true
           jobs:
-            sonar_analysis:
-              environment_variables:
-                NHS_ENVIRONMENT: dev
-              resources:
-                - docker
-              artifacts:
-                - build:
-                    source: build
-              tasks:
-                - exec:
-                    command: /bin/bash
-                    arguments:
-                      - -c
-                      - ./tasks run_sonar
+            # TODO when moving this to GitHub Actions, re-implement this step. It currently fails due to Dojo.
+            # and GoCD has no way of implementing anything like allow_failure: true
+#            sonar_analysis:
+#              environment_variables:
+#                NHS_ENVIRONMENT: dev
+#              resources:
+#                - docker
+#              artifacts:
+#                - build:
+#                    source: build
+#              tasks:
+#                - exec:
+#                    command: /bin/bash
+#                    arguments:
+#                      - -c
+#                      - ./tasks run_sonar
             test_unit:
               resources:
                 - docker
