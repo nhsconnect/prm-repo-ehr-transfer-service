@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "sqs_large_message_bucket" {
   force_destroy = true
 
   versioning {
-    enabled = false
+    enabled = true
   }
 
   logging {
